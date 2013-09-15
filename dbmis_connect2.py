@@ -96,6 +96,12 @@ SQL_TEMPLATE_GETCLINICS = """SELECT
 FROM VW_CLINICS
 """
 
+SQL_TEMPLATE_GETCLINIC = """SELECT
+clinic_name, inn, kpp, ogrn, mcod
+FROM VW_CLINICS
+WHERE CLINIC_ID = {0}
+"""
+
 # Вборка результата обследования, диагноза и заключения
 # для определенного conclusion_id
 SQL_TEMPLATE = "select c.conclusion_id, cast (c.results as BLOB SUB_TYPE TEXT ), cast (c.diagnosis as BLOB SUB_TYPE TEXT ), cast (c.advices as BLOB SUB_TYPE TEXT ) from conclusions c where c.conclusion_id = %d;"
@@ -111,7 +117,7 @@ def unpack_date(sdate = "2012-10-01"):
 class DBMIS:
     'Base class for DBMIS connection'
     
-    def __init__(self, lpu_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
+    def __init__(self, clinic_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
         s_dsn = "%s:%s" % (HOST, DB)
         try:
             self.con = fdb.connect(dsn=s_dsn, user=DB_USER, password=DB_PWD, role = DB_ROLE, charset='WIN1251')
@@ -122,7 +128,9 @@ class DBMIS:
             raise
         sout = "Connection to %s has been established" % (s_dsn)
         log.debug(sout)
-        self.set_context(lpu_id, mis_user, mis_user_pwd)
+        self.clinic_id = clinic_id
+        self.set_context(clinic_id, mis_user, mis_user_pwd)
+        self.get_clinic_info()
                 
         
     def set_context(self, lpu_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
@@ -259,8 +267,31 @@ class DBMIS:
             log.warn( 'DBMIS execute error: %s' % value.message )
             return False
 
+    def get_clinic_info(self):
+    # Get clinics name, inn, kpp, ogrn, mcod for particular clinic
+        clinic_id = self.clinic_id
+        ssql = SQL_TEMPLATE_GETCLINIC.format(clinic_id)
+        self.execute(ssql)
+        rec = self.cur.fetchone()
+        if rec == None:
+            self.name = None
+            self.inn  = None
+            self.kpp  = None
+            self.ogrn = None
+            self.mcod = None
+        else:
+            self.name = rec[0]
+            self.inn  = rec[1]
+            self.kpp  = rec[2]
+            self.ogrn = rec[3]
+            self.mcod = rec[4]
+            
+        
+        
+
 if __name__ == "__main__":
     dbc = DBMIS(22)
+    print dbc.name, dbc.mcod, dbc.ogrn
     cursor = dbc.con.cursor()
     ssql = SQL_TEMPLATE_GETCLINICS
     print ssql

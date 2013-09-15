@@ -124,7 +124,8 @@ if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
-        
+    
+    import os    
     import datetime
     import time
     localtime = time.asctime( time.localtime(time.time()) )
@@ -142,7 +143,18 @@ JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.speciality_id_fk = 1
 AND ap.date_end is Null;"""
     
-    dbc = DBMIS()
+    dbc = DBMIS(CLINIC_ID)
+    if dbc.ogrn == None:
+        CLINIC_OGRN = u""
+    else:
+        CLINIC_OGRN = dbc.ogrn
+    
+    cogrn = CLINIC_OGRN.encode('utf-8')
+    cname = dbc.name.encode('utf-8')
+    
+    sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2}".format(CLINIC_ID, cname, cogrn)
+    log.info(sout)
+    
     p_obj = PatientInfo()
     insorgs = InsorgInfoList()
     cursor = dbc.con.cursor()
@@ -181,6 +193,12 @@ AND ap.date_end is Null;"""
             log.debug(sout)
             ps = p1(p_obj, insorg).encode('utf-8')
             log.debug(ps)
+            # To make sure that you're data is written to disk
+            # http://stackoverflow.com/questions/608316/is-there-commit-analog-in-python-for-writing-into-a-file
+    
+            fo.flush()
+            os.fsync(fo.fileno())
+            
         if age > 20 and agem == 0:
             ccount += 1
             insorg_id   = p_obj.insorg_id
