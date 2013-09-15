@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# insr1.py - запрос страховой пренадлежности
+# insr-1.py - запрос страховой пренадлежности
 #
 
 import logging
@@ -213,12 +213,15 @@ AND ap.date_end is Null;"""
             sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
             fo.write(ps)
-        
+
+    fo.flush()
+    os.fsync(fo.fileno())
     fo.close()
+    
     dbc.close()
     sout = "candidates: {0} / patients: {1}".format(ccount, ncount)
     log.info( sout )
-    sout = "{0} candidates have not got insurance company".format(noicc)
+    sout = "{0} candidates have not got insurance company id".format(noicc)
     log.info( sout )
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Insurance Belongings Request Finish  '+localtime)
