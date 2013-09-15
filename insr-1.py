@@ -166,6 +166,7 @@ AND ap.date_end is Null;"""
     
     ncount = 0
     ccount = 0
+    noicc  = 0
     for row in results:
         ncount += 1
         
@@ -177,14 +178,14 @@ AND ap.date_end is Null;"""
         agem = age % 3
         if ncount % STEP == 0:
             sout = " {0}/{1} people_id: {2} age: {3} agem: {4}".format(ccount, ncount, p_id, age, agem)
-            log.debug(sout)
+            log.info(sout)
             
             insorg_id   = p_obj.insorg_id
             try:
                 insorg = insorgs[insorg_id]
             except:
                 sout = "People_id: {0}. Have not got insorg_id: {1}".format(p_id, insorg_id)
-                log.warn(sout)
+                log.debug(sout)
                 insorg = insorgs[0]
                 
             insorg_name = insorg.name.encode('utf-8')
@@ -206,15 +207,18 @@ AND ap.date_end is Null;"""
                 insorg = insorgs[insorg_id]
             except:
                 sout = "People_id: {0}. Have not got insorg_id: {1}".format(p_id, insorg_id)
-                log.warn(sout)
+                log.debug(sout)
                 insorg = insorgs[0]
-            sss = p1(p_obj, insorg) + "\n"
+                noicc += 1
+            sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
             fo.write(ps)
         
     fo.close()
     dbc.close()
     sout = "candidates: {0} / patients: {1}".format(ccount, ncount)
+    log.info( sout )
+    sout = "{0} candidates have not got insurance company".format(noicc)
     log.info( sout )
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Insurance Belongings Request Finish  '+localtime)
