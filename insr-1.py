@@ -86,26 +86,39 @@ def p1(patient, insorg):
     else:
         insorg_okato = u"{0}".format(ogrn)
     res.append(insorg_okato)
-    
-    # ENP
-    res.append(u"")
-    
-    # Medical Insurance Certificate
-    res.append(u"1")
-    
+
+    # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
     sss = patient.medical_insurance_series
     if sss == None:
-        sss1 = u""
+        s_mis = u""
     else:
-        sss1 = u"{0}".format(sss)
-    res.append(sss1)
-    
+        s_mis = u"{0}".format(sss)
+
     sss = patient.medical_insurance_number
     if sss == None:
-        sss1 = u""
+        s_min = u""
     else:
-        sss1 = u"{0}".format(sss)
-    res.append(sss1)
+        s_min = u"{0}".format(sss)
+    
+    enp = u""
+    if len(s_mis) == 0:
+        tdpfs = u"3" # Полис ОМС единого образца
+        enp = s_min
+        smin = u""
+    elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
+        tdpfs = u"2" # Временное свидетельство, ....
+    else:
+        tdpfs = u"1" # Полис ОМС старого образца
+    
+    
+    # ENP
+    res.append(enp)
+    
+    res.append(tdpfs)
+    
+    res.append(s_mis)
+    
+    res.append(s_min)
     
     # medical care start
     res.append(s_now)
