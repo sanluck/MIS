@@ -25,6 +25,8 @@ DOC_TYPES = {1:u"1",
              2:u"2",
              3:u"3"}
 
+SKIP_OGRN = True
+
 fname = "IM220096T22_13091.csv"
 
 def p1(patient, insorg):
@@ -74,14 +76,14 @@ def p1(patient, insorg):
     res.append(SNILS)
     
     ogrn = insorg.ogrn
-    if ogrn == None or ogrn == 0:
+    if ogrn == None or ogrn == 0 or SKIP_OGRN:
         insorg_ogrn = u""
     else:
         insorg_ogrn = u"{0}".format(ogrn)
     res.append(insorg_ogrn)
 
     okato = insorg.okato
-    if okato == None or okato == 0:
+    if okato == None or okato == 0 or SKIP_OGRN:
         insorg_okato = u""
     else:
         insorg_okato = u"{0}".format(ogrn)
@@ -112,6 +114,11 @@ def p1(patient, insorg):
     
     
     # ENP
+    if SKIP_OGRN:
+        if len(enp) > 0:
+            s_min = enp
+            enp = u""
+            
     res.append(enp)
     
     res.append(tdpfs)
@@ -149,11 +156,11 @@ if __name__ == "__main__":
     s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)    
     y_now = now.year
 
-    s_sqlt = """SELECT ap.people_id_fk 
-FROM area_peoples ap
+    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ca.clinic_id_fk = {0} AND ca.speciality_id_fk = 1
+WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
     
     dbc = DBMIS(CLINIC_ID)
@@ -164,6 +171,8 @@ AND ap.date_end is Null;"""
     
     cogrn = CLINIC_OGRN.encode('utf-8')
     cname = dbc.name.encode('utf-8')
+    
+    if SKIP_OGRN: CLINIC_OGRN = u""
     
     sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2}".format(CLINIC_ID, cname, cogrn)
     log.info(sout)
@@ -182,9 +191,8 @@ AND ap.date_end is Null;"""
     noicc  = 0
     for row in results:
         ncount += 1
-        
         p_id = row[0]
-        p_obj.initFromDb(dbc, p_id)
+        p_obj.initFromRec(row)
         p_bd = p_obj.birthday
         p_by = p_bd.year
         age  = y_now - p_by
