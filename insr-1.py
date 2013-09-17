@@ -189,9 +189,13 @@ AND ap.date_end is Null;"""
     ncount = 0
     ccount = 0
     noicc  = 0
+    p_id_old = 0
     for row in results:
         ncount += 1
         p_id = row[0]
+        if p_id == p_id_old:
+            continue
+        p_id_old = p_id
         p_obj.initFromRec(row)
         p_bd = p_obj.birthday
         p_by = p_bd.year
