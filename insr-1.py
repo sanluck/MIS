@@ -6,28 +6,33 @@
 import logging
 import sys, codecs
 
+from medlib.moinfolist import MoInfoList
+modb = MoInfoList()
+
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 LOG_FILENAME = '_insr.out'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
+logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
+console.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-CLINIC_ID = 224
-CLINIC_OGRN = u""
-STEP = 100
+clist = (215, 220, 222)
 
+CLINIC_OGRN = u""
+
+FNAME = "IM{0}T22_13091.csv"
+
+STEP = 100
 DOC_TYPES = {1:u"1",
              2:u"2",
              3:u"3"}
 
 SKIP_OGRN = True
 
-fname = "IM220096T22_13091.csv"
 
 def p1(patient, insorg):
     import datetime
@@ -139,31 +144,18 @@ def p1(patient, insorg):
     
     return u"|".join(res)
 
-if __name__ == "__main__":
-
-    from dbmis_connect2 import DBMIS
+def plist(dbc, fname, rows):
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
     
     import os    
     import datetime
     import time
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('------------------------------------------------------------')
-    log.info('Insurance Belongings Request Start {0}'.format(localtime))
 
     now = datetime.datetime.now()
     s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)    
     y_now = now.year
 
-    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
-JOIN area_peoples ap ON p.people_id = ap.people_id_fk
-JOIN areas ar ON ap.area_id_fk = ar.area_id
-JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
-AND ap.date_end is Null;"""
-    
-    dbc = DBMIS(CLINIC_ID)
     if dbc.ogrn == None:
         CLINIC_OGRN = u""
     else:
@@ -171,18 +163,12 @@ AND ap.date_end is Null;"""
     
     cogrn = CLINIC_OGRN.encode('utf-8')
     cname = dbc.name.encode('utf-8')
+    mcod  = dbc.mcod
     
     if SKIP_OGRN: CLINIC_OGRN = u""
     
-    sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2}".format(CLINIC_ID, cname, cogrn)
-    log.info(sout)
-    
     p_obj = PatientInfo()
     insorgs = InsorgInfoList()
-    cursor = dbc.con.cursor()
-    s_sql = s_sqlt.format(CLINIC_ID)
-    cursor.execute(s_sql)
-    results = cursor.fetchall()
 
     fo = open(fname, "wb")
     
@@ -190,7 +176,7 @@ AND ap.date_end is Null;"""
     ccount = 0
     noicc  = 0
     p_id_old = 0
-    for row in results:
+    for row in rows:
         ncount += 1
         p_id = row[0]
         if p_id == p_id_old:
@@ -242,12 +228,73 @@ AND ap.date_end is Null;"""
     fo.flush()
     os.fsync(fo.fileno())
     fo.close()
-    
-    dbc.close()
     sout = "candidates: {0} / patients: {1}".format(ccount, ncount)
     log.info( sout )
     sout = "{0} candidates have not got insurance company id".format(noicc)
     log.info( sout )
+    
+def pclinic(clinic_id, mcod):
+    from dbmis_connect2 import DBMIS
+    import time
+
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('------------------------------------------------------------')
+    log.info('Insurance Belongings Request Start {0}'.format(localtime))
+
+    dbc = DBMIS(clinic_id)
+    if dbc.ogrn == None:
+        CLINIC_OGRN = u""
+    else:
+        CLINIC_OGRN = dbc.ogrn
+
+    cogrn = CLINIC_OGRN.encode('utf-8')
+    cname = dbc.name.encode('utf-8')
+    
+    if SKIP_OGRN: CLINIC_OGRN = u""
+    
+    sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
+    log.info(sout)
+
+    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
+AND ap.date_end is Null;"""
+
+
+    cursor = dbc.con.cursor()
+    s_sql = s_sqlt.format(clinic_id)
+    cursor.execute(s_sql)
+    results = cursor.fetchall()
+    
+    fname = FNAME.format(mcod)
+    sout = "Output to file: {0}".format(fname)
+    log.info(sout)
+    
+    plist(dbc, fname, results)
+
+    
+    dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Insurance Belongings Request Finish  '+localtime)
+    
+
+if __name__ == "__main__":
+    
+    import os    
+    import datetime
+
+    for clinic_id in clist:
+        try:
+            mcod = modb.moCodeByMisId(clinic_id)
+            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+            log.debug(sout)
+        except:
+            sout = "Have not got MO Code for clinic_id {0}".format(clinic_id)
+            log.warn(sout)
+            mcod = 0
+
+        pclinic(clinic_id, mcod)    
+
     sys.exit(0)
