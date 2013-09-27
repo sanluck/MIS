@@ -20,7 +20,7 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-clist = (215, 220, 222)
+clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
 
 CLINIC_OGRN = u""
 
