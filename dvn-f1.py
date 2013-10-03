@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# insr-2.py - обработка ответа на запрос страховой пренадлежности
+# dvn-f1.py - формирование карт ДВН
+#             по списку из ответа на запрос страховой принадлежности
 #
 
 import logging
@@ -11,7 +12,7 @@ modb = MoInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_insr2.out'
+LOG_FILENAME = '_dvnf1.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -38,6 +39,23 @@ SET_MO = False
 
 SET_INSORG = True
 
+DS_WHITE_LIST = []
+DS_WHITE_COUNT = 395
+
+def get_wlist(fname="ds_white_list.xls"):
+    import xlrd
+    workbook = xlrd.open_workbook(fname)
+    worksheets = workbook.sheet_names()
+    wshn0 = worksheets[0]
+    worksheet = workbook.sheet_by_name(wshn0)
+    curr_cell = 0
+    for curr_row in range(DS_WHITE_COUNT):
+        cell_value = worksheet.cell_value(curr_row, curr_cell)
+        DS_WHITE_LIST.append(cell_value)
+    
+    workbook.release_resources()
+    
+
 def plist_in(fname):
 # read file <fname>
 # and get peoples list
@@ -51,6 +69,25 @@ def plist_in(fname):
     fi.close()
     return arr
 
+def check_person(db, people_id):
+    import datetime
+    s_sqlt = """SELECT t.ticket_id, td.diagnosis_id_fk
+FROM tickets t
+LEFT JOIN ticket_diagnosis td ON t.ticket_id = td.ticket_id_fk
+WHERE t.people_id_fk = {0} and visit_date > '2013-01-01';"""
+    s_sql = s_sqlt.format(people_id)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    records = cursor.fetchall()
+    for rec in records:
+        dss = rec[1]
+        if dss == None: continue
+        ds = dss.strip()
+        if ds not in DS_WHITE_LIST:
+            return False
+    return True
+    
+
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
     from PatientInfo2 import PatientInfo2
@@ -60,7 +97,7 @@ def pclinic(clinic_id, mcod):
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('------------------------------------------------------------')
-    log.info('Insurance Belongings Results Processing Start {0}'.format(localtime))
+    log.info('DVN List Processing Start {0}'.format(localtime))
     
     fname = FNAME.format(mcod)
     sout = "Input file: {0}".format(fname)
@@ -102,11 +139,13 @@ def pclinic(clinic_id, mcod):
         sout = "Using area_id: {0} area_number: {1}".format(area_id, area_nu)
         log.info(sout)
 
-    not_belongs_2_clinic = 0
+    wrong_clinic = 0
     wrong_insorg = 0
     ncount = 0
     dbc2 = DBMIS(clinic_id)
     cur2 = dbc2.con.cursor()
+
+    dvn_number = 0
     
     for prec in ppp:
         ncount += 1
@@ -120,40 +159,34 @@ def pclinic(clinic_id, mcod):
         medical_insurance_number = prec[5]       
         p_obj.initFromDb(dbc, people_id)
         if clinic_id <> p_obj.clinic_id:
-            not_belongs_2_clinic += 1
-            if SET_MO:
-                area_people_id = p_obj.area_people_id
-                s_sqlt = "UPDATE area_peoples SET area_id_fk = {0} WHERE area_people_id = {1};"
-                s_sql  = s_sqlt.format(area_id, area_people_id)
-                cur2.execute(s_sql)
-                dbc2.con.commit()
-        if (insorg_id <> 0) and (insorg_id <> p_obj.insorg_id):
-            wrong_insorg += 1
-            if SET_INSORG:
-                s_sqlt = "UPDATE peoples SET insorg_id = {0} WHERE people_id = {1};"
-                s_sql  = s_sqlt.format(insorg_id, people_id)
-                cur2.execute(s_sql)
-                dbc2.con.commit()
-                
+            wrong_clinic += 1
+            continue
+
+        if check_person(dbc, people_id):
+            dvn_number += 1
+
         if ncount % STEP == 0:
-            sout = " {0} people_id: {1} clinic_id: {2}".format(ncount, people_id, p_obj.clinic_id)
+            sout = " {0} people_id: {1} clinic_id: {2} dvn_number: {3}".format(ncount, people_id, p_obj.clinic_id, dvn_number)
             log.info(sout)
 
-    sout = "Wrong clinic: {0}".format(not_belongs_2_clinic)
+    sout = "Wrong clinic: {0}".format(wrong_clinic)
     log.info(sout)
-    sout = "Wrong insorg: {0}".format(wrong_insorg)
+    sout = "DVN cases number: {0}".format(dvn_number)
     log.info(sout)
+    
     
     dbc.close()
     dbc2.close()
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Insurance Belongings Results Processing Finish  '+localtime)
+    log.info('DVN List Processing Finish  '+localtime)
     
 
 if __name__ == "__main__":
     
     import os    
     import datetime
+    
+    get_wlist()
 
     for clinic_id in clist:
         try:
