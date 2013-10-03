@@ -285,8 +285,23 @@ class DBMIS:
             self.kpp  = rec[2]
             self.ogrn = rec[3]
             self.mcod = rec[4]
-            
-        
+                
+        s_sqlt = """SELECT 
+                a.area_id, a.area_number,
+                ca.clinic_id_fk
+                from areas a
+                left join clinic_areas ca on a.clinic_area_id_fk = ca.clinic_area_id
+                where ca.clinic_id_fk = {0} and ca.basic_speciality = 1;"""        
+        ssql = s_sqlt.format(clinic_id)
+        self.execute(ssql)
+        recs = self.cur.fetchall()
+        if recs == None:
+            self.clinic_areas = None
+        else:
+            ar = []
+            for rec in recs:
+                ar.append([rec[0], rec[1]])
+            self.clinic_areas = ar
         
 
 if __name__ == "__main__":
