@@ -10,7 +10,7 @@ import exceptions
 import logging
 import fdb
 
-HOST = 'fb.ctmed.ru'
+HOST = 'tb.ctmed.ru'
 DB = 'DBMIS'
 DB_USER = 'sysdba'
 DB_PWD = 'Gjkbrkbybrf'
