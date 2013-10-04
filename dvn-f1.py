@@ -9,6 +9,8 @@ import sys, codecs
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
+from insorglist import InsorgInfoList
+insorgs = InsorgInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
@@ -41,6 +43,13 @@ SET_INSORG = True
 
 DS_WHITE_LIST = []
 DS_WHITE_COUNT = 395
+
+DATE_STAGE_1 = '2013-08-22'
+DATE_END_1 = '2013-09-18'
+HEALTH_GROUP_1 = 1
+RESULT_1 = 317
+DS_1 = 'Z00.0'
+PEOPLE_STATUS_CODE = 3
 
 def get_wlist(fname="ds_white_list.xls"):
     import xlrd
@@ -86,13 +95,91 @@ WHERE t.people_id_fk = {0} and visit_date > '2013-01-01';"""
         if ds not in DS_WHITE_LIST:
             return False
     return True
-    
 
+def person_in_cc(db, people_id):
+    # check if clinical_checkups table already has got a record with current people_id
+    s_sqlt = "SELECT * FROM clinical_checkups WHERE people_id_fk = {0};"
+    s_sql  = s_sqlt.format(people_id)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    rec = cursor.fetchone()
+    if rec == None:
+        return False
+    else:
+        return True
+    
+def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insurance_number):
+    mi_s = medical_insurance_series.encode('cp1251')
+    mi_n = medical_insurance_number.encode('cp1251')
+    cursor = db.con.cursor()
+    if insorg_id == 0:
+        s_sqlt = """UPDATE peoples SET
+        medical_insurance_series = '{0}',
+        medical_insurance_number = '{1}'
+        WHERE people_id = {2};"""
+        s_sql = s_sqlt.format(mi_s, mi_n, people_id)
+        cursor.execute(s_sql)
+    else:
+        insorg = insorgs[insorg_id]
+        i_name = insorg.name.encode('cp1251')
+        i_ogrn = insorg.ogrn
+        s_sqlt = """UPDATE peoples SET
+        medical_insurance_series = '{0}',
+        medical_insurance_number = '{1}',
+        medical_insurance_company_name = '{2}',
+        insorg_id = {3},
+        insorg_ogrn = '{4}'
+        WHERE people_id = {5};"""
+        s_sql = s_sqlt.format(mi_s, mi_n, i_name, insorg_id, i_ogrn, people_id)
+        cursor.execute(s_sql)
+    
+    db.con.commit()
+
+def add_cc(db, clinic_id, people_id):
+    # create record in the clinical_checkups table
+    s_sqlt = """INSERT INTO clinical_checkups
+    (clinic_id_fk, people_id_fk, date_stage_1, date_end_1, 
+    health_group_1, result_1, ds_1,
+    people_status_code)
+    VALUES
+    ({0}, {1}, '{2}', '{3}', {4}, {5}, '{6}');"""
+    s_sql = s_sqlt.format(clinic_id, people_id, DATE_STAGE_1, DATE_END_1, HEALTH_GROUP_1, RESULT_1, DS_1, PEOPLE_STATUS_CODE)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    db.con.commit()
+    s_sqlt = """SELECT 
+    clinical_checkup_id 
+    FROM clinical_checkups
+    WHERE people_id_fk = {0};"""
+    s_sql = s_sqlt.format(people_id)
+    cursor.execute(s_sql)
+    rec = cursor.fetchone()
+    if rec == None:
+        return 0
+    else:
+        return rec[0]
+        
+def register_cc(dbmy, cc_id, people_id):
+    import datetime
+    today = datetime.datetime.today()
+    d_now = "%04d-%02d-%02d" % (today.year, today.month, today.day)
+    
+    # register clinical_checkup in the MySQL database (bs.ctmed.ru:mis)
+    s_sqlt = """INSERT INTO clinical_checkups
+    (cc_id, people_id, date_created)
+    VALUES
+    ({0}, {1}, '{2}')
+    """
+    s_sql = s_sqlt.format(cc_id, people_id, d_now)
+    cursor = dbmy.con.cursor()
+    cursor.execute(s_sql)
+    dbmy.con.commit()
+    
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
+    from dbmysql_connect import DBMY
     from PatientInfo2 import PatientInfo2
-    from insorglist import InsorgInfoList
-    
+        
     import time
 
     localtime = time.asctime( time.localtime(time.time()) )
@@ -109,7 +196,6 @@ def pclinic(clinic_id, mcod):
     log.info(sout)
 
     p_obj = PatientInfo2()
-    insorgs = InsorgInfoList()
 
     dbc = DBMIS(clinic_id)
     if dbc.ogrn == None:
@@ -144,6 +230,7 @@ def pclinic(clinic_id, mcod):
     ncount = 0
     dbc2 = DBMIS(clinic_id)
     cur2 = dbc2.con.cursor()
+    dbmy = DBMY()
 
     dvn_number = 0
     
@@ -156,27 +243,40 @@ def pclinic(clinic_id, mcod):
         else:
             insorg_id = int(insorg_mcod) - 22000
         medical_insurance_series = prec[4]
-        medical_insurance_number = prec[5]       
+        medical_insurance_number = prec[5]
         p_obj.initFromDb(dbc, people_id)
+
+        if ncount % STEP == 0:
+            sout = " {0} people_id: {1} clinic_id: {2} dvn_number: {3}".format(ncount, people_id, p_obj.clinic_id, dvn_number)
+            log.info(sout)
+
         if clinic_id <> p_obj.clinic_id:
             wrong_clinic += 1
             continue
 
         if check_person(dbc, people_id):
+
+            # check if clinical_checkups table 
+            # already has got a record with current people_id
+            if person_in_cc(dbc, people_id): continue
+            
+            set_insorg(dbc2, people_id, insorg_id, medical_insurance_series, medical_insurance_number)
+            
+            cc_id = add_cc(dbc2, clinic_id, people_id)
+            
+            register_cc(dbmy, cc_id, people_id)
+            
             dvn_number += 1
 
-        if ncount % STEP == 0:
-            sout = " {0} people_id: {1} clinic_id: {2} dvn_number: {3}".format(ncount, people_id, p_obj.clinic_id, dvn_number)
-            log.info(sout)
 
     sout = "Wrong clinic: {0}".format(wrong_clinic)
     log.info(sout)
     sout = "DVN cases number: {0}".format(dvn_number)
     log.info(sout)
     
-    
     dbc.close()
     dbc2.close()
+    dbmy.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('DVN List Processing Finish  '+localtime)
     
