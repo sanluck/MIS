@@ -44,8 +44,8 @@ SET_INSORG = True
 DS_WHITE_LIST = []
 DS_WHITE_COUNT = 395
 
-DATE_STAGE_1 = '2013-08-22'
-DATE_END_1 = '2013-09-18'
+D_DATE_STAGE_1 = ['2013-08-15', '2013-09-25']
+D_DATE_END_1   = ['2013-09-01', '2013-09-30']
 HEALTH_GROUP_1 = 1
 RESULT_1 = 317
 DS_1 = 'Z00.0'
@@ -137,12 +137,27 @@ def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insur
 
 def add_cc(db, clinic_id, people_id):
     # create record in the clinical_checkups table
+    from dbmis_connect2 import dset
+    from datetime import datetime, timedelta
+    d1 = D_DATE_STAGE_1[0]
+    d2 = D_DATE_STAGE_1[1]
+    DATE_STAGE_1 = dset(d1, d2)
+    if D_DATE_END_1[0] > DATE_STAGE_1:
+        d1 = D_DATE_END_1[0]
+    else:
+        d1 = DATE_STAGE_1
+        dd1 = datetime.strptime(d1, "%Y-%m-%d").date()
+        dd2 = dd1 + timedelta(days=1)
+        if dd2.weekday() == 5: dd2 = dd1 + timedelta(days=3)
+        d1 = "%04d-%02d-%02d" % (dd2.year, dd2.month, dd2.day)
+    d2 = D_DATE_END_1[1]
+    DATE_END_1 = dset(d1, d2)
     s_sqlt = """INSERT INTO clinical_checkups
     (clinic_id_fk, people_id_fk, date_stage_1, date_end_1, 
     health_group_1, result_1, ds_1,
     people_status_code)
     VALUES
-    ({0}, {1}, '{2}', '{3}', {4}, {5}, '{6}');"""
+    ({0}, {1}, '{2}', '{3}', {4}, {5}, '{6}', {7});"""
     s_sql = s_sqlt.format(clinic_id, people_id, DATE_STAGE_1, DATE_END_1, HEALTH_GROUP_1, RESULT_1, DS_1, PEOPLE_STATUS_CODE)
     cursor = db.con.cursor()
     cursor.execute(s_sql)

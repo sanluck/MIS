@@ -11,7 +11,7 @@ import logging
 import fdb
 
 HOST = 'tb.ctmed.ru'
-DB = 'DBMIS'
+DB = 'DVN'
 DB_USER = 'sysdba'
 DB_PWD = 'Gjkbrkbybrf'
 
@@ -302,6 +302,24 @@ class DBMIS:
             for rec in recs:
                 ar.append([rec[0], rec[1]])
             self.clinic_areas = ar
+
+def dset(d1='2013-08-15', d2='2013-09-25'):
+    # set random date in the region [d1-d2]
+    # exlude weekends
+    from datetime import datetime, timedelta
+    import random
+    
+    dd1 = datetime.strptime(d1, "%Y-%m-%d").date()
+    dd2 = datetime.strptime(d2, "%Y-%m-%d").date()
+    ddd = dd2-dd1
+    ddays = ddd.days
+    while True:
+        delta = random.randint(0, ddays)
+        dd3  = dd1 + timedelta(days=delta)
+        if dd3.weekday() not in (5,6): break
+    
+    d3 = "%04d-%02d-%02d" % (dd3.year, dd3.month, dd3.day)
+    return d3
         
 
 if __name__ == "__main__":
@@ -341,3 +359,4 @@ if __name__ == "__main__":
     print cursor.rowcount
     print r[0], r[1]
     
+    print dset()
