@@ -30,9 +30,19 @@ RESULT_1 = 317
 DS_1 = 'Z00.0'
 PEOPLE_STATUS_CODE = 3
 
+CC_LINES = []
+CC_DOCS = {}
+CURRENT_CLINIC = 0
 
-def add_ccr(db, cc_id):
+def add_ccr(db, cc_id, people_id, clinic_id):
     # create records in the clinical_checkup_results table
+    from PatientInfo2 import PatientInfo2
+    
+    p_obj = PatientInfo2()
+    
+    p_obj.initFromDb(db, people_id)
+    
+    
     s_sqlt = """INSERT INTO clinical_checkups
     (clinic_id_fk, people_id_fk, date_stage_1, date_end_1, 
     health_group_1, result_1, ds_1,
@@ -57,6 +67,7 @@ def add_ccr(db, cc_id):
         
 def register_ccr(dbmy, cc_id):
     import datetime
+    
     today = datetime.datetime.today()
     d_now = "%04d-%02d-%02d" % (today.year, today.month, today.day)
     
@@ -70,113 +81,8 @@ def register_ccr(dbmy, cc_id):
     cursor.execute(s_sql)
     dbmy.con.commit()
     
-def pclinic(clinic_id, mcod):
-    from dbmis_connect2 import DBMIS
-    from dbmysql_connect import DBMY
-    from PatientInfo2 import PatientInfo2
-        
-    import time
-
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('------------------------------------------------------------')
-    log.info('DVN List Processing Start {0}'.format(localtime))
-    
-    fname = FNAME.format(mcod)
-    sout = "Input file: {0}".format(fname)
-    log.info(sout)
-    
-    ppp = plist_in(fname)
-    
-    sout = "Totally {0} lines have been read from file <{1}>".format(len(ppp), fname)
-    log.info(sout)
-
-    p_obj = PatientInfo2()
-
-    dbc = DBMIS(clinic_id)
-    if dbc.ogrn == None:
-        CLINIC_OGRN = u""
-    else:
-        CLINIC_OGRN = dbc.ogrn
-
-    cogrn = CLINIC_OGRN.encode('utf-8')
-    cname = dbc.name.encode('utf-8')
-    
-    if SKIP_OGRN: CLINIC_OGRN = u""
-    
-    sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
-    log.info(sout)
-    
-    if dbc.clinic_areas == None:
-        sout = "Clinic has not got any areas"
-        log.warn(sout)
-        dbc.close()
-        return
-    else:
-        nareas = len(dbc.clinic_areas)
-        area_id = dbc.clinic_areas[0][0]
-        area_nu = dbc.clinic_areas[0][1]
-        sout = "Clinic has got {0} areas".format(nareas)
-        log.info(sout)
-        sout = "Using area_id: {0} area_number: {1}".format(area_id, area_nu)
-        log.info(sout)
-
-    wrong_clinic = 0
-    wrong_insorg = 0
-    ncount = 0
-    dbc2 = DBMIS(clinic_id)
-    cur2 = dbc2.con.cursor()
-    dbmy = DBMY()
-
-    dvn_number = 0
-    
-    for prec in ppp:
-        ncount += 1
-        people_id = prec[0]
-        insorg_mcod = prec[2]
-        if insorg_mcod == "":
-            insorg_id = 0
-        else:
-            insorg_id = int(insorg_mcod) - 22000
-        medical_insurance_series = prec[4]
-        medical_insurance_number = prec[5]
-        p_obj.initFromDb(dbc, people_id)
-
-        if ncount % STEP == 0:
-            sout = " {0} people_id: {1} clinic_id: {2} dvn_number: {3}".format(ncount, people_id, p_obj.clinic_id, dvn_number)
-            log.info(sout)
-
-        if clinic_id <> p_obj.clinic_id:
-            wrong_clinic += 1
-            continue
-
-        if check_person(dbc, people_id):
-
-            # check if clinical_checkups table 
-            # already has got a record with current people_id
-            if person_in_cc(dbc, people_id): continue
-            
-            set_insorg(dbc2, people_id, insorg_id, medical_insurance_series, medical_insurance_number)
-            
-            cc_id = add_cc(dbc2, clinic_id, people_id)
-            
-            register_cc(dbmy, cc_id, people_id)
-            
-            dvn_number += 1
-
-
-    sout = "Wrong clinic: {0}".format(wrong_clinic)
-    log.info(sout)
-    sout = "DVN cases number: {0}".format(dvn_number)
-    log.info(sout)
-    
-    dbc.close()
-    dbc2.close()
-    dbmy.close()
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('DVN List Processing Finish  '+localtime)
-    
 def get_cclist(db):
-    s_sqlt = """SELECT cc_id, people_id
+    s_sqlt = """SELECT cc_id, people_id, clinic_id
 FROM clinical_checkups
 WHERE ccr_dcreated is Null;"""
     s_sql = s_sqlt
@@ -187,8 +93,60 @@ WHERE ccr_dcreated is Null;"""
     for rec in records:
         cc_id     = rec[0]
         people_id = rec[1]
-        ar.append([cc_id, people_id])
+        clinic_id = rec[2]
+        ar.append([cc_id, people_id, clinic_id])
     return ar
+
+def get_cclines(db):
+    s_sqlt = """SELECT 
+cc_line, cc_version_id_fk, cc_sex, cc_ds, cc_age
+FROM clinical_checkup_list
+WHERE cc_stage = 1;"""
+    s_sql = s_sqlt
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    records = cursor.fetchall()
+    ar = []
+    for rec in records:
+        cc_line          = rec[0]
+        cc_version_id_fk = rec[1]
+        cc_sex           = rec[2]
+        cc_ds            = rec[3]
+        cc_age           = rec[4]
+        ar.append([cc_line, cc_version_id_fk, cc_sex, cc_ds, cc_age])
+    return ar
+
+def get_ccdoc(db, clinic_id, medical_help_profile_id):
+    s_sqlt = """SELECT w.worker_id, w.doctor_id_fk, doc.people_id_fk, p.insurance_certificate
+FROM workers w
+LEFT JOIN departments dep ON w.department_id_fk = dep.department_id
+LEFT JOIN doctors doc ON w.doctor_id_fk = doc.doctor_id
+LEFT JOIN peoples p ON doc.people_id_fk = p.people_id
+WHERE dep.clinic_id_fk = {0} 
+AND w.medical_help_profile_id_fk = {1} 
+AND w.status = 0 AND p.insurance_certificate is Not Null;"""
+
+    s_sql = s_sqlt.format(clinic_id, medical_help_profile_id)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    records = cursor.fetchall()
+    ar = []
+    for rec in records:
+        worker_id = rec[0]
+        doctor_id = rec[1]
+        ar.append([worker_id, doctor_id])
+    
+    return ar
+
+def get_ccdocs(db, clinic_id):
+# 136 - акушерство и гинекология
+    CC_DOCS[136] = get_ccdoc(db, clinic_id, 136)
+# 53 - неврология
+    CC_DOCS[53] = get_ccdoc(db, clinic_id, 53)
+# 97 - терапия
+    CC_DOCS[97] = get_ccdoc(db, clinic_id, 97)
+
+
 
 if __name__ == "__main__":
     
@@ -211,13 +169,20 @@ if __name__ == "__main__":
 
     dbc2 = DBMIS()
     
+    CC_LINES = get_cclines(dbc2)
+    
     ncount = 0
     for rec in ar:
         ncount += 1
         cc_id     = rec[0]
         people_id = rec[1]
+        clinic_id = rec[2]
         
-        add_ccr(dbc2, cc_id)
+        if clinic_id <> CURRENT_CLINIC:
+            get_ccdocs(dbc2, clinic_id)
+            CURRENT_CLINIC = clinic_id
+        
+        add_ccr(dbc2, cc_id, people_id, clinic_id)
         
         register_ccr(dbmy, cc_id)
 
@@ -230,6 +195,7 @@ if __name__ == "__main__":
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('DVN Clinical Checkups Results Processing Finish  '+localtime)
-    
+    sout = 'Totally {0} patients have been processed'.format(ncount)
+    log.info( sout )
     
     sys.exit(0)

@@ -174,18 +174,18 @@ def add_cc(db, clinic_id, people_id):
     else:
         return rec[0]
         
-def register_cc(dbmy, cc_id, people_id):
+def register_cc(dbmy, cc_id, people_id, clinic_id):
     import datetime
     today = datetime.datetime.today()
     d_now = "%04d-%02d-%02d" % (today.year, today.month, today.day)
     
     # register clinical_checkup in the MySQL database (bs.ctmed.ru:mis)
     s_sqlt = """INSERT INTO clinical_checkups
-    (cc_id, people_id, date_created)
+    (cc_id, people_id, date_created, clinic_id)
     VALUES
-    ({0}, {1}, '{2}')
+    ({0}, {1}, '{2}', {3})
     """
-    s_sql = s_sqlt.format(cc_id, people_id, d_now)
+    s_sql = s_sqlt.format(cc_id, people_id, d_now, clinic_id)
     cursor = dbmy.con.cursor()
     cursor.execute(s_sql)
     dbmy.con.commit()
@@ -279,7 +279,7 @@ def pclinic(clinic_id, mcod):
             
             cc_id = add_cc(dbc2, clinic_id, people_id)
             
-            register_cc(dbmy, cc_id, people_id)
+            register_cc(dbmy, cc_id, people_id, clinic_id)
             
             dvn_number += 1
 
