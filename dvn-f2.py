@@ -23,12 +23,7 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-DATE_STAGE_1 = '2013-08-22'
-DATE_END_1 = '2013-09-18'
-HEALTH_GROUP_1 = 1
-RESULT_1 = 317
-DS_1 = 'Z00.0'
-PEOPLE_STATUS_CODE = 3
+STEP = 100
 
 CC_LINES = []
 CC_DOCS = {}
@@ -36,34 +31,97 @@ CURRENT_CLINIC = 0
 
 def add_ccr(db, cc_id, people_id, clinic_id):
     # create records in the clinical_checkup_results table
+    import datetime
+    import random
     from PatientInfo2 import PatientInfo2
+    from dbmis_connect2 import dset
     
     p_obj = PatientInfo2()
     
     p_obj.initFromDb(db, people_id)
     
-    
-    s_sqlt = """INSERT INTO clinical_checkups
-    (clinic_id_fk, people_id_fk, date_stage_1, date_end_1, 
-    health_group_1, result_1, ds_1,
-    people_status_code)
-    VALUES
-    ({0}, {1}, '{2}', '{3}', {4}, {5}, '{6}');"""
-    s_sql = s_sqlt.format(clinic_id, people_id, DATE_STAGE_1, DATE_END_1, HEALTH_GROUP_1, RESULT_1, DS_1, PEOPLE_STATUS_CODE)
-    cursor = db.con.cursor()
-    cursor.execute(s_sql)
-    db.con.commit()
     s_sqlt = """SELECT 
-    clinical_checkup_id 
+    people_id_fk, date_stage_1, date_end_1
     FROM clinical_checkups
-    WHERE people_id_fk = {0};"""
-    s_sql = s_sqlt.format(people_id)
+    WHERE clinical_checkup_id = {0};"""
+    s_sql = s_sqlt.format(cc_id)
+    cursor = db.con.cursor()
     cursor.execute(s_sql)
     rec = cursor.fetchone()
     if rec == None:
         return 0
-    else:
-        return rec[0]
+    
+    date_stage_1 = rec[1]
+    date_end_1   = rec[2]
+    d1 = "%04d-%02d-%02d" % (date_stage_1.year, date_stage_1.month, date_stage_1.day)
+    d2 = "%04d-%02d-%02d" % (date_end_1.year, date_end_1.month, date_end_1.day)
+    
+    yc  = datetime.date.today().year # current year
+    bd  = p_obj.birthday
+    yp  = bd.year
+    age = yc - yp
+    sex = p_obj.sex
+    
+    for rec in CC_LINES:
+        cc_line          = rec[0]
+        cc_version_id_fk = rec[1]
+        cc_sex           = rec[2]
+        cc_ds            = rec[3]
+        cc_age           = rec[4]
+        
+        if (cc_sex is not None) and (cc_sex <> sex): continue
+        cc_age_list = [int(i) for i in cc_age.split(',')]
+        if age not in cc_age_list: continue
+        
+        if cc_line in (10, 11, 13):
+            ddd = dset(d1, d2)
+            cc_docs_list = CC_DOCS[136]
+            if len(cc_docs_list) ==0: cc_docs_list = CC_DOCS[97]
+            ln = len(cc_docs_list)
+            i = random.randint(0,ln-1)
+            worker_id = cc_docs_list[i][0]
+            doctor_id = cc_docs_list[i][1]
+        elif cc_line == 23:
+            ddd = dset(d1, d2)
+            cc_docs_list = CC_DOCS[53]
+            if len(cc_docs_list) ==0: cc_docs_list = CC_DOCS[97]
+            ln = len(cc_docs_list)
+            i = random.randint(0,ln-1)
+            worker_id = cc_docs_list[i][0]
+            doctor_id = cc_docs_list[i][1]
+        elif cc_line in (24, 25):
+            ddd = d2
+            cc_docs_list = CC_DOCS[97]
+            ln = len(cc_docs_list)
+            i = random.randint(0,ln-1)
+            worker_id = cc_docs_list[i][0]
+            doctor_id = cc_docs_list[i][1]
+        else:
+            ddd = dset(d1, d2)
+            worker_id = None
+            doctor_id = None
+            
+        if worker_id == None:
+            s_sqlt = """INSERT INTO clinical_checkup_results
+            (clinical_checkup_id_fk, cc_line, cc_version_id_fk,
+            date_checkup, diagnosis_id_fk, order_no, status)
+            VALUES
+            ({0}, {1}, {2}, '{3}', '{4}', 0, 0);"""
+            s_sql = s_sqlt.format(cc_id, cc_line, cc_version_id_fk, ddd, cc_ds)
+        else:
+            s_sqlt = """INSERT INTO clinical_checkup_results
+            (clinical_checkup_id_fk, cc_line, cc_version_id_fk,
+            worker_id_fk, doctor_id_fk,
+            date_checkup, diagnosis_id_fk, order_no, status)
+            VALUES
+            ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', 0, 0);"""
+            s_sql = s_sqlt.format(cc_id, cc_line, cc_version_id_fk, worker_id, doctor_id, ddd, cc_ds)
+    
+        cursor = db.con.cursor()
+        cursor.execute(s_sql)
+        db.con.commit()
+    
+    return 1
         
 def register_ccr(dbmy, cc_id):
     import datetime
@@ -182,9 +240,9 @@ if __name__ == "__main__":
             get_ccdocs(dbc2, clinic_id)
             CURRENT_CLINIC = clinic_id
         
-        add_ccr(dbc2, cc_id, people_id, clinic_id)
+        result = add_ccr(dbc2, cc_id, people_id, clinic_id)
         
-        register_ccr(dbmy, cc_id)
+        if result == 1: register_ccr(dbmy, cc_id)
 
         if ncount % STEP == 0:
             sout = " {0} cc_id: {1} people_id: {1}".format(ncount, cc_id, people_id)
