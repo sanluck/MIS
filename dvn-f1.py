@@ -24,7 +24,8 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 #clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
-clist = [224]
+clist  = [224]
+molist = [220015]
 
 CLINIC_OGRN = u""
 
@@ -137,6 +138,7 @@ def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insur
 
 def add_cc(db, clinic_id, people_id):
     # create record in the clinical_checkups table
+    import sys
     from dbmis_connect2 import dset
     from datetime import datetime, timedelta
     d1 = D_DATE_STAGE_1[0]
@@ -160,8 +162,12 @@ def add_cc(db, clinic_id, people_id):
     ({0}, {1}, '{2}', '{3}', {4}, {5}, '{6}', {7});"""
     s_sql = s_sqlt.format(clinic_id, people_id, DATE_STAGE_1, DATE_END_1, HEALTH_GROUP_1, RESULT_1, DS_1, PEOPLE_STATUS_CODE)
     cursor = db.con.cursor()
-    cursor.execute(s_sql)
-    db.con.commit()
+    try:
+        cursor.execute(s_sql)
+        db.con.commit()
+    except:
+        log.warn('Create record in the clinical_checkups table Error.\SQL Code:\n')
+        log.warn(s_sql)
     s_sqlt = """SELECT 
     clinical_checkup_id 
     FROM clinical_checkups
@@ -303,16 +309,31 @@ if __name__ == "__main__":
     
     get_wlist()
 
-    for clinic_id in clist:
+#    for clinic_id in clist:
+#        try:
+#            mcod = modb.moCodeByMisId(clinic_id)
+#            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+#            log.debug(sout)
+#        except:
+#            sout = "Have not got MO Code for clinic_id {0}".format(clinic_id)
+#            log.warn(sout)
+#            mcod = 0
+#
+#        pclinic(clinic_id, mcod)    
+
+    for mcod in molist:
         try:
-            mcod = modb.moCodeByMisId(clinic_id)
+            mo = modb[mcod]
+            clinic_id = mo.mis_code
             sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
             log.debug(sout)
         except:
-            sout = "Have not got MO Code for clinic_id {0}".format(clinic_id)
+            sout = "Clinic with MO Code {0} was not found".format(mcod)
             log.warn(sout)
-            mcod = 0
+            continue
+            
 
         pclinic(clinic_id, mcod)    
+
 
     sys.exit(0)
