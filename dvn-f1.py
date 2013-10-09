@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 #clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
 clist  = [224]
-molist = [220015]
+molist = [220017, 220018, 220020, 220023, 220096]
 
 CLINIC_OGRN = u""
 
@@ -110,8 +110,13 @@ def person_in_cc(db, people_id):
         return True
     
 def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insurance_number):
-    mi_s = medical_insurance_series.encode('cp1251')
-    mi_n = medical_insurance_number.encode('cp1251')
+    try:
+	mi_s = medical_insurance_series.encode('cp1251')
+	mi_n = medical_insurance_number.encode('cp1251')
+    except:
+	sout = "Error setting insorg_id (people_id: {0})".format(people_id)
+	log.warn(sout)
+	return
     cursor = db.con.cursor()
     if insorg_id == 0:
         s_sqlt = """UPDATE peoples SET
