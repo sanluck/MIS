@@ -42,8 +42,6 @@ DOC_TYPES = {1:u"1",
 
 SKIP_OGRN = True
 
-SET_MO = False
-
 SET_INSORG = True
 
 DS_WHITE_LIST = []
