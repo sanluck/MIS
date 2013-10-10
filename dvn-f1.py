@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # dvn-f1.py - формирование карт ДВН
-#             по списку из ответа на запрос страховой принадлежности
+# INPUT DIRECTORY DVN2DO - файлы с ответами на запросы страховой принадлежности
 #
 
 import logging
@@ -24,8 +24,12 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 #clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
-clist  = [224]
-molist = [220017, 220018, 220020, 220023, 220096]
+#clist  = [224]
+#molist = [220017, 220018, 220020, 220023, 220096]
+
+DVN2DO_PATH  = "./DVN2DO"
+DVNDONE_PATH = "./DVNDONE"
+
 
 CLINIC_OGRN = u""
 
@@ -200,8 +204,8 @@ def register_cc(dbmy, cc_id, people_id, clinic_id):
     cursor = dbmy.con.cursor()
     cursor.execute(s_sql)
     dbmy.con.commit()
-    
-def pclinic(clinic_id, mcod):
+   
+def pclinic(fname, clinic_id, mcod):
     from dbmis_connect2 import DBMIS
     from dbmysql_connect import DBMY
     from PatientInfo2 import PatientInfo2
@@ -212,9 +216,6 @@ def pclinic(clinic_id, mcod):
     log.info('------------------------------------------------------------')
     log.info('DVN List Processing Start {0}'.format(localtime))
     
-    fname = FNAME.format(mcod)
-    sout = "Input file: {0}".format(fname)
-    log.info(sout)
     
     ppp = plist_in(fname)
     
@@ -305,12 +306,64 @@ def pclinic(clinic_id, mcod):
     dbmy.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('DVN List Processing Finish  '+localtime)
+
+def get_fnames(path = DVN2DO_PATH, file_ext = '.csv'):
+    
+    import os    
+    
+    fnames = []
+    for subdir, dirs, files in os.walk(path):
+        for fname in files:
+            if fname.find(file_ext) > 1:
+                log.info(fname)
+                fnames.append(fname)
+    
+    return fnames    
+
+def register_dvn_done(db, mcod, clinic_id, fname):
+    import datetime    
+
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+    s_sqlt = """INSERT INTO
+    dvn_done
+    (mcod, clinic_id, fname, done)
+    VALUES
+    ({0}, {1}, '{2}', '{3}');
+    """
+
+    s_sql = s_sqlt.format(mcod, clinic_id, fname, sdnow)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    db.con.commit()
+
+def dvn_done(db, mcod):
+
+    s_sqlt = """SELECT
+    fname, done
+    FROM
+    dvn_done
+    WHERE mcod = {0};
+    """
+
+    s_sql = s_sqlt.format(mcod)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    rec = cursor.fetchone()
+    if rec == None:
+	return False, "", ""
+    else:
+	fname = rec[0]
+	done  = rec[1]
+	return True, fname, done
     
 
 if __name__ == "__main__":
     
-    import os    
-    import datetime
+    import os, shutil    
+    from dbmysql_connect import DBMY
+
+    log.info("======================= DVN-F1 ===========================================")
     
     get_wlist()
 
@@ -326,19 +379,59 @@ if __name__ == "__main__":
 #
 #        pclinic(clinic_id, mcod)    
 
-    for mcod in molist:
-        try:
-            mo = modb[mcod]
-            clinic_id = mo.mis_code
-            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
-            log.debug(sout)
-        except:
-            sout = "Clinic with MO Code {0} was not found".format(mcod)
-            log.warn(sout)
-            continue
+#    for mcod in molist:
+#        try:
+#            mo = modb[mcod]
+#            clinic_id = mo.mis_code
+#            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+#            log.debug(sout)
+#        except:
+#            sout = "Clinic with MO Code {0} was not found".format(mcod)
+#            log.warn(sout)
+#            continue
             
 
-        pclinic(clinic_id, mcod)    
+#        pclinic(clinic_id, mcod)    
 
+    fnames = get_fnames()
+    n_fnames = len(fnames)
+    sout = "Totally {0} files has been found".format(n_fnames)
+    log.info( sout )
+    
+    dbmy2 = DBMY()
+    
+    for fname in fnames:
+	s_mcod = fname[5:11]
+	mcod = int(s_mcod)
+    
+	try:
+	    mo = modb[mcod]
+	    clinic_id = mo.mis_code
+	    sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+	    log.info(sout)
+	except:
+	    sout = "Clinic not found for mcod = {0}".format(s_mcod)
+	    log.warn(sout)
+	    continue
 
+	f_fname = DVN2DO_PATH + "/" + fname
+	sout = "Input file: {0}".format(f_fname)
+	log.info(sout)
+    
+	ldone, dfname, ddone = dvn_done(dbmy2, mcod)
+	if ldone:
+	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
+	    log.warn( sout )
+	else:
+	    pclinic(f_fname, clinic_id, mcod)
+	    register_dvn_done(dbmy2, mcod, clinic_id, fname)
+	
+	
+	# move file
+	source = DVN2DO_PATH + "/" + fname
+	destination = DVNDONE_PATH + "/" + fname
+	shutil.move(source, destination)
+
+    
+    dbmy2.close()
     sys.exit(0)

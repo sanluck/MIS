@@ -245,7 +245,7 @@ if __name__ == "__main__":
         if result == 1: register_ccr(dbmy, cc_id)
 
         if ncount % STEP == 0:
-            sout = " {0} cc_id: {1} people_id: {1}".format(ncount, cc_id, people_id)
+            sout = " {0} cc_id: {1} people_id: {2}".format(ncount, cc_id, people_id)
             log.info(sout)        
         
     dbmy.close()
