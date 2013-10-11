@@ -12,10 +12,10 @@ modb = MoInfoList()
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 LOG_FILENAME = '_insr2.out'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
+logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
+console.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
@@ -67,6 +67,38 @@ def get_clinic_areas(db, clinic_id):
     CLINIC_AREAS[clinic_id] = clinic_areas
     return clinic_areas
 
+def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insurance_number):
+    try:
+	mi_s = medical_insurance_series.encode('cp1251')
+	mi_n = medical_insurance_number.encode('cp1251')
+    except:
+	sout = "Error setting insorg_id (people_id: {0})".format(people_id)
+	log.warn(sout)
+	return
+    cursor = db.con.cursor()
+    if insorg_id == 0:
+        s_sqlt = """UPDATE peoples SET
+        medical_insurance_series = '{0}',
+        medical_insurance_number = '{1}'
+        WHERE people_id = {2};"""
+        s_sql = s_sqlt.format(mi_s, mi_n, people_id)
+        cursor.execute(s_sql)
+    else:
+        insorg = insorgs[insorg_id]
+        i_name = insorg.name.encode('cp1251')
+        i_ogrn = insorg.ogrn
+        s_sqlt = """UPDATE peoples SET
+        medical_insurance_series = '{0}',
+        medical_insurance_number = '{1}',
+        medical_insurance_company_name = '{2}',
+        insorg_id = {3},
+        insorg_ogrn = '{4}'
+        WHERE people_id = {5};"""
+        s_sql = s_sqlt.format(mi_s, mi_n, i_name, insorg_id, i_ogrn, people_id)
+        cursor.execute(s_sql)
+    
+    db.con.commit()
+
 def plist_in(fname):
 # read file <fname>
 # and get peoples list
@@ -83,6 +115,7 @@ def plist_in(fname):
 def pclinic(fname, clinic_id, mcod):
     from dbmis_connect2 import DBMIS
     from PatientInfo2 import PatientInfo2
+    from dbmysql_connect import DBMY
     from insorglist import InsorgInfoList
     
     import time
@@ -101,6 +134,7 @@ def pclinic(fname, clinic_id, mcod):
     insorgs = InsorgInfoList()
 
     dbc = DBMIS(clinic_id)
+    
     if dbc.ogrn == None:
         CLINIC_OGRN = u""
     else:
@@ -129,10 +163,14 @@ def pclinic(fname, clinic_id, mcod):
         log.info(sout)
 
     not_belongs_2_clinic = 0
+    clinic_not_found = 0
+    no_areas = 0
     wrong_insorg = 0
     ncount = 0
     dbc2 = DBMIS(clinic_id)
     cur2 = dbc2.con.cursor()
+    dbm  = DBMY()
+    curm = dbm.con.cursor()
     
     for prec in ppp:
         ncount += 1
@@ -151,6 +189,7 @@ def pclinic(fname, clinic_id, mcod):
 	    mo = modb[f_mcod]
 	    f_clinic_id = mo.mis_code
 	except:
+	    clinic_not_found += 1
 	    sout = "People_id: {0}. Clinic was not found for mcod = {1}.".format(people_id, f_mcod)
 	    log.warn(sout)
 	    continue
@@ -161,11 +200,14 @@ def pclinic(fname, clinic_id, mcod):
             if SET_MO:
 		clinic_areas = get_clinic_areas(dbc, f_clinic_id)
 		if clinic_areas == None:
-		    sout = "Clinic {0} has not got any areas".format(f_clinic_id)
+		    no_areas += 1
+		    sout = "People_id: {0}. Clinic {1} has not got any areas".format(people_id, f_mcod)
 		    log.warn(sout)
+		    continue
 		else:
 		    nareas = len(clinic_areas)
 		    if nareas == 0:
+			no_areas += 1
 			sout = "Clinic {0} has not got any areas".format(f_clinic_id)
 			log.warn(sout)
 			continue
@@ -182,25 +224,41 @@ def pclinic(fname, clinic_id, mcod):
 		    sout = "people_id: {0} has got new clinic {1}".format(people_id, f_mcod)
 		    log.debug(sout)
 		    
-        if (insorg_id <> 0) and (insorg_id <> p_obj.insorg_id):
-            wrong_insorg += 1
-            if SET_INSORG:
-                s_sqlt = "UPDATE peoples SET insorg_id = {0} WHERE people_id = {1};"
-                s_sql  = s_sqlt.format(insorg_id, people_id)
-                cur2.execute(s_sql)
-                dbc2.con.commit()
+	if (insorg_id <> 0) and (insorg_id <> p_obj.insorg_id):
+            wrong_insorg += 1	
+
+	if SET_INSORG:
+	    set_insorg(dbc2, people_id, insorg_id, medical_insurance_series, medical_insurance_number)
                 
         if ncount % STEP == 0:
             sout = " {0} people_id: {1} clinic_id: {2}".format(ncount, people_id, p_obj.clinic_id)
             log.info(sout)
+	    
+	# register person in the MySQL database
+	s_sqlt = """INSERT INTO
+	clinical_checkups
+	(people_id, clinic_id)
+	VALUES
+	({0}, {1});"""
+	s_sql  = s_sqlt.format(people_id, f_clinic_id)
+	curm.execute(s_sql)
+	dbm.con.commit()
 
     sout = "Wrong clinic: {0}".format(not_belongs_2_clinic)
     log.info(sout)
+
+    sout = "Clinic was not found: {0}".format(clinic_not_found)
+    log.info(sout)
+    
+    sout = "Clinic has got no areas: {0}".format(no_areas)
+    log.info(sout)
+
     sout = "Wrong insorg: {0}".format(wrong_insorg)
     log.info(sout)
     
     dbc.close()
     dbc2.close()
+    dbm.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Insurance Belongings Results Processing Finish  '+localtime)
 

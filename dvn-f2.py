@@ -76,11 +76,17 @@ def add_ccr(db, cc_id, people_id, clinic_id):
         if cc_line in (10, 11, 13):
             ddd = dset(d1, d2)
             cc_docs_list = CC_DOCS[136]
-            if len(cc_docs_list) ==0: cc_docs_list = CC_DOCS[97]
+            if len(cc_docs_list) < 1: cc_docs_list = CC_DOCS[97]
             ln = len(cc_docs_list)
-            i = random.randint(0,ln-1)
-            worker_id = cc_docs_list[i][0]
-            doctor_id = cc_docs_list[i][1]
+            if ln == 0:
+                worker_id = None
+                doctor_id = None
+                sout = "No doctors for people_id: {0} clinic_id: {1}".format(people_id, clinic_id)
+                log.warn(sout)
+            else:
+                i = random.randint(0,ln-1)
+                worker_id = cc_docs_list[i][0]
+                doctor_id = cc_docs_list[i][1]
         elif cc_line == 23:
             ddd = dset(d1, d2)
             cc_docs_list = CC_DOCS[53]
@@ -93,9 +99,15 @@ def add_ccr(db, cc_id, people_id, clinic_id):
             ddd = d2
             cc_docs_list = CC_DOCS[97]
             ln = len(cc_docs_list)
-            i = random.randint(0,ln-1)
-            worker_id = cc_docs_list[i][0]
-            doctor_id = cc_docs_list[i][1]
+            if ln == 0:
+                worker_id = None
+                doctor_id = None
+                sout = "No doctors for people_id: {0} clinic_id: {1}".format(people_id, clinic_id)
+                log.warn(sout)
+            else:
+                i = random.randint(0,ln-1)
+                worker_id = cc_docs_list[i][0]
+                doctor_id = cc_docs_list[i][1]
         else:
             ddd = dset(d1, d2)
             worker_id = None
@@ -142,7 +154,8 @@ def register_ccr(dbmy, cc_id):
 def get_cclist(db):
     s_sqlt = """SELECT cc_id, people_id, clinic_id
 FROM clinical_checkups
-WHERE ccr_dcreated is Null;"""
+WHERE (cc_id is Not Null) AND (ccr_dcreated is Null)
+ORDER BY clinic_id;"""
     s_sql = s_sqlt
     cursor = db.con.cursor()
     cursor.execute(s_sql)

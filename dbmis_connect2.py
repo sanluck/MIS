@@ -167,6 +167,41 @@ class DBMIS:
         self.execute(ssql)
         result = self.cur.fetchone()
         return result
+    
+    def get_p_ids(self, lname, fname, mname, birthday):
+        s_sqlt = """SELECT 
+                    people_id
+                    FROM peoples
+                    WHERE 
+                    UPPER(lname) = '{0}' 
+                    AND UPPER(fname)= '{1}' 
+                    AND UPPER(mname)= '{2}' 
+                    AND birthday = '{3}';"""
+        LNAME = lname.upper().encode('cp1251')
+        FNAME = fname.upper().encode('cp1251')
+        bd = "%04d-%02d-%02d" % (birthday.year, birthday.month, birthday.day)
+        if mname is None:
+            s_sqlt = """SELECT 
+                        people_id
+                        FROM peoples
+                        WHERE 
+                        UPPER(lname) = '{0}' 
+                        AND UPPER(fname)= '{1}' 
+                        AND mname is Null 
+                        AND birthday = '{2}';"""
+            s_sql = s_sqlt.format(LNAME, FNAME, bd)
+        else:
+            MNAME = mname.upper().encode('cp1251')
+            s_sql = s_sqlt.format(LNAME, FNAME, MNAME, bd)
+        
+        self.execute(s_sql)
+        results = self.cur.fetchall()
+        ar = []
+        for rec in results:
+            ar.append(rec[0])
+            
+        return ar
+        
 
 
     def get_workers(self, speciality_id = 1):
@@ -323,40 +358,20 @@ def dset(d1='2013-08-15', d2='2013-09-25'):
         
 
 if __name__ == "__main__":
+    import datetime
+    
     dbc = DBMIS(22)
     print dbc.name, dbc.mcod, dbc.ogrn
-    cursor = dbc.con.cursor()
-    ssql = SQL_TEMPLATE_GETCLINICS
-    print ssql
-    cursor.execute(ssql)
-    results = cursor.fetchall()
-    print cursor.rowcount
-    for rec in results:
-        print rec[0], rec[1]
     
-    l_f = 'ЗИБРОВА'
-    l_i = 'ОЛЬГА'
-    l_o = 'ГРИГОРЬЕВНА'
-    l_f1251 = l_f.decode('utf-8').encode('cp1251')
-    l_i1251 = l_i.decode('utf-8').encode('cp1251')
-    l_o1251 = l_o.decode('utf-8').encode('cp1251')
-    l_snils = '085-702-031 55'
-    ssql = SQL_TEMPLATE_GETPEOPLE.format(l_f1251, l_i1251, l_o1251, l_snils)
-    print ssql
-    cursor.execute(ssql)
-    rec = cursor.fetchone()
-    print cursor.rowcount
-#    print rec
-    f = rec[0].encode('utf-8')
-    i = rec[1].encode('utf-8')
-    o = rec[2].encode('utf-8')
-    sout = "F I O S: {0} {1} {2} {3}; PEOPLE_ID: {4}; BIRTHDAY: {5}".format(f, i, o, rec[3], rec[4], rec[5])
-    print sout
+    l_f = u'Кислицина'
+    l_i = u'Татьяна'
+    l_o = u'Викторовна'
+
+    birthday = datetime.datetime.strptime('1971-02-01', "%Y-%m-%d").date()
     
-    ssql = "SELECT * FROM VW_PEOPLES WHERE PEOPLE_ID = 205"
-    cursor.execute(ssql)
-    r = cursor.fetchone()
-    print cursor.rowcount
-    print r[0], r[1]
+    p_ids = dbc.get_p_ids(l_f, l_i, l_o, birthday)
+    
+    for p_id in p_ids:
+        print "people_id: {0}".format(p_id)
     
     print dset()

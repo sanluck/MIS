@@ -23,26 +23,16 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-#clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
-#clist  = [224]
-#molist = [220017, 220018, 220020, 220023, 220096]
-
 DVN2DO_PATH  = "./DVN2DO"
 DVNDONE_PATH = "./DVNDONE"
-
 
 CLINIC_OGRN = u""
 
 FNAME = "IT22M{0}_13091.csv"
 
 STEP = 100
-DOC_TYPES = {1:u"1",
-             2:u"2",
-             3:u"3"}
 
 SKIP_OGRN = True
-
-SET_INSORG = True
 
 DS_WHITE_LIST = []
 DS_WHITE_COUNT = 395
@@ -110,38 +100,6 @@ def person_in_cc(db, people_id):
         return False
     else:
         return True
-    
-def set_insorg(db, people_id, insorg_id, medical_insurance_series, medical_insurance_number):
-    try:
-	mi_s = medical_insurance_series.encode('cp1251')
-	mi_n = medical_insurance_number.encode('cp1251')
-    except:
-	sout = "Error setting insorg_id (people_id: {0})".format(people_id)
-	log.warn(sout)
-	return
-    cursor = db.con.cursor()
-    if insorg_id == 0:
-        s_sqlt = """UPDATE peoples SET
-        medical_insurance_series = '{0}',
-        medical_insurance_number = '{1}'
-        WHERE people_id = {2};"""
-        s_sql = s_sqlt.format(mi_s, mi_n, people_id)
-        cursor.execute(s_sql)
-    else:
-        insorg = insorgs[insorg_id]
-        i_name = insorg.name.encode('cp1251')
-        i_ogrn = insorg.ogrn
-        s_sqlt = """UPDATE peoples SET
-        medical_insurance_series = '{0}',
-        medical_insurance_number = '{1}',
-        medical_insurance_company_name = '{2}',
-        insorg_id = {3},
-        insorg_ogrn = '{4}'
-        WHERE people_id = {5};"""
-        s_sql = s_sqlt.format(mi_s, mi_n, i_name, insorg_id, i_ogrn, people_id)
-        cursor.execute(s_sql)
-    
-    db.con.commit()
 
 def add_cc(db, clinic_id, people_id):
     # create record in the clinical_checkups table
@@ -186,24 +144,59 @@ def add_cc(db, clinic_id, people_id):
         return 0
     else:
         return rec[0]
+
+def set_document(db, people_id):
+    s_sqlt = """UPDATE peoples
+    SET
+    document_type_id_fk = 14,
+    document_series = '01 01',
+    document_number = '111111'
+    WHERE
+    people_id = {0};"""
+    s_sql = s_sqlt.format(people_id)
+    cursor = db.con.cursor()
+    try:
+        cursor.execute(s_sql)
+        db.con.commit()
+    except:
+        log.warn('Set document error.\nSQL Code:\n')
+        log.warn(s_sql)
         
 def register_cc(dbmy, cc_id, people_id, clinic_id):
     import datetime
     today = datetime.datetime.today()
     d_now = "%04d-%02d-%02d" % (today.year, today.month, today.day)
     
-    # register clinical_checkup in the MySQL database (bs.ctmed.ru:mis)
-    s_sqlt = """INSERT INTO clinical_checkups
-    (cc_id, people_id, date_created, clinic_id)
-    VALUES
-    ({0}, {1}, '{2}', {3})
-    """
-    s_sql = s_sqlt.format(cc_id, people_id, d_now, clinic_id)
+    # look for people_id, clinic_id
+    s_sqlt = """SELECT id FROM clinical_checkups
+    WHERE people_id = {0};"""
+    s_sql = s_sqlt.format(people_id)
+    cursor = dbmy.con.cursor()
+    cursor.execute(s_sql)
+    rec = cursor.fetchone()
+    if rec == None:
+        # register clinical_checkup in the MySQL database (bs.ctmed.ru:mis)
+	s_sqlt = """INSERT INTO clinical_checkups
+	(cc_id, people_id, cc_dcreated, clinic_id)
+	VALUES
+	({0}, {1}, '{2}', {3})
+	"""
+	s_sql = s_sqlt.format(cc_id, people_id, d_now, clinic_id)
+    else:
+	t_id = rec[0]
+	s_sqlt = """UPDATE clinical_checkups
+	SET
+	cc_id = {0}, 
+	cc_dcreated = '{1}',
+	clinic_id ={2}
+	WHERE id = {3};"""
+	s_sql = s_sqlt.format(cc_id, d_now, clinic_id, t_id)
+	
     cursor = dbmy.con.cursor()
     cursor.execute(s_sql)
     dbmy.con.commit()
    
-def pclinic(fname, clinic_id, mcod):
+def pfile(fname):
     from dbmis_connect2 import DBMIS
     from dbmysql_connect import DBMY
     from PatientInfo2 import PatientInfo2
@@ -219,6 +212,25 @@ def pclinic(fname, clinic_id, mcod):
     
     sout = "Totally {0} lines have been read from file <{1}>".format(len(ppp), fname)
     log.info(sout)
+
+    i1 = fname.find("IT22M")
+    if i1 < 0:
+	sout = "Wrong file name <{0}>".format(fname)
+	log.warn(sout)
+	return
+    
+    s_mcod = fname[i1+5:i1+11]
+    mcod   = int(s_mcod)
+
+    try:
+	mo = modb[mcod]
+	clinic_id = mo.mis_code
+	sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+	log.info(sout)
+    except:
+	sout = "Clinic not found for mcod = {0}".format(s_mcod)
+	log.warn(sout)
+	return
 
     p_obj = PatientInfo2()
 
@@ -270,26 +282,57 @@ def pclinic(fname, clinic_id, mcod):
         medical_insurance_series = prec[4]
         medical_insurance_number = prec[5]
         p_obj.initFromDb(dbc, people_id)
+	
+	s_mcod = prec[7]
+	if s_mcod == "\r\n": continue
+	f_mcod = int(s_mcod)
+	try:
+	    mo = modb[f_mcod]
+	    f_clinic_id = mo.mis_code
+	except:
+	    sout = "People_id: {0}. Clinic was not found for mcod = {1}.".format(people_id, f_mcod)
+	    log.warn(sout)
+	    continue
 
         if ncount % STEP == 0:
             sout = " {0} people_id: {1} clinic_id: {2} dvn_number: {3}".format(ncount, people_id, p_obj.clinic_id, dvn_number)
             log.info(sout)
 
-        if clinic_id <> p_obj.clinic_id:
+        if f_clinic_id <> p_obj.clinic_id:
             wrong_clinic += 1
             continue
+	
+	lname = p_obj.lname
+	fname = p_obj.fname
+	mname = p_obj.mname
+	bd    = p_obj.birthday
+	
+	p_ids = dbc.get_p_ids(lname, fname, mname, bd)
+	
+
+	# check if person already 
+	# has got a record in the clinical_checkups table
+	
+        l_exit = False
+	for p_id in p_ids:
+	    if person_in_cc(dbc, people_id):
+		l_exit = True
+		break
+	    
+	if l_exit: continue
 
         if check_person(dbc, people_id):
 
             # check if clinical_checkups table 
-            # already has got a record with current people_id
-            if person_in_cc(dbc, people_id): continue
             
-            set_insorg(dbc2, people_id, insorg_id, medical_insurance_series, medical_insurance_number)
+            cc_id = add_cc(dbc2, f_clinic_id, people_id)
+	    
+	    d_s = p_obj.document_series
+	    d_n = p_obj.document_number
+	    if (d_s is None) or (d_n is None): set_document(dbc2, people_id)
+	    
             
-            cc_id = add_cc(dbc2, clinic_id, people_id)
-            
-            register_cc(dbmy, cc_id, people_id, clinic_id)
+            register_cc(dbmy, cc_id, people_id, f_clinic_id)
             
             dvn_number += 1
 
@@ -421,7 +464,7 @@ if __name__ == "__main__":
 	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
 	    log.warn( sout )
 	else:
-	    pclinic(f_fname, clinic_id, mcod)
+	    pfile(f_fname)
 	    register_dvn_done(dbmy2, mcod, clinic_id, fname)
 	
 	
