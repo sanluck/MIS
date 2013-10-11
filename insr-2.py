@@ -220,8 +220,14 @@ def pclinic(fname, clinic_id, mcod):
 		    area_people_id = p_obj.area_people_id
 		    s_sqlt = "UPDATE area_peoples SET area_id_fk = {0} WHERE area_people_id = {1};"
 		    s_sql  = s_sqlt.format(area_id, area_people_id)
-		    cur2.execute(s_sql)
-		    dbc2.con.commit()
+		    try:
+			cur2.execute(s_sql)
+			dbc2.con.commit()
+		    except:
+			sout = "Can not set new clinic {0} for people_id {1}".format(f_clinic_id, people_id)
+			log.warn(sout)
+			log.warn("SQL:")
+			log.warn(s_sql)
 		    
 		    sout = "people_id: {0} has got new clinic {1}".format(people_id, f_mcod)
 		    log.debug(sout)
