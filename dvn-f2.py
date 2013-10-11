@@ -90,11 +90,17 @@ def add_ccr(db, cc_id, people_id, clinic_id):
         elif cc_line == 23:
             ddd = dset(d1, d2)
             cc_docs_list = CC_DOCS[53]
-            if len(cc_docs_list) ==0: cc_docs_list = CC_DOCS[97]
+            if len(cc_docs_list) <1: cc_docs_list = CC_DOCS[97]
             ln = len(cc_docs_list)
-            i = random.randint(0,ln-1)
-            worker_id = cc_docs_list[i][0]
-            doctor_id = cc_docs_list[i][1]
+            if ln == 0:
+                worker_id = None
+                doctor_id = None
+                sout = "No doctors for people_id: {0} clinic_id: {1}".format(people_id, clinic_id)
+                log.warn(sout)
+            else:
+                i = random.randint(0,ln-1)
+                worker_id = cc_docs_list[i][0]
+                doctor_id = cc_docs_list[i][1]
         elif cc_line in (24, 25):
             ddd = d2
             cc_docs_list = CC_DOCS[97]
