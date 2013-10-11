@@ -8,6 +8,8 @@ import sys, codecs
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
+from insorglist import InsorgInfoList
+insorgs = InsorgInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
@@ -31,7 +33,7 @@ SKIP_OGRN = True
 
 SET_MO = True
 
-SET_INSORG = False
+SET_INSORG = True
 
 INSR2DO_PATH = "./INSR2DO"
 DVN2DO_PATH  = "./DVN2DO"
@@ -233,7 +235,7 @@ def pclinic(fname, clinic_id, mcod):
         if ncount % STEP == 0:
             sout = " {0} people_id: {1} clinic_id: {2}".format(ncount, people_id, p_obj.clinic_id)
             log.info(sout)
-	    
+	
 	# register person in the MySQL database
 	s_sqlt = """INSERT INTO
 	clinical_checkups

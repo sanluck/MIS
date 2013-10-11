@@ -104,7 +104,7 @@ def rep_peoples(db, ar):
     import xlwt
     
     book = xlwt.Workbook(encoding="cp1251")
-    sheet1 = book.add_sheet("Clinics List")
+    sheet1 = book.add_sheet("Patients List")
     sheet1.write(0, 0, "Clinic_id")
     sheet1.write(0, 1, "People_id")
     sheet1.write(0, 2, "FIO")
