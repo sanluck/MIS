@@ -134,7 +134,7 @@ def add_ccr(db, cur, cc_id, people_id, clinic_id):
             ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', 0, 0);"""
             s_sql = s_sqlt.format(cc_id, cc_line, cc_version_id_fk, worker_id, doctor_id, ddd, cc_ds)
     
-        cur.execute(s_sql)
+        db.con.execute_immediate(s_sql) #cur.execute(s_sql)
         db.con.commit()
     
     return 1
