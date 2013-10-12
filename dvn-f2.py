@@ -243,7 +243,7 @@ if __name__ == "__main__":
     ar = get_cclist(dbmy)
 
     dbc2 = DBMIS()
-    cur2 = con2.cursor()
+    cur2 = dbc2.con.cursor()
     
     CC_LINES = get_cclines(dbc2)
     
