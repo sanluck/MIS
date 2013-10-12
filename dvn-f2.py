@@ -29,7 +29,7 @@ CC_LINES = []
 CC_DOCS = {}
 CURRENT_CLINIC = 0
 
-def add_ccr(db, cc_id, people_id, clinic_id):
+def add_ccr(con, cur, cc_id, people_id, clinic_id):
     # create records in the clinical_checkup_results table
     import datetime
     import random
@@ -38,16 +38,15 @@ def add_ccr(db, cc_id, people_id, clinic_id):
     
     p_obj = PatientInfo2()
     
-    p_obj.initFromDb(db, people_id)
+    p_obj.initFromCur(cur, people_id)
     
     s_sqlt = """SELECT 
     people_id_fk, date_stage_1, date_end_1
     FROM clinical_checkups
     WHERE clinical_checkup_id = {0};"""
     s_sql = s_sqlt.format(cc_id)
-    cursor = db.con.cursor()
-    cursor.execute(s_sql)
-    rec = cursor.fetchone()
+    cur.execute(s_sql)
+    rec = cur.fetchone()
     if rec == None:
         return 0
     
@@ -135,9 +134,8 @@ def add_ccr(db, cc_id, people_id, clinic_id):
             ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', 0, 0);"""
             s_sql = s_sqlt.format(cc_id, cc_line, cc_version_id_fk, worker_id, doctor_id, ddd, cc_ds)
     
-        cursor = db.con.cursor()
-        cursor.execute(s_sql)
-        db.con.commit()
+        cur.execute(s_sql)
+        con.commit()
     
     return 1
         
@@ -245,6 +243,8 @@ if __name__ == "__main__":
     ar = get_cclist(dbmy)
 
     dbc2 = DBMIS()
+    con2 = dbc2.con()
+    cur2 = con2.cursor()
     
     CC_LINES = get_cclines(dbc2)
     
@@ -259,7 +259,7 @@ if __name__ == "__main__":
             get_ccdocs(dbc2, clinic_id)
             CURRENT_CLINIC = clinic_id
         
-        result = add_ccr(dbc2, cc_id, people_id, clinic_id)
+        result = add_ccr(con2, cur2, cc_id, people_id, clinic_id)
         
         if result == 1: register_ccr(dbmy, cc_id)
 

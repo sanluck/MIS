@@ -177,6 +177,46 @@ WHERE ap.people_id_fk = {0} AND ca.basic_speciality = 1 AND  ap.date_end is Null
             self.clinic_id = rec[4]
             self.area_number = rec[3]
             self.area_people_id = rec[0]
+
+    def initFromCur(self, cur, patientId):
+        SQL_TEMPLATE_PEOPLE = """SELECT
+        people_id,
+        lname,
+        fname,
+        mname,
+        sex,
+        document_type_id_fk,
+        document_series,
+        document_number,
+        birthday,
+        inn,
+        insurance_certificate,
+        medical_insurance_series,
+        medical_insurance_number,
+        insorg_id,
+        phone,
+        mobile_phone
+        FROM PEOPLES WHERE PEOPLE_ID = {0};"""        
+        ssql = SQL_TEMPLATE_PEOPLE.format(patientId)
+        cur.execute(ssql)
+        rec = cur.fetchone()
+        if rec <> None: self.initFromRec(rec)
+        
+        SQL_TEMPLATE_AP = """SELECT 
+ap.area_people_id, ap.area_id_fk,
+a.clinic_area_id_fk, a.area_number,
+ca.clinic_id_fk
+FROM area_peoples ap 
+LEFT JOIN areas a ON ap.area_id_fk = a.area_id
+LEFT JOIN clinic_areas ca ON a.clinic_area_id_fk = ca.clinic_area_id
+WHERE ap.people_id_fk = {0} AND ca.basic_speciality = 1 AND  ap.date_end is Null;"""
+        ssql = SQL_TEMPLATE_AP.format(patientId)
+        cur.execute(ssql)
+        rec = cur.fetchone()
+        if rec <> None:
+            self.clinic_id = rec[4]
+            self.area_number = rec[3]
+            self.area_people_id = rec[0]
         
 
     def asString(self):
