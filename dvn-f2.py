@@ -158,7 +158,7 @@ def register_ccr(dbmy, cc_id):
 def get_cclist(db):
     s_sqlt = """SELECT cc_id, people_id, clinic_id
 FROM clinical_checkups
-WHERE (cc_id is Not Null) AND (ccr_dcreated is Null)
+WHERE (cc_id is Not Null) AND (cc_id != 0) AND (ccr_dcreated is Null)
 ORDER BY clinic_id;"""
     s_sql = s_sqlt
     cursor = db.con.cursor()
