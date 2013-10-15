@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 STEP = 100
 
-molist = [220096] 
+molist = [220066, 220069, 220070, 220072, 220039, 220067, 220142, 220141, 220052, 220098, 220077, 220084, 220082, 220086, 220143]
 
 BIRTHPLACE = u"Алтайский край"
 
@@ -192,15 +192,23 @@ def pclinic(clinic_id, mcod):
 		    clinical_checkup_results
 		    WHERE clinical_checkup_id_fk = {0};"""
 		    s_sql = s_sqlt.format(cc_id_d)
-		    dbc2.con.execute_immediate(s_sql)
-		    dbc2.con.commit()
+		    try:
+			dbc2.con.execute_immediate(s_sql)
+			dbc2.con.commit()
+		    except:
+			sout = "Delete from clinical_checkup_results error. cc_id: {0}".format(cc_id_d)
+			log.warn( sout )
 		    
 		    s_sqlt = """DELETE FROM
 		    clinical_checkups
 		    WHERE clinical_checkup_id = {0};"""
 		    s_sql = s_sqlt.format(cc_id_d)
-		    dbc2.con.execute_immediate(s_sql)
-		    dbc2.con.commit()
+		    try:
+			dbc2.con.execute_immediate(s_sql)
+			dbc2.con.commit()
+		    except:
+			sout = "Delete from clinical_checkups error. cc_id: {0}".format(cc_id_d)
+			log.warn( sout )
 
 
     sout = "Deleted clinical checkups number: {0}".format(cc_id_d_number)
