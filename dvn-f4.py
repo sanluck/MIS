@@ -24,8 +24,10 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-VT2DO_PATH  = "./VT2DO"
-VTDONE_PATH = "./VTDONE"
+VT2DO_PATH    = "./VT2DO"
+VTDONE_PATH   = "./VTDONE"
+REGISTER_FILE = True
+MOVE_FILE     = True
 
 STEP = 100
 
@@ -59,6 +61,23 @@ def plist_in(fname):
     
     workbook.release_resources()
     return arr
+
+def get_cc_lines(db, people_id):
+    s_sqlt = """SELECT clinical_checkup_id
+    FROM clinical_checkups
+    WHERE people_id_fk = {0}
+    ORDER BY clinical_checkup_id;"""
+    s_sql  = s_sqlt.format(people_id)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    recs = cursor.fetchall()
+    ar = []
+    for rec in recs:
+	cc_id = rec[0]
+	ar.append(cc_id)
+	
+    return ar
+    
 
 def pfile(fname):
     from dbmis_connect2 import DBMIS
@@ -114,6 +133,8 @@ def pfile(fname):
     dbmy = DBMY()
 
     double_number = 0
+    dd_number     = 0
+    condidate_number = 0
     
     for prec in ppp:
         ncount += 1
@@ -123,12 +144,59 @@ def pfile(fname):
         if ncount % STEP == 0:
             sout = " {0} people_id: {1}".format(ncount, people_id)
             log.info(sout)
-
+	
+	if err_code in (54,57):
+	    cc_lines = get_cc_lines(dbc, people_id)
+	    for cc_id in cc_lines:
+		s_sqlt = """UPDATE clinical_checkups
+		SET
+		people_status_code = 1
+		WHERE clinical_checkup_id = {0}"""
+		s_sql = s_sqlt.format(cc_id)
+		dbc2.con.execute_immediate(s_sql)
+		dbc2.con.commit()
+		condidate_number += 1
+		
 	if err_code in (70,71):
 	    double_number += 1
+	    cc_lines = get_cc_lines(dbc, people_id)
+	    if len(cc_lines) > 1:
+		dd_number += 1
+		iii = 0
+		for cc_id in cc_lines:
+		    iii += 1
+		    sout = "people_id: {0} cc_id: {1}".format(people_id, cc_id)
+		    log.info(sout)
+		    if iii == 1: continue
+		    s_sqlt = """UPDATE clinical_checkups
+		    SET
+		    people_status_code = 2
+		    WHERE clinical_checkup_id = {0}"""
+		    s_sql = s_sqlt.format(cc_id)
+		    dbc2.con.execute_immediate(s_sql)
+		    dbc2.con.commit()
+		    
+	    elif len(cc_lines) == 1:
+		cc_id = cc_lines[0]
+		s_sqlt = """UPDATE clinical_checkups
+		SET
+		people_status_code = 2
+		WHERE clinical_checkup_id = {0}"""
+		s_sql = s_sqlt.format(cc_id)
+		dbc2.con.execute_immediate(s_sql)
+		dbc2.con.commit()
+		
+
+    sout = "Candidates number: {0}".format(condidate_number)
+    log.info(sout)
+
 
     sout = "Double DVN cases: {0}".format(double_number)
     log.info(sout)
+
+    sout = "Double people_id: {0}".format(dd_number)
+    log.info(sout)
+
     
     dbc.close()
     dbc2.close()
@@ -225,13 +293,13 @@ if __name__ == "__main__":
 	    log.warn( sout )
 	else:
 	    pfile(f_fname)
-	    register_vt_done(dbmy2, mcod, clinic_id, fname)
+	    if REGISTER_FILE: register_vt_done(dbmy2, mcod, clinic_id, fname)
 	
-	
+	if MOVE_FILE:
 	# move file
-	source = VT2DO_PATH + "/" + fname
-	destination = VTDONE_PATH + "/" + fname
-	shutil.move(source, destination)
+	    source = VT2DO_PATH + "/" + fname
+	    destination = VTDONE_PATH + "/" + fname
+	    shutil.move(source, destination)
     
     dbmy2.close()
     sys.exit(0)
