@@ -296,7 +296,7 @@ if __name__ == "__main__":
 	sout  = "Input file: {0}".format(f_in)
 	log.info(sout)
     
-	if CHECK_FILES: 
+	if CHECK_FILE: 
 	    ldone, dfname, ddone = rvt_done(dbmy2, mcod)
 	else:
 	    ldone = False
