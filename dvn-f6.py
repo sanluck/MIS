@@ -37,7 +37,8 @@ MIS_DB   = "DBMIS"
 f_t            = "1_t.xls"
 RVT2DO_PATH    = "./RVT2DO"
 RVTDONE_PATH   = "./RVTDONE"
-REGISTER_FILE  = True
+CHECK_FILE     = False
+REGISTER_FILE  = False
 
 STEP = 100
 
@@ -295,7 +296,11 @@ if __name__ == "__main__":
 	sout  = "Input file: {0}".format(f_in)
 	log.info(sout)
     
-	ldone, dfname, ddone = rvt_done(dbmy2, mcod)
+	if CHECK_FILES: 
+	    ldone, dfname, ddone = rvt_done(dbmy2, mcod)
+	else:
+	    ldone = False
+	
 	if ldone:
 	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
 	    log.warn( sout )
