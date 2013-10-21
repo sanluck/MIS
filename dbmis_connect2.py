@@ -117,8 +117,8 @@ def unpack_date(sdate = "2012-10-01"):
 class DBMIS:
     'Base class for DBMIS connection'
     
-    def __init__(self, clinic_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
-        s_dsn = "%s:%s" % (HOST, DB)
+    def __init__(self, clinic_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD, mis_host = HOST, mis_db = DB):
+        s_dsn = "%s:%s" % (mis_host, mis_db)
         try:
             self.con = fdb.connect(dsn=s_dsn, user=DB_USER, password=DB_PWD, role = DB_ROLE, charset='WIN1251')
             self.cur = self.con.cursor()
