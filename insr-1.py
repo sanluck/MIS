@@ -11,7 +11,7 @@ modb = MoInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_insr.out'
+LOG_FILENAME = '_insr1.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -21,11 +21,11 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 #clist = (101, 105, 110, 119, 121, 125, 133, 140, 141, 142, 146, 147, 148, 150, 152, 161, 163, 165, 167, 169, 170, 174, 175, 176, 178, 181, 182, 186)
-clist = [200]
+clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220141]
 
 CLINIC_OGRN = u""
 
-FNAME = "IM{0}T22_13091.csv"
+FNAME = "IM{0}T22_13101.csv"
 
 STEP = 100
 DOC_TYPES = {1:u"1",
@@ -286,15 +286,16 @@ if __name__ == "__main__":
     import os    
     import datetime
 
-    for clinic_id in clist:
+    for mcod in clist:
         try:
-            mcod = modb.moCodeByMisId(clinic_id)
+	    mo = modb[mcod]
+	    clinic_id = mo.mis_code
             sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
             log.debug(sout)
         except:
-            sout = "Have not got MO Code for clinic_id {0}".format(clinic_id)
+            sout = "Have not got clinic for MO Code {0}".format(mcod)
             log.warn(sout)
-            mcod = 0
+            clinic_id = 0
 
         pclinic(clinic_id, mcod)    
 
