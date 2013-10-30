@@ -34,6 +34,25 @@ def get_exectime(cur):
     return t2-t1
     
 
+def register_exectime(db, exectime):
+    import datetime
+
+    iexectime = int(exectime*1000)
+
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+    s_sqlt = """INSERT INTO
+    dbmisr1
+    (dt, exectime)
+    VALUES
+    ('{0}', {1});
+    """
+
+    s_sql = s_sqlt.format(sdnow, iexectime)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    db.con.commit()
+
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
     from dbmysql_connect import DBMY
@@ -45,21 +64,23 @@ if __name__ == "__main__":
     log.info('------------------------------------------------------------')
     log.info('DBMIS Monitoring Start {0}'.format(localtime))
     
+    dbmy2 = DBMY()
+    
     dbc    = DBMIS(clinic_id = CLINIC_ID, mis_host = MIS_HOST, mis_db = MIS_DB)
     cursor = dbc.con.cursor()
     
     cursor.execute(S_SQLT)
     rec = cursor.fetchone()
     
-    for i in range(50):
+    for i in range(COUNT):
         dt = get_exectime(cursor)
+        register_exectime(dbmy2, dt)
         dnow = datetime.datetime.now()
         sdnow = str(dnow)        
         sout = "{0} Execution time: {1}".format(sdnow, dt)
         log.info(sout)
         time.sleep(W_SEC)
-        
-        
     
     dbc.close()
+    dbmy2.close()
     sys.exit(0)
