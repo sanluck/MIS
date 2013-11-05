@@ -111,6 +111,8 @@ if __name__ == "__main__":
          '--imgformat' , 'PNG' ,
          '--title' , 'Etalon Execution Time' ,
          '--lower-limit' , '0' ,
+         '-w 800',
+         '-h 300',
          def_string,
          area_string
     )

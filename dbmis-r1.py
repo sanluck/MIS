@@ -14,7 +14,7 @@ MIS_DB   = 'DBMIS'
 S_SQLT   = """SELECT current_timestamp FROM rdb$database;"""
 
 W_SEC = 10
-COUNT = 360*5
+COUNT = 360*10
 
 LOG_FILENAME = '_dbmisr1.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
