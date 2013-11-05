@@ -83,4 +83,7 @@ if __name__ == "__main__":
     
     dbc.close()
     dbmy2.close()
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('DBMIS Monitoring Finish {0}'.format(localtime))
+    log.info('===========================================================')
     sys.exit(0)
