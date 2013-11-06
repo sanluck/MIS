@@ -41,6 +41,8 @@ DVNDONE_PATH = "./DVNDONE"
 
 CLINIC_AREAS = {}
 
+from dvn_config import mo_list
+
 def get_clinic_areas(db, clinic_id):
     
     if CLINIC_AREAS.has_key(clinic_id):
@@ -199,7 +201,7 @@ def pclinic(fname, clinic_id, mcod):
         p_obj.initFromDb(dbc, people_id)
         if f_clinic_id <> p_obj.clinic_id:
             not_belongs_2_clinic += 1
-            if SET_MO:
+            if SET_MO and (f_mcod in mo_list):
 		clinic_areas = get_clinic_areas(dbc, f_clinic_id)
 		if clinic_areas == None:
 		    no_areas += 1
@@ -300,16 +302,16 @@ def register_insr2_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def insr2_done(db, mcod):
+def insr2_done(db, mcod, w_month = '1310'):
 
     s_sqlt = """SELECT
     fname, done
     FROM
     insr2_done
-    WHERE mcod = {0};
+    WHERE mcod = {0} AND fname LIKE '%{1}%';
     """
 
-    s_sql = s_sqlt.format(mcod)
+    s_sql = s_sqlt.format(mcod, w_month)
     cursor = db.con.cursor()
     cursor.execute(s_sql)
     rec = cursor.fetchone()
