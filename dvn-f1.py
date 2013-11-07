@@ -28,8 +28,6 @@ DVNDONE_PATH = "./DVNDONE"
 
 CLINIC_OGRN = u""
 
-FNAME = "IT22M{0}_13091.csv"
-
 STEP = 100
 
 SKIP_OGRN = True
@@ -37,12 +35,14 @@ SKIP_OGRN = True
 DS_WHITE_LIST = []
 DS_WHITE_COUNT = 395
 
-D_DATE_STAGE_1 = ['2013-08-15', '2013-09-25']
-D_DATE_END_1   = ['2013-09-01', '2013-09-30']
+D_DATE_STAGE_1 = ['2013-09-02', '2013-10-25']
+D_DATE_END_1   = ['2013-10-01', '2013-10-31']
 HEALTH_GROUP_1 = 1
 RESULT_1 = 317
 DS_1 = 'Z00.0'
 PEOPLE_STATUS_CODE = 3
+
+from dvn_config import mo_list
 
 def get_wlist(fname="ds_white_list.xls"):
     import xlrd
@@ -213,13 +213,13 @@ def pfile(fname):
     sout = "Totally {0} lines have been read from file <{1}>".format(len(ppp), fname)
     log.info(sout)
 
-    i1 = fname.find("IT22M")
+    i1 = fname.find("22M")
     if i1 < 0:
 	sout = "Wrong file name <{0}>".format(fname)
 	log.warn(sout)
 	return
     
-    s_mcod = fname[i1+5:i1+11]
+    s_mcod = fname[i1+3:i1+9]
     mcod   = int(s_mcod)
 
     try:
@@ -378,16 +378,16 @@ def register_dvn_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def dvn_done(db, mcod):
+def dvn_done(db, mcod, w_month = '1310'):
 
     s_sqlt = """SELECT
     fname, done
     FROM
     dvn_done
-    WHERE mcod = {0};
+    WHERE mcod = {0} AND fname LIKE '%{1}%';
     """
 
-    s_sql = s_sqlt.format(mcod)
+    s_sql = s_sqlt.format(mcod, w_month)
     cursor = db.con.cursor()
     cursor.execute(s_sql)
     rec = cursor.fetchone()
@@ -444,6 +444,9 @@ if __name__ == "__main__":
     for fname in fnames:
 	s_mcod = fname[5:11]
 	mcod = int(s_mcod)
+	
+	# skip MO if it is not in the list
+	if mcod not in mo_list: continue
     
 	try:
 	    mo = modb[mcod]

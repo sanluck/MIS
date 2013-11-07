@@ -20,8 +20,11 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
+HOST = "fb2.ctmed.ru"
+DB   = "DBMIS"
+
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
-clist = [220152]
+clist = [220086]
 
 CLINIC_OGRN = u""
 
@@ -32,8 +35,9 @@ DOC_TYPES = {1:u"1",
              2:u"2",
              3:u"3"}
 
-SKIP_OGRN = True
+SKIP_OGRN  = True
 
+ALL_PEOPLE = True
 
 def p1(patient, insorg):
     import datetime
@@ -212,7 +216,7 @@ def plist(dbc, fname, rows):
             fo.flush()
             os.fsync(fo.fileno())
             
-        if age > 20 and agem == 0:
+        if ALL_PEOPLE or (age > 20 and agem == 0):
             ccount += 1
             insorg_id   = p_obj.insorg_id
             try:
@@ -242,7 +246,7 @@ def pclinic(clinic_id, mcod):
     log.info('------------------------------------------------------------')
     log.info('Insurance Belongings Request Start {0}'.format(localtime))
 
-    dbc = DBMIS(clinic_id)
+    dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     if dbc.ogrn == None:
         CLINIC_OGRN = u""
     else:
