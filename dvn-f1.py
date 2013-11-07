@@ -35,13 +35,12 @@ SKIP_OGRN = True
 DS_WHITE_LIST = []
 DS_WHITE_COUNT = 395
 
-D_DATE_STAGE_1 = ['2013-09-02', '2013-10-25']
-D_DATE_END_1   = ['2013-10-01', '2013-10-31']
 HEALTH_GROUP_1 = 1
 RESULT_1 = 317
 DS_1 = 'Z00.0'
 PEOPLE_STATUS_CODE = 3
 
+from dvn_config import D_DATE_STAGE_1, D_DATE_END_1
 from dvn_config import mo_list
 
 def get_wlist(fname="ds_white_list.xls"):
