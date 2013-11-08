@@ -234,16 +234,16 @@ def register_vt_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def vt_done(db, mcod):
+def vt_done(db, mcod, w_month = '1310'):
 
     s_sqlt = """SELECT
     fname, done
     FROM
     vt_done
-    WHERE mcod = {0};
+    WHERE mcod = {0} AND fname LIKE '%{1}%';
     """
 
-    s_sql = s_sqlt.format(mcod)
+    s_sql = s_sqlt.format(mcod, w_month)
     cursor = db.con.cursor()
     cursor.execute(s_sql)
     rec = cursor.fetchone()
@@ -270,7 +270,8 @@ if __name__ == "__main__":
     dbmy2 = DBMY()
     
     for fname in fnames:
-	s_mcod = fname[5:11]
+	s_mcod  = fname[5:11]
+	w_month = fname[12:16]
 	mcod = int(s_mcod)
     
 	try:
@@ -287,7 +288,7 @@ if __name__ == "__main__":
 	sout = "Input file: {0}".format(f_fname)
 	log.info(sout)
     
-	ldone, dfname, ddone = vt_done(dbmy2, mcod)
+	ldone, dfname, ddone = vt_done(dbmy2, mcod, w_month)
 	if ldone:
 	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
 	    log.warn( sout )
