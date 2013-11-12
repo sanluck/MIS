@@ -24,10 +24,11 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-VT2DO_PATH    = "./VT2DO"
-VTDONE_PATH   = "./VTDONE"
-REGISTER_FILE = True
-MOVE_FILE     = True
+VT2DO_PATH        = "./VT2DO"
+VTDONE_PATH       = "./VTDONE"
+CHECK_REGISTERED  = False
+REGISTER_FILE     = True
+MOVE_FILE         = True
 
 STEP = 100
 
@@ -288,7 +289,11 @@ if __name__ == "__main__":
 	sout = "Input file: {0}".format(f_fname)
 	log.info(sout)
     
-	ldone, dfname, ddone = vt_done(dbmy2, mcod, w_month)
+	if CHECK_REGISTERED:
+	    ldone, dfname, ddone = vt_done(dbmy2, mcod, w_month)
+	else:
+	    ldone = False
+	    
 	if ldone:
 	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
 	    log.warn( sout )
