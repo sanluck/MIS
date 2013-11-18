@@ -80,7 +80,7 @@ if __name__ == "__main__":
     log.info('------------------------------------------------------------')
     log.info('Graphing of DBMIS Monitoring Start {0}'.format(localtime))
     
-    ar, etime_min, etime_max = get_exectimes()
+    ar, etime_min, etime_max = get_exectimes(gdate = '2013-11-11')
     
     starttime = ar[0][0] - 10
     dpoints = len(ar)
