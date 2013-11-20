@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # insr-1.py - запрос страховой пренадлежности
+#             Insurance Belongins Request (IBR)
 #
 
 import logging
@@ -24,20 +25,26 @@ HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
-clist = [220086]
+clist = [220137]
+
+cid_list = [105,110,119,121,124,125,127,128,131,133,134,140,141,142,145,146,147,148,150,151,152,157,159,160,161,162,163,165,166,167,168,169,170,174,175,176,177,178,180,181,182,186,192,198,199,200,205,206,208,210,213,215,220,222,223,224,226,227,230,232,233,234,235,236,237,238,239,240,330,381]
 
 CLINIC_OGRN = u""
 
-FNAME = "IM{0}T22_13101.csv"
+FNAME = "IM{0}T22_13111.csv"
 
 STEP = 100
 DOC_TYPES = {1:u"1",
              2:u"2",
              3:u"3"}
 
-SKIP_OGRN  = True
+SKIP_OGRN  = True # Do not put OGRN into IBR
 
-ALL_PEOPLE = True
+ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
+
+DVN_LIST   = True # Use clinical_checkups table to find out patients list
+
+CID_LIST   = True # Use cid_lis (list of clinic_id)
 
 def p1(patient, insorg):
     import datetime
@@ -260,16 +267,23 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
     log.info(sout)
 
-    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+    if DVN_LIST:
+	s_sqlt = """SELECT DISTINCT p.* FROM vw_peoples p
+RIGHT JOIN clinical_checkups cc ON p.people_id = cc.people_id_fk
+WHERE cc.clinic_id_fk = {0}
+AND ((cc.date_end_1 > '2013-10-31') OR (cc.date_end_2 > '2013-10-31'));"""
+	s_sql = s_sqlt.format(clinic_id)
+    else:
+	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
+	s_sql = s_sqlt.format(clinic_id)
 
 
     cursor = dbc.con.cursor()
-    s_sql = s_sqlt.format(clinic_id)
     cursor.execute(s_sql)
     results = cursor.fetchall()
     
@@ -290,18 +304,33 @@ if __name__ == "__main__":
     import os    
     import datetime
 
-    for mcod in clist:
-        try:
-	    mo = modb[mcod]
-	    clinic_id = mo.mis_code
-            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
-            log.debug(sout)
-        except:
-            sout = "Have not got clinic for MO Code {0}".format(mcod)
-            log.warn(sout)
-            clinic_id = 0
-	    continue
-
-        pclinic(clinic_id, mcod)    
-
+    
+    if CID_LIST:
+	for clinic_id in cid_list:
+	    try:
+		mcod = modb.moCodeByMisId(clinic_id)
+		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+		log.debug(sout)
+	    except:
+		sout = "Have not got clinic for clinic_id {0}".format(clinic_id)
+		log.warn(sout)
+		mcod = 0
+		continue
+	    
+	    pclinic(clinic_id, mcod)
+    else:
+	for mcod in clist:
+	    try:
+		mo = modb[mcod]
+		clinic_id = mo.mis_code
+		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+		log.debug(sout)
+	    except:
+		sout = "Have not got clinic for MO Code {0}".format(mcod)
+		log.warn(sout)
+		clinic_id = 0
+		continue
+	    
+	    pclinic(clinic_id, mcod)    
+	
     sys.exit(0)
