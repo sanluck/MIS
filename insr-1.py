@@ -27,22 +27,39 @@ DB   = "DBMIS"
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
 clist = [220137]
 
-cid_list = [105,110,119,121,124,125,127,128,131,133,134,140,141,142,145,146,147,148,150,151,152,157,159,160,161,162,163,165,166,167,168,169,170,174,175,176,177,178,180,181,182,186,192,198,199,200,205,206,208,210,213,215,220,222,223,224,226,227,230,232,233,234,235,236,237,238,239,240,330,381]
+cid_list = [52,95,98,101,105,110,119,121,124,125,127,128,131,133,134,140,141,142,145,146,147,148,150,151,152,157,159,160,161,162,163,165,166,167,168,169,170,174,175,176,177,178,180,181,182,186,192,198,199,200,205,206,208,210,213,215,220,221,222,223,224,226,227,230,232,233,234,235,236,237,238,239,240,246,250,254,255,268,280,299,300,301,330,381]
+
 
 CLINIC_OGRN = u""
 
-FNAME = "IM{0}T22_13111.csv"
+FNAME = "IM{0}T22_13115.csv"
 
 STEP = 100
 DOC_TYPES = {1:u"1",
              2:u"2",
-             3:u"3"}
+             3:u"3",
+             4:u"4",
+             5:u"5",
+             6:u"6",
+             7:u"7",
+             8:u"8",
+             9:u"9",
+             10:u"10",
+             11:u"11",
+             13:u"12",
+             13:u"13",
+             14:u"14",
+             15:u"15",
+             16:u"16",
+             17:u"17",
+             18:u"18"
+             }
 
 SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
-DVN_LIST   = True # Use clinical_checkups table to find out patients list
+DVN_LIST   = False # Use clinical_checkups table to find out patients list
 
 CID_LIST   = True # Use cid_lis (list of clinic_id)
 
@@ -53,12 +70,12 @@ def p1(patient, insorg):
     
     res = []
     res.append( u"{0}".format(patient.people_id) )
-    res.append( u"{0}".format(patient.lname.upper()) )
-    res.append( u"{0}".format(patient.fname.upper()) )
+    res.append( u"{0}".format(patient.lname.strip().upper()) )
+    res.append( u"{0}".format(patient.fname.strip().upper()) )
     if patient.mname == None:
         res.append(u"")
     else:
-        res.append( u"{0}".format(patient.mname.upper()) )
+        res.append( u"{0}".format(patient.mname.strip().upper()) )
     dr = patient.birthday
     sdr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
     res.append(sdr)
