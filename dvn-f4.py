@@ -24,6 +24,9 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
+HOST = "fb2.ctmed.ru"
+DB   = "DVN3"
+
 VT2DO_PATH        = "./VT2DO"
 VTDONE_PATH       = "./VTDONE"
 CHECK_REGISTERED  = False
@@ -120,7 +123,7 @@ def pfile(fname):
 
     p_obj = PatientInfo2()
 
-    dbc = DBMIS(clinic_id)
+    dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     cname = dbc.name.encode('utf-8')
 
     sout = "cod_mo: {0} clinic_id: {1} clinic_name: {2} ".format(mcod, clinic_id, cname)
@@ -129,7 +132,7 @@ def pfile(fname):
     wrong_clinic = 0
     wrong_insorg = 0
     ncount = 0
-    dbc2 = DBMIS(clinic_id)
+    dbc2 = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     cur2 = dbc2.con.cursor()
     dbmy = DBMY()
 
@@ -145,8 +148,8 @@ def pfile(fname):
         if ncount % STEP == 0:
             sout = " {0} people_id: {1}".format(ncount, people_id)
             log.info(sout)
-	
-	if err_code in (54,57):
+	# err_code in (54, 57) 06/12/2013 - skip 57
+	if err_code == 54:
 	    cc_lines = get_cc_lines(dbc, people_id)
 	    for cc_id in cc_lines:
 		s_sqlt = """UPDATE clinical_checkups
@@ -235,7 +238,7 @@ def register_vt_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def vt_done(db, mcod, w_month = '1310'):
+def vt_done(db, mcod, w_month = '1311'):
 
     s_sqlt = """SELECT
     fname, done
