@@ -33,6 +33,15 @@ CHECK_REGISTERED  = False
 REGISTER_FILE     = True
 MOVE_FILE         = True
 
+COMMENT1 = u"""Неверное оформление 2 этапа диспансеризации. Результат оплаченного в предыдущем периоде 1 этапа диспансеризации (319) не предполагает необходимости проведения 2 этапа)"""
+
+COMMENT2 = u"""Неверное оформление 2 этапа диспансеризации. Результат оплаченного в предыдущем периоде 1 этапа диспансеризации (317) не предполагает необходимости проведения 2 этапа)"""
+
+COMMENT3 = u"""Неверное оформление 2 этапа диспансеризации. Результат оплаченного в предыдущем периоде 1 этапа диспансеризации (318) не предполагает необходимости проведения 2 этапа)"""
+
+COMMENTL = (COMMENT1, COMMENT2, COMMENT2)
+
+
 STEP = 100
 
 def plist_in(fname):
@@ -58,10 +67,12 @@ def plist_in(fname):
 	if c1_type != 2: continue
 	    
 	code        = worksheet.cell_value(curr_row, 4)
+	comment	    = worksheet.cell_value(curr_row, 5)
 	people_id_s = worksheet.cell_value(curr_row, 11)
 	people_id   = int(people_id_s)
 	
-	arr.append([people_id, code])
+	
+	arr.append([people_id, code, comment])
     
     workbook.release_resources()
     return arr
@@ -139,18 +150,23 @@ def pfile(fname):
     double_number = 0
     dd_number     = 0
     condidate_number = 0
+    commentl_number = 0
     
     for prec in ppp:
         ncount += 1
         people_id = prec[0]
         err_code  = prec[1]
+	comment   = prec[2]
 
         if ncount % STEP == 0:
             sout = " {0} people_id: {1}".format(ncount, people_id)
             log.info(sout)
 	# err_code in (54, 57) 06/12/2013 - skip 57
-	if err_code == 54:
+	if (err_code == 54) or ((err_code == 53) and (comment in COMMENTL)):
+	    if comment in COMMENTL: commentl_number += 1
+	    
 	    cc_lines = get_cc_lines(dbc, people_id)
+	    
 	    for cc_id in cc_lines:
 		s_sqlt = """UPDATE clinical_checkups
 		SET
@@ -201,7 +217,9 @@ def pfile(fname):
     sout = "Double people_id: {0}".format(dd_number)
     log.info(sout)
 
-    
+    sout = "Commentl number: {0}".format(commentl_number)
+    log.info(sout)
+
     dbc.close()
     dbc2.close()
     dbmy.close()
