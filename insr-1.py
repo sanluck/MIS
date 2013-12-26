@@ -22,7 +22,7 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
+DB   = "DVN3"
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
 clist = [220137]
@@ -32,7 +32,7 @@ cid_list = [95,98,101,105,110,119,121,124,125,127,128,131,133,134,140,141,142,14
 
 CLINIC_OGRN = u""
 
-FNAME = "IM{0}T22_13121.csv"
+FNAME = "IM{0}T22_13122.csv"
 
 STEP = 100
 DOC_TYPES = {1:u"1",
@@ -62,6 +62,12 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 DVN_LIST   = True # Use clinical_checkups table to find out patients list
 
 CID_LIST   = True # Use cid_lis (list of clinic_id)
+
+OPLATA     = True # Select only those cases from clinical_checkups 
+		  # where clinical_checkup_stages.oplata > 1
+		  
+DSTART     = '2013-11-01'
+DEND       = '2013-11-30'
 
 def p1(patient, insorg):
     import datetime
@@ -287,9 +293,11 @@ def pclinic(clinic_id, mcod):
     if DVN_LIST:
 	s_sqlt = """SELECT DISTINCT p.* FROM vw_peoples p
 RIGHT JOIN clinical_checkups cc ON p.people_id = cc.people_id_fk
-WHERE cc.clinic_id_fk = {0}
-AND ((cc.date_end_1 > '2013-11-30') OR (cc.date_end_2 > '2013-11-30'));"""
-	s_sql = s_sqlt.format(clinic_id)
+WHERE cc.clinic_id_fk = {0} 
+AND (date_end_1 is NOT NULL)
+AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) >= '{1}'
+AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) <= '{2}';"""
+	s_sql = s_sqlt.format(clinic_id, DSTART, DEND)
     else:
 	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
@@ -298,7 +306,16 @@ JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
 	s_sql = s_sqlt.format(clinic_id)
-
+	
+    if OPLATA:
+	s_sqlt = """SELECT DISTINCT p.* FROM vw_peoples p
+RIGHT JOIN clinical_checkups cc ON p.people_id = cc.people_id_fk
+WHERE cc.clinical_checkup_id IN (SELECT clinical_checkup_id_fk FROM clinical_checkup_stages WHERE oplata > 1) 
+AND cc.clinic_id_fk = {0} 
+AND (date_end_1 is NOT NULL)
+AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) >= '{1}'
+AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) <= '{2}';"""
+	s_sql = s_sqlt.format(clinic_id, DSTART, DEND)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
