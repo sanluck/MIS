@@ -24,8 +24,8 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID  = 156
-DBF_DIR    = "/home/gnv/MIS/import/156/"
+CLINIC_ID  = 106
+DBF_DIR    = "/home/gnv/MIS/import/{0}/".format(CLINIC_ID)
 table_name = DBF_DIR + "REGISTRY.DBF"
 
 STEP = 100
