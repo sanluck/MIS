@@ -24,8 +24,8 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID  = 106
-DBF_DIR    = "/home/gnv/MIS/import/106/"
+CLINIC_ID  = 156
+DBF_DIR    = "/home/gnv/MIS/import/156/"
 table_name = DBF_DIR + "REGISTRY.DBF"
 
 STEP = 100
@@ -57,8 +57,8 @@ kladr[217] = [u"1101233000", 22, 2203500000000, u"Петропавловский
 kladr[171] = [u"1101240000", 22, 2204200000000, u"Смоленский р-н", None, None] # Смоленская ЦРБ
 kladr[172] = [u"1101242000", 22, 2204300000000, u"Советский р-н", None, None] # Советская ЦРБ
 kladr[185] = [u"1101257000", 22, 2205800000000, u"Целинный р-н", None, None] # Целинная ЦРБ
-kladr[117] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск"] # Бийская ГП-6
-kladr[156] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск"] # Бийская ГБ-3
+kladr[117] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск г"] # Бийская ГП-6
+kladr[156] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск г"] # Бийская ГБ-3
 
 s_sqlt56 = """UPDATE peoples
 SET 
