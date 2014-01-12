@@ -26,24 +26,13 @@ SQLT_FPEOPLE = """SELECT FIRST 20
     MNAME,
     LNAME ||' '|| FNAME ||' '|| coalesce(' '||MNAME, '') As FIO,
     BIRTHDAY,
-    SEX,
-    DOCUMENT_TYPE_ID_FK,
-    DOCUMENT_SERIES,
-    DOCUMENT_NUMBER,
-    INSURANCE_CERTIFICATE,
-    MEDICAL_INSURANCE_COMPANY_NAME,
-    MEDICAL_INSURANCE_SERIES,
-    MEDICAL_INSURANCE_NUMBER,
-    BIRTHPLACE,
-    insorg_id
-FROM
-    PEOPLES
-Where PEOPLE_ID>0
-AND (Upper(lname) like Upper('{0}')||'%')
-and (Upper(fname) like Upper('{1}')||'%')
-and (Upper(mname) like Upper('{2}')||'%')
-and birthday = '{3}'
-Order by LNAME, FNAME, MNAME;"""
+    SEX
+FROM VW_PEOPLES_SMALL_EXT
+WHERE 
+upper(LNAME) starting '{0}'
+AND upper(FNAME) starting '{1}' 
+AND upper(MNAME) starting '{2}'
+AND BIRTHDAY='{3}';"""
 
 SQLT_FPEOPLE0 = """SELECT FIRST 20
     PEOPLE_ID,
@@ -52,23 +41,12 @@ SQLT_FPEOPLE0 = """SELECT FIRST 20
     MNAME,
     LNAME ||' '|| FNAME ||' '|| coalesce(' '||MNAME, '') As FIO,
     BIRTHDAY,
-    SEX,
-    DOCUMENT_TYPE_ID_FK,
-    DOCUMENT_SERIES,
-    DOCUMENT_NUMBER,
-    INSURANCE_CERTIFICATE,
-    MEDICAL_INSURANCE_COMPANY_NAME,
-    MEDICAL_INSURANCE_SERIES,
-    MEDICAL_INSURANCE_NUMBER,
-    BIRTHPLACE,
-    insorg_id
-FROM
-    PEOPLES
-Where PEOPLE_ID>0
-AND (Upper(lname) like Upper('{0}')||'%')
-and (Upper(fname) like Upper('{1}')||'%')
-and birthday = '{2}'
-Order by LNAME, FNAME;"""
+    SEX
+    FROM VW_PEOPLES_SMALL_EXT
+    WHERE 
+    upper(LNAME) starting '{0}'
+    AND upper(FNAME) starting '{1}' 
+    AND BIRTHDAY='{2}';"""
 
 class PEOPLE:
     def __init__(self):
