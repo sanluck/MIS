@@ -24,8 +24,8 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID  = 156
-DBF_DIR    = "/home/gnv/MIS/import/156/"
+CLINIC_ID  = 106
+DBF_DIR    = "/home/gnv/MIS/import/106/"
 table_name = DBF_DIR + "REGISTRY.DBF"
 
 STEP = 100
@@ -193,6 +193,11 @@ if __name__ == "__main__":
     log.info( sout )
 
     dbc = DBMIS(CLINIC_ID, mis_host = HOST, mis_db = DB)
+    
+    clinic_name = dbc.name
+    sout = "clinic_name: {0}".format(clinic_name.encode("utf-8"))
+    log.info( sout )
+    
     people = PEOPLE()
     
     s_sqlt = """SELECT DISTINCT p.people_id,
@@ -241,11 +246,15 @@ AND ap.date_end is Null;"""
             kod_smo = p_dbf.insorg_id
             soato   = p_dbf.soato
             
-            if counta % STEP == 0: print counta, people_id, p_dbf.people_id
+            if counta % STEP == 0: 
+                sout = "{0} {1} {2}".format(counta, people_id, p_dbf.people_id)
+                log.info( sout )
+                
         elif counta % STEP == 0: 
             kod_smo = None
             soato   = None
-            print counta, people_id, 'None'
+            sout = "{0} {1} 'None'".format(counta, people_id)
+            log.info( sout )            
 
         # p_payment_type_id_fk
         if people.p_payment_type_id_fk is None:
