@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
+import logging
+
+log = logging.getLogger(__name__)
+
 SQLT_PEOPLE = """SELECT DISTINCT p.people_id,
 p.lname, p.fname, p.mname, p.birthday,
 p.p_payment_type_id_fk, p.medical_insurance_region_id_fk, p.insorg_id,
@@ -13,6 +18,57 @@ JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
+
+SQLT_FPEOPLE = """SELECT FIRST 20
+    PEOPLE_ID,
+    LNAME,
+    FNAME,
+    MNAME,
+    LNAME ||' '|| FNAME ||' '|| coalesce(' '||MNAME, '') As FIO,
+    BIRTHDAY,
+    SEX,
+    DOCUMENT_TYPE_ID_FK,
+    DOCUMENT_SERIES,
+    DOCUMENT_NUMBER,
+    INSURANCE_CERTIFICATE,
+    MEDICAL_INSURANCE_COMPANY_NAME,
+    MEDICAL_INSURANCE_SERIES,
+    MEDICAL_INSURANCE_NUMBER,
+    BIRTHPLACE,
+    insorg_id
+FROM
+    PEOPLES
+Where PEOPLE_ID>0
+AND (Upper(lname) like Upper('{0}')||'%')
+and (Upper(fname) like Upper('{1}')||'%')
+and (Upper(mname) like Upper('{2}')||'%')
+and birthday = '{3}'
+Order by LNAME, FNAME, MNAME;"""
+
+SQLT_FPEOPLE0 = """SELECT FIRST 20
+    PEOPLE_ID,
+    LNAME,
+    FNAME,
+    MNAME,
+    LNAME ||' '|| FNAME ||' '|| coalesce(' '||MNAME, '') As FIO,
+    BIRTHDAY,
+    SEX,
+    DOCUMENT_TYPE_ID_FK,
+    DOCUMENT_SERIES,
+    DOCUMENT_NUMBER,
+    INSURANCE_CERTIFICATE,
+    MEDICAL_INSURANCE_COMPANY_NAME,
+    MEDICAL_INSURANCE_SERIES,
+    MEDICAL_INSURANCE_NUMBER,
+    BIRTHPLACE,
+    insorg_id
+FROM
+    PEOPLES
+Where PEOPLE_ID>0
+AND (Upper(lname) like Upper('{0}')||'%')
+and (Upper(fname) like Upper('{1}')||'%')
+and birthday = '{2}'
+Order by LNAME, FNAME;"""
 
 class PEOPLE:
     def __init__(self):
@@ -74,4 +130,39 @@ class PEOPLE:
         self.insorg_id = rec.kod_smo
         self.soato = rec.soato
         self.fio = self.lname + self.fname + self.mname
+    
+def get_registry(table_name):
+    import dbf
+    
+    table = dbf.Table(table_name)
+    table.open()
+
+    p_arr = []
+    for rec in table:
+        p_dbf = PEOPLE()
+        p_dbf.initFromDBF(rec)
+        p_arr.append(p_dbf)
+        
+    table.close()
+    return p_arr
+
+def get_people(cursor, lname, fname, mname, birthday):
+    
+    lname1251 = lname.encode('cp1251')
+    fname1251 = fname.encode('cp1251')
+    s_birthday = "%04d-%02d-%02d" % (birthday.year, birthday.month, birthday.day)
+    if mname is None:
+        s_sql = SQLT_FPEOPLE0.format(lname1251, fname1251, s_birthday)
+    else:
+        mname1251 = mname.encode('cp1251')
+        s_sql = SQLT_FPEOPLE.format(lname1251, fname1251, mname1251, s_birthday)
+
+    try:
+        cursor.execute(s_sql)
+        results = cursor.fetchall()
+        return results
+    except Exception, e:
+        r_msg = 'Ошибка запроса данных из DBMIS: {0} {1}'.format(sys.stderr, e)
+        log.error( r_msg )
+        return None
     
