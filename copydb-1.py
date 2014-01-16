@@ -21,13 +21,13 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 CLINIC_ID = 22
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 TABLE = "DATABASE_VERSION"
 
 HOST2 = "fb2.ctmed.ru"
-DB2   = "LBMIS"
+DB2   = "DVN4"
 
 class DB_REC:
     
@@ -61,20 +61,24 @@ class DB_REC:
 #        if workstation         is None: workstation = u'Null'
 #        if version_string      is None: version_string = u'Null'
 #        if version_string_type is None: version_string_type = u'Null'
-        if unit_context        is None: unit_context = u'Null'
-        
-        s_sqlt = """INSERT INTO {0} (unit_name, version_number, workstation, version_string, version_string_type, unit_context) VALUES (?, ?, ?, ?, ?, ?)
-        """
-        
-        s_sql = s_sqlt.format(TABLE)
-        cur.execute(s_sql, (unit_name, version_number, workstation, version_string, version_string_type, StringIO(unit_context)))
+        if unit_context is None: 
+            s_sqlt = """INSERT INTO {0} (unit_name, version_number, workstation, version_string, version_string_type, unit_context) VALUES (?, ?, ?, ?, ?, ?);"""
+            s_sql = s_sqlt.format(TABLE)
+            cur.execute(s_sql, (unit_name, version_number, workstation, version_string, version_string_type, unit_context))
+        else:
+            s_sqlt = """INSERT INTO {0} (unit_name, version_number, workstation, version_string, version_string_type, unit_context) VALUES (?, ?, ?, ?, ?, ?);"""
+            s_sql = s_sqlt.format(TABLE)
+            cur.execute(s_sql, (unit_name, version_number, workstation, version_string, version_string_type, StringIO(unit_context)))
 
 
 if __name__ == "__main__":
     
+    import time    
     from dbmis_connect2 import DBMIS
 
-    log.info("======================= Copy Table (1) =============================")
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info("==================== Copy Table (1) ================================")
+    log.info("Start: {0}".format(localtime))
     
     try:
         dbc = DBMIS(CLINIC_ID, mis_host = HOST, mis_db = DB)
@@ -99,7 +103,7 @@ if __name__ == "__main__":
         log.error(sout)
         sys.exit(1)
     
-    sout = "Database {0}:{1}".format(HOST, DB)
+    sout = "Source Database: {0}:{1}".format(HOST, DB)
     log.info( sout )
     sout = "Table {0} has got {1} records".format(TABLE, rec[0])
     log.info( sout )
@@ -112,6 +116,10 @@ if __name__ == "__main__":
         sout = "{0}".format(e)
         log.error(sout)
         sys.exit(1)
+
+    sout = "Output Database: {0}:{1}".format(HOST2, DB2)
+    log.info( sout )
+
         
     cur2 = dbc2.con.cursor()
 
@@ -142,4 +150,6 @@ if __name__ == "__main__":
     dbc.close()
     dbc2.con.commit()
     dbc2.close()
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info("Finish: {0}".format(localtime))
     sys.exit(0)
