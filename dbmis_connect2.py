@@ -11,7 +11,7 @@ import logging
 import fdb
 
 HOST = 'fb2.ctmed.ru'
-DB = 'DVN3'
+DB = 'DVN4'
 DB_USER = 'sysdba'
 DB_PWD = 'Gjkbrkbybrf'
 

@@ -25,7 +25,7 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 HOST = "fb2.ctmed.ru"
-DB   = "DVN3"
+DB   = "DVN4"
 
 VT2DO_PATH        = "./VT2DO"
 VTDONE_PATH       = "./VTDONE"
@@ -162,7 +162,9 @@ def pfile(fname):
             sout = " {0} people_id: {1}".format(ncount, people_id)
             log.info(sout)
 	# err_code in (54, 57) 06/12/2013 - skip 57
-	if (err_code == 54) or ((err_code == 53) and (comment in COMMENTL)):
+	# (err_code == 54) or ((err_code == 53) and (comment in COMMENTL))
+	# 16/01/2014 check only 54
+	if (err_code == 54):
 	    if comment in COMMENTL: commentl_number += 1
 	    
 	    cc_lines = get_cc_lines(dbc, people_id)
