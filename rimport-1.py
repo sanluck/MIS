@@ -146,7 +146,6 @@ if __name__ == "__main__":
 	    log.warn( sout )
 	else:
 	    if not pfile(f_id, f_fname): break
-	    if REGISTER_FILE: register_pr_done(dbmy2, fname)
 	
 	if MOVE_FILE:
 	# move file

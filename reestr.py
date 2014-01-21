@@ -82,14 +82,14 @@ def put_reestr(db, f_id, r_arr):
     kat, kod_lpu, dn, dk, 
     fam, im, ot, dr, w,
     kpl, vpolis, spolis, npolis, str_pens,
-    ds, profil, data_p, spec, kod_i,
+    ds, uet, profil, data_p, spec, kod_i,
     f_doctor, perv_povt, cel_posobr)
     VALUES
     (%s, 
     %s, %s, %s, %s,
     %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s,
-    %s, %s, %s, %s, %s,
+    %s, %s, %s, %s, %s, %s,
     %s, %s, %s);"""
 
     cursor = db.con.cursor()
@@ -116,7 +116,7 @@ def put_reestr(db, f_id, r_arr):
                              pr.kat, pr.kod_lpu, pr.dn, pr.dk, 
                              fam, im, ot, pr.dr, pr.w,
                              pr.kpl, pr.vpolis, pr.spolis, pr.npolis, pr.str_pens,
-                             pr.ds, pr.profil, pr.data_p, pr.spec, pr.kod_i,
+                             pr.ds, pr.uet, pr.profil, pr.data_p, pr.spec, pr.kod_i,
                              pr.f_doctor, pr.perv_povt, pr.cel_posobr,))
         except Exception, e:
             sout = "Can't insert into pr table"

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # r_analysis-1.py - анализ реестров
 #                   посещения <-> обращения
+#                   ДЮЮ (обращения = 2 посещения специалиста)
 #
 
 import logging
@@ -10,7 +11,7 @@ from datetime import datetime
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_ranalysis.out'
+LOG_FILENAME = '_ranalysis2.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -19,7 +20,7 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-F_ID  = 1
+F_ID  = 2
 
 S_O1  = 167.30
 S_O1F = 104.00
@@ -62,7 +63,7 @@ def ra1(db, f_id = F_ID):
         spec = rec[0]
         t3   = rec[1]
         t4   = rec[2]
-        s_count[spec] = [0, 0]
+        s_count[spec] = 0
         ttt[spec] = [t3, t4]
     
     s_sql = s_sqlt1.format(f_id)
@@ -76,12 +77,16 @@ def ra1(db, f_id = F_ID):
     
     sum3   = 0.0
     sum4   = 0.0
+
+    sum29  = 0.0
+    n29    = 0
     
     n_posobr3 = 0
     
     t_polis = ""
     t_spec  = 0
-    l_perv  = False
+    n_spec  = 0
+    
     for rec in result:
 
         ncount += 1
@@ -113,6 +118,8 @@ def ra1(db, f_id = F_ID):
                 sum2 += uet*float(t2)
                 sum3 += uet*float(t3)
                 sum4 += uet*float(t4)
+                n29  += 1
+                sum29+= uet*float(t1)
             else:
                 sum1 += float(t1)
                 sum2 += float(t2)
@@ -122,33 +129,26 @@ def ra1(db, f_id = F_ID):
         if t_polis == s_polis:
             if t_spec == spec:
                 if cel_posobr == 3: continue
-                if perv_povt == 1:
-                    l_perv = True
-                    s_count[spec][0] += 1
-                else:
-                    if l_perv:
-                        s_count[spec][1] += 1
-                        if spec != 29:
-                            sum3 += float(t3)
-                            sum4 += float(t4)
-                    
-                    l_perv = False
+                n_spec  += 1
+                if n_spec == 2:
+                    n_spec = 0
+                    s_count[spec] += 1
+                    if spec != 29:
+                        sum3 += float(t3)
+                        sum4 += float(t4)
             else:
                 t_spec = spec
-                if (cel_posobr != 3) and (perv_povt == 1) :
-                    l_perv = True
-                    s_count[spec][0] += 1
-                else:
-                    l_perv = False
+                if cel_posobr == 3: 
+                    n_spec = 0
+                    continue
+                n_spec = 1
         else:
             t_polis = s_polis
             t_spec  = spec
-            if cel_posobr == 3: continue
-            if (cel_posobr != 3) and (perv_povt == 1):
-                l_perv = True
-                s_count[spec][0] += 1
-            else:
-                l_perv = False
+            if cel_posobr == 3:
+                n_spec = 0
+                continue
+            n_spec = 1
         
         
     sout = "Count of cel_posob = 3: {0} Sum: {1} {2}".format(n_posobr3, sum1o, sum2o)
@@ -156,37 +156,33 @@ def ra1(db, f_id = F_ID):
 
     sout = "s1: {0} {1}  s2: {2} {3}".format(sum1, sum2, sum3, sum4)
     log.info( sout )
-
     
-    sum_s1_1 = 0
-    sum_s1_2 = 0
+    sout = "n29: {0} sum29: {1}".format(n29, sum29)
+    log.info( sout )
+    
     sum_s2_1 = 0
     sum_s2_2 = 0
     
     for spec in s_count.keys():
-        c1 = s_count[spec][0]
-        c2 = s_count[spec][1]
+        n2 = s_count[spec]
         t3 = ttt[spec][0]
         t4 = ttt[spec][1]
 
-        s1_1 = c1*t3
-        s1_2 = c1*t4
-        s2_1 = c2*t3
-        s2_2 = c2*t4
-
-        sum_s1_1 += s1_1
-        sum_s1_2 += s1_2
-        sum_s2_1 += s2_1
-        sum_s2_2 += s2_2
+        s2_1 = n2*t3
+        s2_2 = n2*t4
+        
+        if spec != 29:
+            sum_s2_1 += s2_1
+            sum_s2_2 += s2_2
 
 
-        sout = "spec: {0} count1: {1} count2: {2}".format(spec, c1, c2)
+        sout = "spec: {0} case count: {1}".format(spec, n2)
         log.info( sout )
-        sout = "          s1_1: {0} s1_2: {1} s2_1: {2} s2_2: {3}".format(s1_1, s1_2, s2_1, s2_2)
+        sout = "          s2_1: {0} s2_2: {1}".format(s2_1, s2_2)
         log.info( sout )
 
     log.info( "TOTAL" )
-    sout = "s1_1: {0} s1_2: {1} s2_1: {2} s2_2: {3}".format(sum_s1_1, sum_s1_2, sum_s2_1, sum_s2_2)
+    sout = "          s2_1: {0} s2_2: {1}".format(sum_s2_1, sum_s2_2)
     
     log.info( sout )
     
