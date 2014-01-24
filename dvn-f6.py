@@ -31,8 +31,8 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-MIS_HOST = "fb.ctmed.ru"
-MIS_DB   = "DBMIS"
+MIS_HOST = "fb2.ctmed.ru"
+MIS_DB   = "DVN4"
 
 f_t            = "1_t.xls"
 RVT2DO_PATH    = "./RVT2DO"
@@ -171,7 +171,7 @@ def pfile(f_in, f_out):
 	    sout = " {0} people_id: {1}".format(numb_in, people_id)
 	    log.info(sout)
 	
-	if not code in (54, 57): continue
+	if not code in (53, 54, 57): continue
 
 	s_sqlt = """SELECT clinical_checkup_id
 	FROM clinical_checkups
