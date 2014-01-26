@@ -143,4 +143,41 @@ def get_people(cursor, lname, fname, mname, birthday):
         r_msg = 'Ошибка запроса данных из DBMIS: {0} {1}'.format(sys.stderr, e)
         log.error( r_msg )
         return None
+
+def find_registry(people, p_arr):
+    lname    = people.lname
+    fname    = people.fname
+    mname    = people.mname
+    birthday = people.birthday
+    u_lname  = lname.upper()
+    u_fname  = fname.upper()
+    if mname is None:
+        u_mname  = mname
+    else:
+        u_mname  = mname.upper()
+        
+    for p_dbf in p_arr:
+        if (u_lname == p_dbf.lname) and (u_fname == p_dbf.fname) and (u_mname == p_dbf.mname) and (birthday == p_dbf.birthday):
+            return p_dbf
+        
+    return None
+
+def get_patients(db, clinic_id):
+#
+# get patients (people's list) for the clinic
+#
+    s_sql = SQLT_PEOPLE.format(clinic_id)
+    
+    
+    try:
+        cursor = db.con.cursor()
+        cursor.execute(s_sql)
+        results = cursor.fetchall()
+    except Exception, e:
+        r_msg = 'Ошибка запроса данных из DBMIS: {0} {1}'.format(sys.stderr, e)
+        log.error( r_msg )
+        results = None
+    
+    return results
+    
     
