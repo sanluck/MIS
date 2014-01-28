@@ -11,7 +11,10 @@ p.lname, p.fname, p.mname, p.birthday,
 p.p_payment_type_id_fk, p.medical_insurance_region_id_fk, p.insorg_id,
 p.social_status_id_fk, p.territory_id_fk,
 p.addr_jure_region_code, p.addr_jure_area_code, p.addr_jure_area_name,
-p.addr_jure_town_code, p.addr_jure_town_name
+p.addr_jure_town_code, p.addr_jure_town_name,
+p.birthplace,
+p.document_type_id_fk, p.document_series, p.document_number,
+p.citizenship
 FROM peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
@@ -67,6 +70,12 @@ class PEOPLE:
         self.addr_jure_town_name = None
         self.soato = None
         self.fio = None
+        self.birthplace = None
+        self.document_type_id_fk = None
+        self.document_series = None
+        self.document_number = None
+        self.citizenship = None
+        
     
     def initFromRec(self, rec):
         self.people_id = rec[0]
@@ -95,6 +104,21 @@ class PEOPLE:
             self.addr_jure_town_name = rec[14]
         else:
             self.addr_jure_town_name = rec[14].strip()
+
+        if rec[15] is None:
+            self.birthplace = rec[15]
+        else:
+            self.birthplace = rec[15].strip()
+
+        self.document_type_id_fk = rec[16]
+        if rec[17] is None:
+            self.document_series = None
+        else:
+            self.document_series = rec[17].strip()
+        self.document_number = rec[18]
+
+        self.citizenship = rec[19]
+
     
     def initFromDBF(self, rec):
         self.people_id = rec.number
@@ -108,6 +132,19 @@ class PEOPLE:
         self.insorg_id = rec.kod_smo
         self.soato = rec.soato
         self.fio = self.lname + self.fname + self.mname
+        if rec.mrod is None:
+            self.birthplace = None
+        else:
+            self.birthplace = rec.mrod.strip()
+        
+        self.document_type_id_fk = rec.c_doc
+        if rec.s_doc is None:
+            self.document_series = None
+        else:
+            self.document_series = rec.s_doc.strip()
+            
+        self.document_number = rec.n_doc
+        
     
 def get_registry(table_name):
     import dbf

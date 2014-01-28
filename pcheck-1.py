@@ -48,6 +48,7 @@ s_sqlt4 = """UPDATE peoples
 SET social_status_id_fk = ?
 WHERE people_id = ?"""
 
+
 # territory_id_fk, addr_jure_region_code, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name
 kladr = {}
 kladr[132] = [u"1101202000", 22, 2200300000000, u"Алтайский р-н", None, None] # Алтайская ЦРБ
@@ -69,6 +70,30 @@ addr_jure_area_code = ?,
 addr_jure_area_name = ?, 
 addr_jure_town_code = ?,
 addr_jure_town_name = ?
+WHERE people_id = ?"""
+
+BIRTHPLACE = u"Алтайский край"
+
+s_sqlt7 = """UPDATE peoples
+SET birthplace = ?
+WHERE people_id = ?"""
+
+s_sqlt8 = """UPDATE peoples
+SET 
+document_type_id_fk = ?,
+document_series = ?,
+document_number = ?
+WHERE people_id = ?"""
+
+s_sqlt80 = """UPDATE peoples
+SET 
+document_series = ?
+WHERE people_id = ?"""
+
+CITIZENSHIP = u"643"
+
+s_sqlt9 = """UPDATE peoples
+SET citizenship = ?
 WHERE people_id = ?"""
 
 if __name__ == "__main__":
@@ -118,7 +143,7 @@ if __name__ == "__main__":
     
     results = get_patients(dbc, CLINIC_ID)
     if results is None:
-        r_sount = 0
+        r_count = 0
     else:
         r_count = len(results)
 
@@ -146,16 +171,33 @@ if __name__ == "__main__":
         
         if p_dbf is not None:
             countf += 1
-            kod_smo = p_dbf.insorg_id
-            soato   = p_dbf.soato
+            kod_smo    = p_dbf.insorg_id
+            soato      = p_dbf.soato
+            birthplace = p_dbf.birthplace
+
+            document_type_id_fk = p_dbf.document_type_id_fk
+            document_series     = p_dbf.document_series
+            document_number     = p_dbf.document_number
+            
+            if (document_type_id_fk == 14) and (document_series is not None):
+                if len(document_series) == 4:
+                    document_series = document_series[:2] + " " + document_series[2:]
+
             
             if counta % STEP == 0: 
                 sout = "{0} {1} {2}".format(counta, people_id, p_dbf.people_id)
                 log.info( sout )
                 
         elif counta % STEP == 0: 
-            kod_smo = None
-            soato   = None
+            kod_smo    = None
+            soato      = None
+            birthplace = BIRTHPLACE
+
+            document_type_id_fk = None
+            document_series     = None
+            document_number     = None
+
+
             sout = "{0} {1} 'None'".format(counta, people_id)
             log.info( sout )            
 
@@ -201,6 +243,25 @@ if __name__ == "__main__":
         # territory_id_fk, addr_jure_region_code, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name
         if people.territory_id_fk is None:
             curw.execute(s_sqlt56,(territory_id_fk, addr_jure_region_code, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name, people_id))
+
+        # birthplace
+        if (people.birthplace is None) and (birthplace is not None):
+            
+            curw.execute(s_sqlt7,(birthplace, people_id))
+
+        # document
+        if (people.document_type_id_fk is None) and (document_type_id_fk is not None):
+            curw.execute(s_sqlt8,(document_type_id_fk, document_series, document_number, people_id))
+        elif (people.document_type_id_fk == 14) and (people.document_series is not None):
+            if len(people.document_series) == 4:
+                document_series = people.document_series[:2] + " " + people.document_series[2:]
+                curw.execute(s_sqlt80,(document_series, people_id))
+
+        # citizenship
+        if (people.citizenship is None):
+            
+            curw.execute(s_sqlt9,(CITIZENSHIP, people_id))
+
             
         conw.commit()
     
