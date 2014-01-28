@@ -125,7 +125,7 @@ if __name__ == "__main__":
     sout = "Totally for {0} peoples date_beg {1} has been assigned".format(countu, DATE_BEG)
     log.info( sout )    
 
-    sout = "Totally for {0} peoples motive_attach_beg_id_fk {1} has been assigned".format(countu, MOTIVE_ATT)
+    sout = "Totally for {0} peoples motive_attach_beg_id_fk {1} has been assigned".format(countu1, MOTIVE_ATT)
     log.info( sout )    
 
     localtime = time.asctime( time.localtime(time.time()) )
