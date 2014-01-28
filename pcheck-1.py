@@ -62,10 +62,25 @@ kladr[117] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск г"] # 
 kladr[156] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск г"] # Бийская ГБ-3
 kladr[138] = [u"1101405000", 22, None, None, 2200000400000, u"Бийск г"] # Бийская ГБ-4
 
+s_sqlt50 = """UPDATE peoples
+SET addr_jure_region_code = ?
+WHERE people_id = ?"""
+
+s_sqlt51 = """UPDATE peoples
+SET 
+addr_jure_area_code = ?, 
+addr_jure_area_name = ?
+WHERE people_id = ?"""
+
+s_sqlt52 = """UPDATE peoples
+SET 
+addr_jure_town_code = ?,
+addr_jure_town_name = ?
+WHERE people_id = ?"""
+
 s_sqlt56 = """UPDATE peoples
 SET 
 territory_id_fk = ?,
-addr_jure_region_code = ?,
 addr_jure_area_code = ?, 
 addr_jure_area_name = ?, 
 addr_jure_town_code = ?,
@@ -240,9 +255,19 @@ if __name__ == "__main__":
             
             curw.execute(s_sqlt4,(ss_id, people_id))
             
+        # addr_jure_region_code
+        if people.addr_jure_region_code is None:
+            curw.execute(s_sqlt50,(addr_jure_region_code, people_id))
+            
         # territory_id_fk, addr_jure_region_code, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name
         if people.territory_id_fk is None:
-            curw.execute(s_sqlt56,(territory_id_fk, addr_jure_region_code, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name, people_id))
+            curw.execute(s_sqlt56,(territory_id_fk, addr_jure_area_code, addr_jure_area_name, addr_jure_town_code, addr_jure_town_name, people_id))
+        # addr_jure_area_code, addr_jure_area_name
+        elif (people.addr_jure_area_code is None) and (addr_jure_area_code is not None):
+            curw.execute(s_sqlt51,(addr_jure_area_code, addr_jure_area_name, people_id))
+        # addr_jure_town_code, addr_jure_town_name
+        elif (people.addr_jure_town_code is None) and (addr_jure_town_code is not None):
+            curw.execute(s_sqlt52,(addr_jure_town_code, addr_jure_town_name, people_id))
 
         # birthplace
         if (people.birthplace is None) and (birthplace is not None):
