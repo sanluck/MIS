@@ -173,4 +173,7 @@ if __name__ == "__main__":
     
     dbc.close()
     dbcw.close()
+
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('Database Connections Closed  '+localtime)
     sys.exit(0)
