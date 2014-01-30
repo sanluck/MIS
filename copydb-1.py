@@ -24,10 +24,13 @@ CLINIC_ID = 22
 HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
-TABLE = "DATABASE_VERSION"
+TABLE  = "DATABASE_VERSION"
+s_sqld = "DELETE FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
+s_sqlc = "SELECT COUNT(*) FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
+s_sqls = "SELECT * FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 
-HOST2 = "fb2.ctmed.ru"
-DB2   = "DVN4"
+HOST2 = "fb.orthobarnaul.ru"
+DB2   = "DBMIS"
 
 class DB_REC:
     
@@ -91,7 +94,7 @@ if __name__ == "__main__":
         
     cur = dbc.con.cursor()
     
-    s_sql = "SELECT COUNT(*) FROM {0}".format(TABLE)
+    s_sql = s_sqlc
     
     try:
         cur.execute(s_sql)
@@ -123,12 +126,12 @@ if __name__ == "__main__":
         
     cur2 = dbc2.con.cursor()
 
-    s_sql2 = "DELETE FROM {0}".format(TABLE)
+    s_sql2 = s_sqld
     cur2.execute(s_sql2)
     dbc2.con.commit()
     
     # Retrieval using the "file-like" methods of BlobReader:
-    s_sql = "SELECT * FROM {0}".format(TABLE)
+    s_sql = s_sqls
     cur.execute(s_sql)
     cur.set_stream_blob('A') # Note the capital letter
     
