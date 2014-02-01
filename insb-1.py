@@ -163,7 +163,7 @@ def write_st(db, ar, upd = False):
 		f_oms_series = rec[0]
 		f_oms_number = rec[1]
 		f_enp        = rec[2]
-		f_mcod =     rec[3]
+		f_mcod       = rec[3]
 		
 		sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
 		log.info(sout)
