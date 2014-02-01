@@ -22,20 +22,21 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
-clist = [220011]
+clist = [220011, 220001, 220014]
 
 cid_list = [95,98,101,105,110,119,121,124,125,127,128,131,133,134,140,141,142,145,146,147,148,150,151,152,157,159,160,161,162,163,165,166,167,168,169,170,174,175,176,177,178,180,181,182,186,192,198,199,200,205,206,208,210,213,215,220,222,223,224,226,227,230,232,233,234,235,236,237,238,239,240,330,381]
 
 CLINIC_OGRN = u""
 
-FNAMEa = "AM{0}T22_14011.csv"
-FNAMEb = "BM{0}T22_14011.csv"
+FNAMEa = "AM{0}T22_14021.csv" # нет среди ответов фонда
+FNAMEb = "SM{0}T22_14021.csv" # в ТФОМС на внесение изменений
+FNAMEx = "SD{0}T22_14021.xls" # паценты с несколькими прикреплениями
 
-STEP = 100
+STEP = 1000
 DOC_TYPES = {1:u"1",
              2:u"2",
              3:u"3",
@@ -59,6 +60,37 @@ DOC_TYPES = {1:u"1",
 SKIP_OGRN  = True # Do not put OGRN into IBR
 
 CID_LIST   = False # Use cid_lis (list of clinic_id)
+
+MLIST      = True  # Use mis.mlist table (MySQL)
+
+def get_clist(db):
+    
+    s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
+    
+    cur = db.con.cursor()
+    cur.execute(s_sql)
+    result = cur.fetchall()
+    
+    ar = []
+    
+    for rec in result:
+	mcod = rec[0]
+	ar.append(mcod)
+	
+    return ar
+
+def register_cdone(db, clinic_id):
+    import datetime    
+
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+
+    s_sql = """UPDATE mlist
+    SET done = %s
+    WHERE clinic_id = %s;"""
+    
+    cur = db.con.cursor()
+    cur.execute(s_sql, (sdnow, clinic_id))
 
 def p1(patient, insorg):
     import datetime
@@ -170,7 +202,8 @@ def p1(patient, insorg):
     
     return u"|".join(res)
 
-def plist(dbc, mcod, rows):
+def plist(dbc, clinic_id, mcod, rows):
+    import xlwt
     from dbmysql_connect import DBMY
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
@@ -186,6 +219,18 @@ def plist(dbc, mcod, rows):
     FROM
     sm
     WHERE people_id = %s"""
+
+    cur = dbc.con.cursor()
+    
+    s_sql_ap = """SELECT 
+ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
+ca.clinic_id_fk
+FROM area_peoples ap
+LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
+LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null
+ORDER BY ap.date_beg DESC;"""
     
     
     p_obj = PatientInfo()
@@ -193,17 +238,33 @@ def plist(dbc, mcod, rows):
 
     fnamea = FNAMEa.format(mcod)
     fnameb = FNAMEb.format(mcod)
-    sout = "Output to files: {0} | {1}".format(fnamea, fnameb)
+    fnamex = FNAMEx.format(mcod)
+    sout = "Output to files: {0} | {1} | {2}".format(fnamea, fnameb, fnamex)
     log.info(sout)
 
     foa = open(fnamea, "wb")
     fob = open(fnameb, "wb")
+
+    wb = xlwt.Workbook(encoding='cp1251')
+    ws = wb.add_sheet('Patients')
     
-    count   = 0
-    count_e = 0
-    count_a = 0
-    count_b = 0
-    noicc   = 0
+    sout = u"clinic_id: {0}".format(clinic_id)
+    ws.write(0,0,sout)
+    ws.write(2,0,u"id")
+    ws.write(2,1,u"date_beg")
+    ws.write(2,2,u"motive")
+    ws.write(2,3,u"clinic_id")
+    
+    ws_row = 3
+    
+    
+    count    = 0
+    count_e  = 0
+    count_a  = 0
+    count_b  = 0
+    count_m  = 0
+    count_np = 0
+    noicc    = 0
     
     for row in rows:
         count += 1
@@ -245,26 +306,98 @@ def plist(dbc, mcod, rows):
 		count_e += 1
 	    else:
 		count_b += 1
-		sss = p1(p_obj, insorg) + "|\n"
-		ps = sss.encode('windows-1251')
 		
-		fob.write(ps)
+		cur.execute(s_sql_ap,(p_id, ))
+		recs_ap = cur.fetchall()
+		l_print = False
+		if len(recs_ap) == 1:
+		    sss = p1(p_obj, insorg) + "|\n"
+		    ps = sss.encode('windows-1251')
+		    l_print = True
+
+		else:
+		    count_m += 1
+		    for rec_ap in recs_ap:
+			area_people_id = rec_ap[0]
+			area_id_fk     = rec_ap[1]
+			date_beg       = rec_ap[2]
+			motive_attach  = rec_ap[3]
+			clinic_id_fk   = rec_ap[4]
+			sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
+			log.info( sout )
+			
+			ws_row += 1
+			ws.write(ws_row,0,p_id)
+			if date_beg is None:
+			    s_date_beg = u"None"
+			else:
+			    s_date_beg = u"%04d-%02d-%02d" % (date_beg.year, date_beg.month, date_beg.day)
+			ws.write(ws_row,1,s_date_beg)
+			ws.write(ws_row,2,motive_attach)
+			ws.write(ws_row,3,clinic_id_fk)
+			
+
+			
+			if (motive_attach == 2) and (clinic_id == clinic_id_fk) and (not l_print):
+			    sss = p1(p_obj, insorg) + "|\n"
+			    ps = sss.encode('windows-1251')
+			    l_print = True
+			    
+		
+		if l_print:
+		    fob.write(ps)
     
-		fob.flush()
-		os.fsync(fob.fileno())
+		    fob.flush()
+		    os.fsync(fob.fileno())
+		else:
+		    count_np += 1
 		
 
     foa.close()
     fob.close()
+    wb.save(fnamex)
 
-    dbmy.close()
-    
     sout = "Totally {0} of {1} patients have got mcod equal to TFOMS".format(count_e, count)
     log.info( sout )
     sout = "{0} patients have not been identified by TFOMS".format(count_a)
     log.info( sout )
     sout = "{0} patients have not got mcod equal to TFOMS".format(count_b)
     log.info( sout )
+    sout = "{0} patients have got few attachments".format(count_m)
+    log.info( sout )
+    sout = "{0} patients have not been printed out".format(count_np)
+    log.info( sout )
+
+    # write results into MySQL DB
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+    
+    s_sql = """SELECT id FROM iba WHERE clinic_id = %s;"""
+    curr.execute(s_sql,(clinic_id,))
+    rec = curr.fetchone()
+    if rec is None:
+	s_sql = """INSERT INTO iba
+	(clinic_id, mcod, done, count, count_e, count_a, count_m, count_np)
+	VALUES
+	(%s, %s, %s, %s, %s, %s, %s, %s);"""
+	curr.execute(s_sql,(clinic_id, mcod, sdnow, count, count_e, count_a, count_m, count_np, ))
+	dbmy.con.commit()
+    else:
+	_id = rec[0]
+	s_sql = """UPDATE iba
+	SET 
+	done = %s,
+	count = %s,
+	count_e = %s,
+	count_a = %s,
+	count_m = %s,
+	count_np  = %s
+	WHERE id = %s;"""
+	curr.execute(s_sql,(sdnow, count, count_e, count_a, count_m, count_np, _id, ))
+	dbmy.con.commit()
+
+    dbmy.close()
+
 
 
 def pclinic(clinic_id, mcod):
@@ -300,7 +433,7 @@ AND ap.date_end is Null;"""
     cursor.execute(s_sql)
     results = cursor.fetchall()
     
-    plist(dbc, mcod, results)
+    plist(dbc, clinic_id, mcod, results)
     
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
@@ -311,7 +444,9 @@ if __name__ == "__main__":
     
     import os    
     import datetime
+    from dbmysql_connect import DBMY
 
+    log.info("======================= INSB-2 ===========================================")
     
     if CID_LIST:
 	for clinic_id in cid_list:
@@ -327,6 +462,12 @@ if __name__ == "__main__":
 	    
 	    pclinic(clinic_id, mcod)
     else:
+	if MLIST: 
+	    dbmy = DBMY()
+	    clist = get_clist(dbmy)
+	    mcount = len(clist)
+	    sout = "Totally {0} MO to be processed".format(mcount)
+	    log.info( sout )
 	for mcod in clist:
 	    try:
 		mo = modb[mcod]
@@ -339,6 +480,10 @@ if __name__ == "__main__":
 		clinic_id = 0
 		continue
 	    
-	    pclinic(clinic_id, mcod)    
+	    pclinic(clinic_id, mcod)
+	    if MLIST:
+		register_cdone(dbmy, clinic_id)
 	
+    if MLIST:
+	dbmy.close()
     sys.exit(0)
