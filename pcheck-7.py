@@ -22,7 +22,7 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 CLINIC_ID  = 123

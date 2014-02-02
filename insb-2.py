@@ -338,7 +338,7 @@ ORDER BY ap.date_beg DESC;"""
 			
 
 			
-			if (motive_attach == 2) and (clinic_id == clinic_id_fk) and (not l_print):
+			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print):
 			    sss = p1(p_obj, insorg) + "|\n"
 			    ps = sss.encode('windows-1251')
 			    l_print = True
