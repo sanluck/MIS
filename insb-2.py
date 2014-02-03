@@ -33,31 +33,10 @@ cid_list = [95,98,101,105,110,119,121,124,125,127,128,131,133,134,140,141,142,14
 CLINIC_OGRN = u""
 
 FNAMEa = "AM{0}T22_14021.csv" # нет среди ответов фонда
-FNAMEb = "SM{0}T22_14021.csv" # в ТФОМС на внесение изменений
+FNAMEb = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
 FNAMEx = "SD{0}T22_14021.xls" # паценты с несколькими прикреплениями
 
 STEP = 1000
-DOC_TYPES = {1:u"1",
-             2:u"2",
-             3:u"3",
-             4:u"4",
-             5:u"5",
-             6:u"6",
-             7:u"7",
-             8:u"8",
-             9:u"9",
-             10:u"10",
-             11:u"11",
-             12:u"12",
-             13:u"13",
-             14:u"14",
-             15:u"15",
-             16:u"16",
-             17:u"17",
-             18:u"18"
-             }
-
-SKIP_OGRN  = True # Do not put OGRN into IBR
 
 CID_LIST   = False # Use cid_lis (list of clinic_id)
 
@@ -92,120 +71,11 @@ def register_cdone(db, clinic_id):
     cur = db.con.cursor()
     cur.execute(s_sql, (sdnow, clinic_id))
 
-def p1(patient, insorg):
-    import datetime
-    now = datetime.datetime.now()
-    s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)    
-    
-    res = []
-    res.append( u"{0}".format(patient.people_id) )
-    res.append( u"{0}".format(patient.lname.strip().upper()) )
-    res.append( u"{0}".format(patient.fname.strip().upper()) )
-    if patient.mname == None:
-        res.append(u"")
-    else:
-        res.append( u"{0}".format(patient.mname.strip().upper()) )
-    dr = patient.birthday
-    sdr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
-    res.append(sdr)
-    sex = patient.sex
-    if sex == u"М":
-        res.append(u"1")
-    else:
-        res.append(u"2")
-    doc_type_id = patient.document_type_id_fk
-    if doc_type_id == None:
-        sdt = u"14"
-    elif DOC_TYPES.has_key(doc_type_id):
-        sdt = DOC_TYPES[doc_type_id]
-    else:
-        sdt = u""
-    res.append(sdt)
-    if patient.document_series == None:
-        ds = u""
-    else:
-        ds = patient.document_series
-    res.append(ds)
-    if patient.document_number == None:
-        dn = u""
-    else:
-        dn = patient.document_number
-    res.append(dn)
-
-    if patient.insurance_certificate == None:
-        SNILS = u""
-    else:
-        SNILS = patient.insurance_certificate
-    res.append(SNILS)
-    
-    ogrn = insorg.ogrn
-    if ogrn == None or ogrn == 0 or SKIP_OGRN:
-        insorg_ogrn = u""
-    else:
-        insorg_ogrn = u"{0}".format(ogrn)
-    res.append(insorg_ogrn)
-
-    okato = insorg.okato
-    if okato == None or okato == 0 or SKIP_OGRN:
-        insorg_okato = u""
-    else:
-        insorg_okato = u"{0}".format(ogrn)
-    res.append(insorg_okato)
-
-    # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
-    sss = patient.medical_insurance_series
-    if sss == None:
-        s_mis = u""
-    else:
-        s_mis = u"{0}".format(sss)
-
-    sss = patient.medical_insurance_number
-    if sss == None:
-        s_min = u""
-    else:
-        s_min = u"{0}".format(sss)
-    
-    enp = u""
-    if len(s_mis) == 0:
-        tdpfs = u"3" # Полис ОМС единого образца
-        enp = s_min
-        smin = u""
-    elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
-        tdpfs = u"2" # Временное свидетельство, ....
-    else:
-        tdpfs = u"1" # Полис ОМС старого образца
-    
-    
-    # ENP
-    if SKIP_OGRN:
-        if len(enp) > 0:
-            s_min = enp
-            enp = u""
-            
-    res.append(enp)
-    
-    res.append(tdpfs)
-    
-    res.append(s_mis)
-    
-    res.append(s_min)
-    
-    # medical care start
-    res.append(s_now)
-    # medical care end
-    res.append(s_now)
-    
-    # MO  OGRN
-    res.append(CLINIC_OGRN)
-    # HEALTHCARE COST
-    res.append(u"")
-    
-    return u"|".join(res)
 
 def plist(dbc, clinic_id, mcod, rows):
     import xlwt
     from dbmysql_connect import DBMY
-    from PatientInfo import PatientInfo
+    from PatientInfo import PatientInfo, p1, p2
     from insorglist import InsorgInfoList
     
     import os    
@@ -237,7 +107,8 @@ ORDER BY ap.date_beg DESC;"""
     insorgs = InsorgInfoList()
 
     fnamea = FNAMEa.format(mcod)
-    fnameb = FNAMEb.format(mcod)
+    stime  = time.strftime("%Y%m%d")
+    fnameb = FNAMEb.format(mcod, stime)
     fnamex = FNAMEx.format(mcod)
     sout = "Output to files: {0} | {1} | {2}".format(fnamea, fnameb, fnamex)
     log.info(sout)
@@ -311,7 +182,7 @@ ORDER BY ap.date_beg DESC;"""
 		recs_ap = cur.fetchall()
 		l_print = False
 		if len(recs_ap) == 1:
-		    sss = p1(p_obj, insorg) + "|\n"
+		    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
 		    ps = sss.encode('windows-1251')
 		    l_print = True
 
@@ -339,7 +210,7 @@ ORDER BY ap.date_beg DESC;"""
 
 			
 			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print):
-			    sss = p1(p_obj, insorg) + "|\n"
+			    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
 			    ps = sss.encode('windows-1251')
 			    l_print = True
 			    
@@ -416,8 +287,6 @@ def pclinic(clinic_id, mcod):
 
     cogrn = CLINIC_OGRN.encode('utf-8')
     cname = dbc.name.encode('utf-8')
-    
-    if SKIP_OGRN: CLINIC_OGRN = u""
     
     sout = "clinic_id: {0} cod_mo: {1} clinic_name: {2} clinic_ogrn: {3}".format(clinic_id, mcod, cname, cogrn)
     log.info(sout)
