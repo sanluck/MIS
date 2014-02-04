@@ -29,8 +29,8 @@ s_sqld = "DELETE FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 s_sqlc = "SELECT COUNT(*) FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 s_sqls = "SELECT * FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 
-HOST2 = "fb.orthobarnaul.ru"
-DB2   = "DBMIS"
+HOST2 = "fb.ctmed.ru"
+DB2   = "LBMIS"
 
 class DB_REC:
     
