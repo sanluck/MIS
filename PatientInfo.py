@@ -626,7 +626,10 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
         misn = s_min
     else:
         tdpfs = u"С" # Полис ОМС старого образца
-        misn  = s_mis + u" № " + s_min
+        if s_min is None:
+            misn  = s_mis
+        else:
+            misn  = s_mis + u" № " + s_min
         
     res = []
     res.append(tdpfs)
