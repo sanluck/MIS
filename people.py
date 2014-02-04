@@ -145,6 +145,28 @@ class PEOPLE:
             
         self.document_number = rec.n_doc
         
+
+class SM_PEOPLE:
+    def __init__(self):
+        self.people_id = None
+        self.lname = None
+        self.fname = None
+        self.mname = None
+        self.birthday         = None
+	self.sex              = None
+        self.document_type_id = None
+        self.document_series  = None
+        self.document_number  = None
+	self.snils            = None
+	self.smo_ogrn         = None
+	self.ocato            = None
+	self.enp              = None
+	
+	self.dpfs             = None
+	self.s_oms            = None
+	self.n_oms            = None
+        
+
     
 def get_registry(table_name):
     import dbf
