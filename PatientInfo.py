@@ -590,11 +590,17 @@ def p1(patient, insorg, CLINIC_OGRN = u""):
 
 def p2join(ar_in):
     str_r = u''
+    nnn = len(ar_in)
+    i = 0
     for sss in ar_in:
+        i += 1
         if sss is None:
-            str_r += u';'
+            if i < nnn: str_r += u';'
         else:
-            str_r += u'"' + sss + u'";'
+            if  i < nnn:
+                str_r += u'"' + sss + u'";'
+            else:
+                str_r += u'"' + sss + u'"'
     return str_r
 
 def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
@@ -632,23 +638,32 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
             misn  = s_mis + u" № " + s_min
         
     res = []
+    # 1
     res.append(tdpfs)
+    # 2
     res.append(misn)
+    # 3
     res.append(enp)
     
+    # 4
     res.append( u"{0}".format(patient.lname.strip().upper()) )
+    # 5
     res.append( u"{0}".format(patient.fname.strip().upper()) )
+    # 6
     if patient.mname == None:
         res.append(None)
     else:
         res.append( u"{0}".format(patient.mname.strip().upper()) )
 
+    # 7
     dr = patient.birthday
     sdr = u"%04d%02d%02d" % (dr.year, dr.month, dr.day)
     res.append(sdr)
 
+    # 8
     res.append(patient.birthplace)
 
+    # 9
     doc_type_id = patient.document_type_id_fk
     if doc_type_id is None:
         sdt = u"14"
@@ -657,16 +672,19 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
     else:
         sdt = None
     res.append(sdt)
+
+    # 10
     if patient.document_series is None:
-        ds = None
+        dsn = None
     else:
-        ds = patient.document_series
-    res.append(ds)
-    if patient.document_number is None:
-        dn = None
-    else:
-        dn = patient.document_number
-    res.append(dn)
+        dsn = patient.document_series
+
+    if patient.document_number is not None:
+        if dsn is None:
+            dsn = patient.document_number
+        else:
+            dsn += u" № " + patient.document_number
+    res.append(dsn)
 
     if patient.document_when is None:
         res.append(None)
