@@ -661,7 +661,10 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
     res.append(sdr)
 
     # 8
-    res.append(patient.birthplace)
+    if patient.birthplace is None:
+        res.append(None)
+    else:
+        res.append( u"{0}".format(patient.birthplace.strip().upper()) )
 
     # 9
     doc_type_id = patient.document_type_id_fk
