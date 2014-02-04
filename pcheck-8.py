@@ -127,7 +127,10 @@ def get_sm(fname):
 	sm_p.birthday         = bd
 	sm_p.sex              = sex
 	sm_p.document_type_id = doc_type_id
-	sm_p.document_series  = d_series(document_series)
+	if doc_type_id == '14':
+	    sm_p.document_series  = d_series(document_series)
+	else:
+	    sm_p.document_series  = d_number(document_series)
 	sm_p.document_number  = d_number(document_number)
 	sm_p.snils            = snils
 	sm_p.smo_ogrn         = smo_ogrn
