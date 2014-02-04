@@ -199,7 +199,8 @@ def check_sm(clinic_id, mcod, sm_ar):
         if counta % STEP == 0:
 	    if d_series is not None:
 		d_sss = d_series.encode('utf-8')
-	    else d_sss = 'None'
+	    else:
+		d_sss = 'None'
             sout = "{0} {1} {2} {3} {4} {5} {6}".format(counta, lname, fname, mname, d_type_id, d_sss, d_number)
             log.info( sout )
 	    
