@@ -4,6 +4,8 @@
 import sys
 import logging
 
+STEP = 1000
+
 log = logging.getLogger(__name__)
 
 SQLT_PEOPLE = """SELECT DISTINCT p.people_id,
@@ -165,8 +167,8 @@ class SM_PEOPLE:
 	self.dpfs             = None
 	self.s_oms            = None
 	self.n_oms            = None
-        
-
+	
+	self.mcod             = None
     
 def get_registry(table_name):
     import dbf
@@ -239,4 +241,173 @@ def get_patients(db, clinic_id):
     
     return results
     
+def put_sm2mira(db, ar_sm, upd = False):
     
+    s_sqlf = """SELECT oms_series, oms_number, enp, mcod
+    FROM
+    mira$peoples
+    WHERE people_id = %s"""
+
+    s_sqli = """INSERT INTO
+    mira$peoples
+    (people_id, lname, fname, mname, birthday, sex,
+    document_type_id_fk, document_series, documnet_number,
+    snils,
+    dpfs, oms_series, oms_number, enp,
+    ocato, mcod)
+    VALUES 
+    (%s, %s, %s, %s, %s, %s,
+    %s, %s, %s,
+    %s,
+    %s, %s, %s, %s,
+    %s, %s);"""
+
+
+    s_sqlu = """UPDATE
+    mira$peoples
+    SET
+    lname = %s,
+    fname = %s,
+    mname = %s,
+    birthday = %s,
+    sex = %s,
+    document_type_id_fk = %s,
+    document_series = %s,
+    documnet_number = %s,
+    snils = %s,
+    dpfs = %s, 
+    oms_series = %s, 
+    oms_number = %s,
+    enp = %s?,
+    ocato = %s,
+    mcod = %s
+    WHERE 
+    people_id = %s;"""
+
+    
+    curr = db.con.cursor()
+    curw = db.con.cursor()
+    count_a = 0
+    count_i = 0
+    count_u = 0
+    
+    for sm in ar_sm:
+	count_a += 1
+
+	people_id        = sm.people_id
+	lname            = sm.lname
+	fname            = sm.fname
+	mname            = sm.mname
+	birthday         = sm.birthday
+	sex              = sm.sex
+	document_type_id = sm.document_type_id
+	document_series  = sm.document_series
+	document_number  = sm.document_number
+	snils            = sm.snils
+	smo_ogrn         = sm.smo_ogrn
+	ocato            = sm.ocato
+	enp              = sm.enp
+	
+	dpfs             = sm.dpfs
+	oms_series       = sm.s_oms
+	oms_number       = sm.n_oms
+	
+	mcod             = sm.mcod
+
+	if count_a % STEP == 0:
+	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
+	    log.info(sout)
+	
+	curr.execute(s_sqlf,(people_id,))
+	rec = curr.fetchone()
+
+	if rec is None:
+	    try:
+		curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, documnet_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod))
+		db.con.commit()	
+		count_i += 1
+	    except Exception, e:
+		sout = "Can't insert into sm table. UID: {0}".format(people_id)
+		log.error(sout)
+		sout = "{0}".format(e)
+		log.error(sout)
+	else:
+	    if upd:
+		try:
+		    curw.execute(s_sqlu,(ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod, people_id,))
+		    db.con.commit()	
+		    count_u += 1
+		except Exception, e:
+		    sout = "Can't update sm table. UID: {0}".format(people_id)
+		    log.error(sout)
+		    sout = "{0}".format(e)
+		    log.error(sout)
+	    if PRINT_FOUND:
+		f_oms_series = rec[0]
+		f_oms_number = rec[1]
+		f_enp        = rec[2]
+		f_mcod       = rec[3]
+		
+		sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
+		log.info(sout)
+		
+	    
+    return count_a, count_i, count_u
+    
+    
+    import sys
+
+    s_sqlt = """INSERT INTO
+    pr
+    (f_id,
+    kat, kod_lpu, dn, dk, 
+    fam, im, ot, dr, w,
+    kpl, vpolis, spolis, npolis, str_pens,
+    ds, uet, profil, data_p, spec, kod_i,
+    f_doctor, perv_povt, cel_posobr)
+    VALUES
+    (%s, 
+    %s, %s, %s, %s,
+    %s, %s, %s, %s, %s,
+    %s, %s, %s, %s, %s,
+    %s, %s, %s, %s, %s, %s,
+    %s, %s, %s);"""
+
+    cursor = db.con.cursor()
+    
+    for pr in r_arr:
+        
+        if pr.fam is None: 
+            fam = u""
+        else:
+            fam = pr.fam.strip()
+
+        if pr.im is None: 
+            im = u""
+        else:
+            im = pr.im.strip()
+
+        if pr.ot is None: 
+            ot = u""
+        else:
+            ot = pr.ot.strip()
+
+        try:
+            cursor.execute(s_sqlt,(f_id, 
+                             pr.kat, pr.kod_lpu, pr.dn, pr.dk, 
+                             fam, im, ot, pr.dr, pr.w,
+                             pr.kpl, pr.vpolis, pr.spolis, pr.npolis, pr.str_pens,
+                             pr.ds, pr.uet, pr.profil, pr.data_p, pr.spec, pr.kod_i,
+                             pr.f_doctor, pr.perv_povt, pr.cel_posobr,))
+        except Exception, e:
+            sout = "Can't insert into pr table"
+            log.error(sout)
+            sout = "{0}".format(e)
+            log.error(sout)
+            return False
+        
+        db.con.commit()
+        
+    
+    return True
+            
