@@ -76,11 +76,23 @@ def d_number(document_number):
     
     if (document_number is not None) and (document_number.find('I') >= 0):
 	a_ar = document_number.split('I')
-	sss  = ''.join(a_ar)
+	n = len(a_ar)
+	b_ar = []
+	i = 0
+	while i < n:
+	    a = a_ar[i]
+	    i += 1
+	    if a == '':
+		if (i < n) and (a_ar[i] == ''):
+		    i += 2
+		    b_ar.append('I')
+	    else:
+		b_ar.append(a)
+		
+	sss  = ''.join(b_ar)
 	return sss
     else:
 	return document_number
-
 
 def get_sm(fname):
     from datetime import datetime
