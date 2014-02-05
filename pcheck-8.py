@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # pcheck-8.py - поиск записей в таблице peoples
-#               для пациентов из файла SM
+#               для пациентов клиники из таблицы mis.mira$peoples
 #               с последующим заданием документа и полиса ОМС
 #
 
@@ -25,7 +25,13 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-STEP = 100
+clist = [220124]
+
+cid_list = [95,98]
+
+STEP = 1000
+
+CID_LIST   = False # Use cid_lis (list of clinic_id)
 
 s_sqlt1 = """UPDATE peoples
 SET 
@@ -40,130 +46,38 @@ medical_insurance_series = ?,
 medical_insurance_number = ?
 WHERE people_id = ?"""
 
-SM2DO_PATH        = "./SM2DO"
-SMDONE_PATH       = "./SMDONE"
+s_sqlt2 = """UPDATE peoples
+SET 
+medical_insurance_series = ?,
+medical_insurance_number = ?,
+is_new_policy = ?
+WHERE people_id = ?"""
 
-CHECK_REGISTERED  = False
-REGISTER_FILE     = False
-MOVE_FILE         = False
 
-
-def get_fnames(path = SM2DO_PATH, file_ext = '.csv'):
+s_sqlt3 = """UPDATE mira$peoples
+SET id_done = 1
+WHERE people_id = %s;"""
     
-    import os    
-    
-    fnames = []
-    for subdir, dirs, files in os.walk(path):
-        for fname in files:
-            if fname.find(file_ext) > 1:
-                log.info(fname)
-                fnames.append(fname)
-    
-    return fnames    
-
-def d_series(document_series):
-    
-    if (document_series is not None) and (document_series.find('I') >= 0):
-	a_ar = document_series.split('I')
-	sss  = ''.join(a_ar)
-	if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
-	
-	return sss
-    else:
-	return document_series
-
-def d_number(document_number):
-    
-    if (document_number is not None) and (document_number.find('I') >= 0):
-	a_ar = document_number.split('I')
-	n = len(a_ar)
-	b_ar = []
-	i = 0
-	while i < n:
-	    a = a_ar[i]
-	    i += 1
-	    if a == '':
-		if (i < n) and (a_ar[i] == ''):
-		    i += 2
-		    b_ar.append('I')
-	    else:
-		b_ar.append(a)
-		
-	sss  = ''.join(b_ar)
-	return sss
-    else:
-	return document_number
-
-def get_sm(fname):
-    from datetime import datetime
-    from people import SM_PEOPLE
-    
-    ins = open( fname, "r" )
-
-    array = []
-    for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	people_id  = int(a_line[0])
-	lname = a_line[1]
-	fname = a_line[2]
-	mname = a_line[3]
-	s_bd  = a_line[4]
-	
-	try:
-	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
-	except:
-	    bd = None
-	
-	sex   = int(a_line[5])
-	
-	doc_type_id     = a_line[6]
-	document_series = a_line[7]
-	document_number = a_line[8]
-	snils           = a_line[9]
-	
-	smo_ogrn        = a_line[10]
-	ocato           = a_line[11]
-	enp             = a_line[12]
-	
-	dpfs            = a_line[13]
-	s_oms           = a_line[14]
-	n_oms           = a_line[15]
-	
-	sm_p = SM_PEOPLE()
-	
-	sm_p.people_id = people_id
-	sm_p.lname = lname
-	sm_p.fname = fname
-	sm_p.mname = mname
-	sm_p.birthday         = bd
-	sm_p.sex              = sex
-	sm_p.document_type_id = doc_type_id
-	if doc_type_id == '14':
-	    sm_p.document_series  = d_series(document_series)
-	else:
-	    sm_p.document_series  = d_number(document_series)
-	sm_p.document_number  = d_number(document_number)
-	sm_p.snils            = snils
-	sm_p.smo_ogrn         = smo_ogrn
-	sm_p.ocato            = ocato
-	sm_p.enp              = enp
-	
-	sm_p.dpfs             = dpfs
-	sm_p.s_oms            = s_oms
-	sm_p.n_oms            = n_oms
-	
-	array.append( sm_p )
-    
-    ins.close()    
-    
-    return array
-
-def check_sm(clinic_id, mcod, sm_ar):
-
-    from dbmis_connect2 import DBMIS
+def pclinic(clinic_id, mcod):
+    from dbmysql_connect import DBMY
+    from people import get_mira_peoples
     from people import PEOPLE, get_people
+    from dbmis_connect2 import DBMIS
+    import time
 
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('------------------------------------------------------------')
+    log.info('Update OMS documents data. Start {0}'.format(localtime))
+
+    dbmy = DBMY()
+    sm_ar = get_mira_peoples(dbmy, mcod)
+    
+    if sm_ar is None:
+	sout = "There are no data for mcod = {0}".format(mcod)
+	log.info( sout )
+	dbmy.close()
+	return
+    
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     if dbc.ogrn == None:
         CLINIC_OGRN = u""
@@ -175,6 +89,12 @@ def check_sm(clinic_id, mcod, sm_ar):
     
     sout = "clinic_id: {0} cod_mo: {1} clinic_name: {2} clinic_ogrn: {3}".format(clinic_id, mcod, cname, cogrn)
     log.info(sout)
+
+    l_sm  = len(sm_ar)
+    sout = "{0} peoples to be processed".format(l_sm)
+    log.info( sout )
+
+    curm = dbmy.con.cursor()
     
     curr = dbc.con.cursor()
     curw = dbc.con.cursor()
@@ -182,15 +102,17 @@ def check_sm(clinic_id, mcod, sm_ar):
     counta   = 0
     
     count_nf = 0
-    
-    for sm_p in sm_ar:
-	
+
+
+    for sm in sm_ar:
+
 	counta  += 1
 	
-        u_lname  = sm_p.lname
-        u_fname  = sm_p.fname
-        u_mname  = sm_p.mname
-        birthday = sm_p.birthday
+	mp_id   = sm.people_id
+        u_lname  = sm.lname
+        u_fname  = sm.fname
+        u_mname  = sm.mname
+        birthday = sm.birthday
 
         lname = u_lname.encode('utf-8')
         fname = u_fname.encode('utf-8')
@@ -199,21 +121,23 @@ def check_sm(clinic_id, mcod, sm_ar):
         else:
             mname = u_mname.encode('utf-8')
 
-	d_type_id = sm_p.document_type_id
-	d_series  = sm_p.document_series
-	d_number  = sm_p.document_number
+	d_type_id = sm.document_type_id
+	d_series  = sm.document_series
+	d_number  = sm.document_number
 
-	dpfs      = sm_p.dpfs
-	s_oms     = sm_p.s_oms
-	n_oms     = sm_p.n_oms
+	dpfs      = sm.dpfs
+	s_oms     = sm.s_oms
+	n_oms     = sm.n_oms
 
 
         if counta % STEP == 0:
+	    ss_oms = s_oms.encode('utf-8')
+	    nn_oms = n_oms.encode('utf-8')
 	    if d_series is not None:
 		d_sss = d_series.encode('utf-8')
 	    else:
 		d_sss = 'None'
-            sout = "{0} {1} {2} {3} {4} {5} {6}".format(counta, lname, fname, mname, d_type_id, d_sss, d_number)
+            sout = "{0} {1} {2} {3} {4} {5} {6} {7}".format(counta, lname, fname, mname, birthday, dpfs, ss_oms, nn_oms)
             log.info( sout )
 	    
         
@@ -226,95 +150,78 @@ def check_sm(clinic_id, mcod, sm_ar):
             for pf in pf_arr:
                 people_id = pf[0]
 		
-		if (d_type_id is not None) and (d_number is not None):
-		    curw.execute(s_sqlt1, (d_type_id, d_series, d_number, people_id))
-		    dbc.con.commit()
-
 		if (dpfs is not None) and (n_oms is not None):
-		    curw.execute(s_sqlt2, (dpfs, s_oms, n_oms, people_id))
-		    dbc.con.commit()
-
+		    if dpfs in (2,3):
+			is_new_policy = 1
+		    else:
+			is_new_policy = 0
+			
+		    try:
+			curw.execute(s_sqlt2, (s_oms, n_oms, is_new_policy, people_id))
+			dbc.con.commit()
+		    except Exception, e:
+			r_msg = 'Ошибка записи в DBMIS: {0} {1}'.format(sys.stderr, e)
+			log.error( r_msg )
+			sout = "people_id: {0} dpfs: {1} s_oms: {2} n_oms: {3}".format(people_id,dpfs, s_oms, n_oms)
+			log.error( sout )
 		
                 if counta % STEP == 0: 
                     sout = "people_id: {0}".format(people_id)
+          
                     log.info( sout )    
 	
+	curm.execute(s_sqlt3, (mp_id))
+	dbmy.con.commit()
 	
-    dbc.close()
     sout = "Totally {0} peoples have been checked".format(counta)
     log.info( sout )    
     
     sout = "{0} peoples have not been found in the DBMIS".format(count_nf)
-    log.info( sout )    
+    log.info( sout )
+
+    dbmy.close()    
+    dbc.close()
+
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('Update OMS documents data. Finish  '+localtime)
+
+
 
 if __name__ == "__main__":
-    import os, shutil
-    import time
-    import datetime
-    from dbmysql_connect import DBMY
-    from people import PEOPLE, get_registry, get_people
-    
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('--------------------------------------------------------------------')
 
-    log.info('PCHECK-8. Start {0}'.format(localtime))
+    import sys    
+
+    log.info("======================= PCHECK-8 ===========================================")
 
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info( sout )
 
-    fnames = get_fnames()
-    n_fnames = len(fnames)
-    sout = "Totally {0} files has been found".format(n_fnames)
-    log.info( sout )
-    
-    dbmy2 = DBMY()
-    
-    for fname in fnames:
-	s_mcod  = fname[2:8]
-	w_month = fname[12:16]
-	mcod = int(s_mcod)
-	try:
-	    mo = modb[mcod]
-	    clinic_id = mo.mis_code
-	    sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
-	    log.info(sout)
-	except:
-	    sout = "Clinic not found for mcod = {0}".format(s_mcod)
-	    log.warn(sout)
-	    clinic_id = 0
-
-	f_fname = SM2DO_PATH + "/" + fname
-	sout = "Input file: {0}".format(f_fname)
-	log.info(sout)
-    
-	if CHECK_REGISTERED:
-	    ldone, dfname, ddone = sm_done(dbmy2, mcod, w_month)
-	else:
-	    ldone = False
+    if CID_LIST:
+	for clinic_id in cid_list:
+	    try:
+		mcod = modb.moCodeByMisId(clinic_id)
+		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+		log.debug(sout)
+	    except:
+		sout = "Have not got clinic for clinic_id {0}".format(clinic_id)
+		log.warn(sout)
+		mcod = 0
+		continue
 	    
-	if ldone:
-	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
-	    log.warn( sout )
-	else:
-	    #pfile(f_fname)
-	    ar = get_sm(f_fname)
-	    l_ar = len(ar)
-	    sout = "File has got {0} lines".format(l_ar)
-	    log.info( sout )
-
-	    check_sm(clinic_id, mcod, ar)
-
-	    log.info( sout )
-	    if REGISTER_FILE: register_sm_done(dbmy2, mcod, clinic_id, fname)
+	    pclinic(clinic_id, mcod)
+    else:
+	for mcod in clist:
+	    try:
+		mo = modb[mcod]
+		clinic_id = mo.mis_code
+		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod) 
+		log.debug(sout)
+	    except:
+		sout = "Have not got clinic for MO Code {0}".format(mcod)
+		log.warn(sout)
+		clinic_id = 0
+		continue
+	    
+	    pclinic(clinic_id, mcod)
 	
-	if MOVE_FILE:
-	# move file
-	    source = SM2DO_PATH + "/" + fname
-	    destination = SMDONE_PATH + "/" + fname
-	    shutil.move(source, destination)
-    
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('PCHECK-8. Finish  '+localtime)  
-    
-    dbmy2.close()
     sys.exit(0)

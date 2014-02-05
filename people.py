@@ -26,6 +26,16 @@ JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
 
+SQLT_PMIRA0 = """SELECT
+people_id, lname, fname, mname, birthday, sex,
+document_type_id_fk, document_series, document_number,
+snils, dpfs, oms_series, oms_number, enp,
+ocato, mcod, smo_ogrn
+FROM mira$peoples
+WHERE 
+mcod = {0}
+AND id_done is Null;"""
+
 SQLT_FPEOPLE = """SELECT FIRST 20
     PEOPLE_ID,
     LNAME,
@@ -189,13 +199,13 @@ def get_registry(table_name):
 
 def get_people(cursor, lname, fname, mname, birthday):
     
-    lname1251 = lname.encode('cp1251')
-    fname1251 = fname.encode('cp1251')
+    lname1251 = lname.upper().encode('cp1251')
+    fname1251 = fname.upper().encode('cp1251')
     s_birthday = "%04d-%02d-%02d" % (birthday.year, birthday.month, birthday.day)
     if mname is None:
         s_sql = SQLT_FPEOPLE0.format(lname1251, fname1251, s_birthday)
     else:
-        mname1251 = mname.encode('cp1251')
+        mname1251 = mname.upper().encode('cp1251')
         s_sql = SQLT_FPEOPLE.format(lname1251, fname1251, mname1251, s_birthday)
 
     try:
@@ -472,3 +482,67 @@ def put_sm2mira(db, ar_sm, upd = False):
 		
 	    
     return count_a, count_i, count_u
+
+def get_mira_peoples(db, mcod):
+#
+# get patients (people's list) for the clinic
+#
+
+    
+    s_sql = SQLT_PMIRA0.format(mcod)
+    
+    
+    try:
+        cursor = db.con.cursor()
+        cursor.execute(s_sql)
+        results = cursor.fetchall()
+    except Exception, e:
+        r_msg = 'Ошибка запроса данных из DBMYSQL: {0} {1}'.format(sys.stderr, e)
+        log.error( r_msg )
+        return None
+    
+    ar_sm = []
+    for rec in results:
+	people_id = rec[0]
+	lname = rec[1]
+	fname = rec[2]
+	mname = rec[3]
+	birthday = rec[4]
+	sex = rec[5]
+	document_type_id = rec[6]
+	document_series = rec[7]
+	document_number = rec[8]
+	snils = rec[9]
+	dpfs = rec[10]
+	oms_series = rec[11]
+	oms_number = rec[12]
+	enp = rec[13]
+	ocato = rec[14]
+	mcod = rec[15]
+	smo_ogrn	 = rec[16]
+	
+	sm_p = SM_PEOPLE()
+
+	sm_p.people_id        = people_id
+	sm_p.lname            = lname
+	sm_p.fname            = fname
+	sm_p.mname            = mname
+	sm_p.birthday         = birthday
+	sm_p.sex              = sex
+	sm_p.document_type_id = document_type_id
+	sm_p.document_series  = document_series
+	sm_p.document_number  = document_number
+	sm_p.snils            = snils
+	sm_p.smo_ogrn         = smo_ogrn
+	sm_p.ocato            = ocato
+	sm_p.enp              = enp
+	
+	sm_p.dpfs             = dpfs
+	sm_p.s_oms            = oms_series
+	sm_p.n_oms            = oms_number
+	
+	sm_p.mcod             = mcod
+	
+	ar_sm.append(sm_p)
+	
+    return ar_sm
