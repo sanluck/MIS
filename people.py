@@ -5,6 +5,8 @@ import sys
 import logging
 
 STEP = 1000
+PRINT_FOUND = False
+SM2DO_PATH  = "./SM2DO"
 
 log = logging.getLogger(__name__)
 
@@ -241,6 +243,122 @@ def get_patients(db, clinic_id):
     
     return results
     
+def get_fnames(path = SM2DO_PATH, file_ext = '.csv'):
+    
+    import os    
+    
+    fnames = []
+    for subdir, dirs, files in os.walk(path):
+        for fname in files:
+            if fname.find(file_ext) > 1:
+                log.info(fname)
+                fnames.append(fname)
+    
+    return fnames    
+
+def d_series(document_series):
+    
+    if (document_series is not None) and (document_series.find('I') >= 0):
+	a_ar = document_series.split('I')
+	sss  = ''.join(a_ar)
+	if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
+	
+	return sss
+    else:
+	return document_series
+
+def d_number(document_number):
+    
+    if (document_number is not None) and (document_number.find('I') >= 0):
+	a_ar = document_number.split('I')
+	n = len(a_ar)
+	b_ar = []
+	i = 0
+	while i < n:
+	    a = a_ar[i]
+	    i += 1
+	    if a == '':
+		if (i < n) and (a_ar[i] == ''):
+		    i += 2
+		    b_ar.append('I')
+	    else:
+		b_ar.append(a)
+		
+	sss  = ''.join(b_ar)
+	return sss
+    else:
+	return document_number
+
+def get_sm(fname, mcod = None):
+    from datetime import datetime
+    
+    ins = open( fname, "r" )
+
+    array = []
+    for line in ins:
+	u_line = line.decode('cp1251')
+	a_line = u_line.split("|")
+	people_id  = int(a_line[0])
+	lname = a_line[1]
+	fname = a_line[2]
+	mname = a_line[3]
+	s_bd  = a_line[4]
+	
+	try:
+	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
+	except:
+	    bd = None
+	
+	sex   = int(a_line[5])
+	
+	doc_type_id     = a_line[6]
+	document_series = a_line[7]
+	document_number = a_line[8]
+	snils           = a_line[9]
+	
+	smo_ogrn        = a_line[10]
+	ocato           = a_line[11]
+	enp             = a_line[12]
+	
+	dpfs            = a_line[13]
+	s_oms           = a_line[14]
+	n_oms           = a_line[15]
+	
+	sm_p = SM_PEOPLE()
+	
+	sm_p.people_id = people_id
+	sm_p.lname = lname
+	sm_p.fname = fname
+	sm_p.mname = mname
+	sm_p.birthday         = bd
+	sm_p.sex              = sex
+	sm_p.document_type_id = doc_type_id
+
+	if doc_type_id == '14':
+	    sm_p.document_series  = d_series(document_series)
+	else:
+	    sm_p.document_series  = d_number(document_series)
+	sm_p.document_number  = d_number(document_number)
+	sm_p.snils            = snils
+	sm_p.smo_ogrn         = smo_ogrn
+	sm_p.ocato            = ocato
+	sm_p.enp              = enp
+	
+	if len(dpfs) == 0:
+	    sm_p.dpfs = None
+	else:
+	    sm_p.dpfs         = dpfs
+	sm_p.s_oms            = s_oms
+	sm_p.n_oms            = n_oms
+	
+	sm_p.mcod             = mcod
+	
+	array.append( sm_p )
+    
+    ins.close()    
+    
+    return array
+
 def put_sm2mira(db, ar_sm, upd = False):
     
     s_sqlf = """SELECT oms_series, oms_number, enp, mcod
@@ -251,16 +369,16 @@ def put_sm2mira(db, ar_sm, upd = False):
     s_sqli = """INSERT INTO
     mira$peoples
     (people_id, lname, fname, mname, birthday, sex,
-    document_type_id_fk, document_series, documnet_number,
+    document_type_id_fk, document_series, document_number,
     snils,
     dpfs, oms_series, oms_number, enp,
-    ocato, mcod)
+    ocato, mcod, smo_ogrn)
     VALUES 
     (%s, %s, %s, %s, %s, %s,
     %s, %s, %s,
     %s,
     %s, %s, %s, %s,
-    %s, %s);"""
+    %s, %s, %s);"""
 
 
     s_sqlu = """UPDATE
@@ -273,14 +391,15 @@ def put_sm2mira(db, ar_sm, upd = False):
     sex = %s,
     document_type_id_fk = %s,
     document_series = %s,
-    documnet_number = %s,
+    document_number = %s,
     snils = %s,
     dpfs = %s, 
     oms_series = %s, 
     oms_number = %s,
     enp = %s?,
     ocato = %s,
-    mcod = %s
+    mcod = %s,
+    smo_ogrn = %s
     WHERE 
     people_id = %s;"""
 
@@ -323,22 +442,22 @@ def put_sm2mira(db, ar_sm, upd = False):
 
 	if rec is None:
 	    try:
-		curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, documnet_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod))
+		curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn))
 		db.con.commit()	
 		count_i += 1
 	    except Exception, e:
-		sout = "Can't insert into sm table. UID: {0}".format(people_id)
+		sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
 		log.error(sout)
 		sout = "{0}".format(e)
 		log.error(sout)
 	else:
 	    if upd:
 		try:
-		    curw.execute(s_sqlu,(ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod, people_id,))
+		    curw.execute(s_sqlu,(lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, amo_ogrn, people_id,))
 		    db.con.commit()	
 		    count_u += 1
 		except Exception, e:
-		    sout = "Can't update sm table. UID: {0}".format(people_id)
+		    sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
 		    log.error(sout)
 		    sout = "{0}".format(e)
 		    log.error(sout)
@@ -348,66 +467,8 @@ def put_sm2mira(db, ar_sm, upd = False):
 		f_enp        = rec[2]
 		f_mcod       = rec[3]
 		
-		sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
+		sout = "Found in mira$peoples: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
 		log.info(sout)
 		
 	    
     return count_a, count_i, count_u
-    
-    
-    import sys
-
-    s_sqlt = """INSERT INTO
-    pr
-    (f_id,
-    kat, kod_lpu, dn, dk, 
-    fam, im, ot, dr, w,
-    kpl, vpolis, spolis, npolis, str_pens,
-    ds, uet, profil, data_p, spec, kod_i,
-    f_doctor, perv_povt, cel_posobr)
-    VALUES
-    (%s, 
-    %s, %s, %s, %s,
-    %s, %s, %s, %s, %s,
-    %s, %s, %s, %s, %s,
-    %s, %s, %s, %s, %s, %s,
-    %s, %s, %s);"""
-
-    cursor = db.con.cursor()
-    
-    for pr in r_arr:
-        
-        if pr.fam is None: 
-            fam = u""
-        else:
-            fam = pr.fam.strip()
-
-        if pr.im is None: 
-            im = u""
-        else:
-            im = pr.im.strip()
-
-        if pr.ot is None: 
-            ot = u""
-        else:
-            ot = pr.ot.strip()
-
-        try:
-            cursor.execute(s_sqlt,(f_id, 
-                             pr.kat, pr.kod_lpu, pr.dn, pr.dk, 
-                             fam, im, ot, pr.dr, pr.w,
-                             pr.kpl, pr.vpolis, pr.spolis, pr.npolis, pr.str_pens,
-                             pr.ds, pr.uet, pr.profil, pr.data_p, pr.spec, pr.kod_i,
-                             pr.f_doctor, pr.perv_povt, pr.cel_posobr,))
-        except Exception, e:
-            sout = "Can't insert into pr table"
-            log.error(sout)
-            sout = "{0}".format(e)
-            log.error(sout)
-            return False
-        
-        db.con.commit()
-        
-    
-    return True
-            

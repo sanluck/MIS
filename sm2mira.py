@@ -21,139 +21,126 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
-
 STEP = 100
-
-s_sqlt1 = """UPDATE peoples
-SET 
-document_type_id_fk = ?,
-document_series = ?,
-document_number = ?
-WHERE people_id = ?"""
-
-s_sqlt2 = """UPDATE peoples
-SET 
-medical_insurance_series = ?,
-medical_insurance_number = ?
-WHERE people_id = ?"""
 
 SM2DO_PATH        = "./SM2DO"
 SMDONE_PATH       = "./SMDONE"
 
-CHECK_REGISTERED  = False
-REGISTER_FILE     = False
-MOVE_FILE         = False
+CHECK_REGISTERED  = True
+REGISTER_FILE     = True
+MOVE_FILE         = True
 
+def register_sm_done(db, mcod, clinic_id, fname):
+    import datetime    
 
-def get_fnames(path = SM2DO_PATH, file_ext = '.csv'):
-    
-    import os    
-    
-    fnames = []
-    for subdir, dirs, files in os.walk(path):
-        for fname in files:
-            if fname.find(file_ext) > 1:
-                log.info(fname)
-                fnames.append(fname)
-    
-    return fnames    
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+    s_sqlt = """INSERT INTO
+    mira$sm_done
+    (mcod, clinic_id, fname, done)
+    VALUES
+    ({0}, {1}, '{2}', '{3}');
+    """
 
-def d_series(document_series):
-    
-    if (document_series is not None) and (document_series.find('I') >= 0):
-	a_ar = document_series.split('I')
-	sss  = ''.join(a_ar)
-	if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
-	
-	return sss
+    s_sql = s_sqlt.format(mcod, clinic_id, fname, sdnow)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    db.con.commit()
+
+def sm_done(db, mcod, w_month = '1312'):
+
+    s_sqlt = """SELECT
+    fname, done
+    FROM
+    mira$sm_done
+    WHERE mcod = {0} AND fname LIKE '%{1}%';
+    """
+
+    s_sql = s_sqlt.format(mcod, w_month)
+    cursor = db.con.cursor()
+    cursor.execute(s_sql)
+    rec = cursor.fetchone()
+    if rec == None:
+	return False, "", ""
     else:
-	return document_series
+	fname = rec[0]
+	done  = rec[1]
+	return True, fname, done
 
-def d_number(document_number):
+
+if __name__ == "__main__":
+    import os, shutil
+    import time
+    import datetime
+    from people import get_fnames, get_sm
+    from dbmysql_connect import DBMY
+    from people import put_sm2mira
     
-    if (document_number is not None) and (document_number.find('I') >= 0):
-	a_ar = document_number.split('I')
-	n = len(a_ar)
-	b_ar = []
-	i = 0
-	while i < n:
-	    a = a_ar[i]
-	    i += 1
-	    if a == '':
-		if (i < n) and (a_ar[i] == ''):
-		    i += 2
-		    b_ar.append('I')
-	    else:
-		b_ar.append(a)
-		
-	sss  = ''.join(b_ar)
-	return sss
-    else:
-	return document_number
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('--------------------------------------------------------------------')
 
-def get_sm(fname):
-    from datetime import datetime
-    from people import SM_PEOPLE
+    log.info('SM2MIRA. Start {0}'.format(localtime))
+
+    fnames = get_fnames(path = SM2DO_PATH, file_ext = '.csv')
+    n_fnames = len(fnames)
+    sout = "Totally {0} files has been found".format(n_fnames)
+    log.info( sout )
     
-    ins = open( fname, "r" )
-
-    array = []
-    for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	people_id  = int(a_line[0])
-	lname = a_line[1]
-	fname = a_line[2]
-	mname = a_line[3]
-	s_bd  = a_line[4]
-	
+    dbmy2 = DBMY()
+    
+    for fname in fnames:
+	s_mcod  = fname[2:8]
+	w_month = fname[12:16]
+	mcod = int(s_mcod)
 	try:
-	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
+	    mo = modb[mcod]
+	    clinic_id = mo.mis_code
+	    mname = mo.name.encode('utf-8')
+	    sout = "clinic_id: {0} MO Code: {1} MO Name: {2}".format(clinic_id, mcod, mname) 
+	    log.info(sout)
 	except:
-	    bd = None
-	
-	sex   = int(a_line[5])
-	
-	doc_type_id     = a_line[6]
-	document_series = a_line[7]
-	document_number = a_line[8]
-	snils           = a_line[9]
-	
-	smo_ogrn        = a_line[10]
-	ocato           = a_line[11]
-	enp             = a_line[12]
-	
-	dpfs            = a_line[13]
-	s_oms           = a_line[14]
-	n_oms           = a_line[15]
-	
-	sm_p = SM_PEOPLE()
-	
-	sm_p.people_id = people_id
-	sm_p.lname = lname
-	sm_p.fname = fname
-	sm_p.mname = mname
-	sm_p.birthday         = bd
-	sm_p.sex              = sex
-	sm_p.document_type_id = doc_type_id
-	if doc_type_id == '14':
-	    sm_p.document_series  = d_series(document_series)
+	    sout = "Clinic not found for mcod = {0}".format(s_mcod)
+	    log.warn(sout)
+	    clinic_id = 0
+
+	f_fname = SM2DO_PATH + "/" + fname
+	sout = "Input file: {0}".format(f_fname)
+	log.info(sout)
+    
+	if CHECK_REGISTERED:
+	    ldone, dfname, ddone = sm_done(dbmy2, mcod, w_month)
 	else:
-	    sm_p.document_series  = d_number(document_series)
-	sm_p.document_number  = d_number(document_number)
-	sm_p.snils            = snils
-	sm_p.smo_ogrn         = smo_ogrn
-	sm_p.ocato            = ocato
-	sm_p.enp              = enp
+	    ldone = False
+	    
+	if ldone:
+	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
+	    log.warn( sout )
+	else:
+	    #pfile(f_fname)
+	    ar_sm = get_sm(f_fname, mcod)
+	    l_ar = len(ar_sm)
+	    sout = "File has got {0} lines".format(l_ar)
+	    log.info( sout )
+
+	    count_a, count_i, count_u = put_sm2mira(dbmy2, ar_sm, upd = False)
+
+	    sout = "{0} records have been insrted into mira$peoples table".format(count_i)
+	    log.info( sout )
+	    sout = "{0} records have been updated".format(count_u)
+	    log.info( sout )
+
+	    if REGISTER_FILE: register_sm_done(dbmy2, mcod, clinic_id, fname)
 	
-	sm_p.dpfs             = dpfs
-	sm_p.s_oms            = s_oms
-	sm_p.n_oms            = n_oms
-	
-	array.append( sm_p )
+	if MOVE_FILE:
+	# move file
+	    source = SM2DO_PATH + "/" + fname
+	    destination = SMDONE_PATH + "/" + fname
+	    shutil.move(source, destination)
     
-    ins.close()    
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('SM2MIRA. Finish  '+localtime)  
     
-    return array
+    dbmy2.close()
+    sys.exit(0)
+
+

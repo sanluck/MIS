@@ -246,46 +246,9 @@ def check_sm(clinic_id, mcod, sm_ar):
     
     sout = "{0} peoples have not been found in the DBMIS".format(count_nf)
     log.info( sout )    
-	
-
-def register_sm_done(db, mcod, clinic_id, fname):
-    import datetime    
-
-    dnow = datetime.datetime.now()
-    sdnow = str(dnow)
-    s_sqlt = """INSERT INTO
-    sm_done
-    (mcod, clinic_id, fname, done)
-    VALUES
-    ({0}, {1}, '{2}', '{3}');
-    """
-
-    s_sql = s_sqlt.format(mcod, clinic_id, fname, sdnow)
-    cursor = db.con.cursor()
-    cursor.execute(s_sql)
-    db.con.commit()
-
-def sm_done(db, mcod, w_month = '1311'):
-
-    s_sqlt = """SELECT
-    fname, done
-    FROM
-    sm_done
-    WHERE mcod = {0} AND fname LIKE '%{1}%';
-    """
-
-    s_sql = s_sqlt.format(mcod, w_month)
-    cursor = db.con.cursor()
-    cursor.execute(s_sql)
-    rec = cursor.fetchone()
-    if rec == None:
-	return False, "", ""
-    else:
-	fname = rec[0]
-	done  = rec[1]
-	return True, fname, done
 
 if __name__ == "__main__":
+    import os, shutil
     import time
     import datetime
     from dbmysql_connect import DBMY
