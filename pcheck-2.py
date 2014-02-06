@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID  = 138
+CLINIC_ID  = 123
 
 STEP = 1000
 

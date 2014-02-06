@@ -25,7 +25,9 @@ log = logging.getLogger(__name__)
 
 IN_PATH        = "./FIN"
 OUT_PATH       = "./FOUT"
-
+CHECK_LAST_CH  = False
+SM_CH          = u';'
+SM_COUNT       = 17
 
 def get_fnames(path = IN_PATH, file_ext = '.csv'):
 # get file names
@@ -73,9 +75,15 @@ def write_st(ar, fout):
     i   = 0
     for line in ar:
 	i += 1
+	a_l = line.split(SM_CH)
+	sm_count = len(a_l) - 1
+	if sm_count <> SM_COUNT:
+	    sout = "Wrang line: {0}".format(line.encode('utf-8'))
+	    log.warn( sout )
+	    continue
 	l_line = len(line)
 	l1 = l_line - 1
-	if (l1 >= 0) and (line[l1] == ';'):
+	if (CHECK_LAST_CH) and (l1 >= 0) and (line[l1] == ';'):
 	    line = line[:l1]
 	    
 	if i == nnn: 
