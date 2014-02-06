@@ -308,6 +308,10 @@ def get_sm(fname, mcod = None):
     for line in ins:
 	u_line = line.decode('cp1251')
 	a_line = u_line.split("|")
+	if len(a_line) < 15:
+	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+	    log.warn( sout )
+	    continue
 	people_id  = int(a_line[0])
 	lname = a_line[1]
 	fname = a_line[2]
