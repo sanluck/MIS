@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pcheck-2.py - проверка записей в таблице peoples
 #               для пациентов заданной клиники
-#               замена "Бийск" на "Бийск г"
+#               задание типа оплаты по возрасту
 #
 
 import logging
@@ -25,15 +25,12 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID  = 117
+CLINIC_ID  = 138
 
-STEP = 100
-
-TOWN_NAME_0 = u"Бийск"
-TOWN_NAME_2 = u"Бийск г"
+STEP = 1000
 
 s_sqlt1 = """UPDATE peoples
-SET addr_jure_town_name = ?
+SET p_payment_type_id_fk = ?
 WHERE people_id = ?"""
 
 if __name__ == "__main__":
@@ -41,6 +38,11 @@ if __name__ == "__main__":
     import datetime
     from dbmis_connect2 import DBMIS
     from people import PEOPLE, SQLT_PEOPLE
+    
+    now = datetime.datetime.now()
+    s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)    
+    y_now = now.year
+    y_now = 2013
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('--------------------------------------------------------------------')
@@ -84,16 +86,23 @@ if __name__ == "__main__":
             sout = "{0} {1}".format(counta, people_id)
             log.info( sout )    
     
-        addr_jure_town_name = people.addr_jure_town_name
+        payment_type = people.p_payment_type_id_fk
         
-        if addr_jure_town_name is None: continue
+        if payment_type is not None: continue
+  
+        p_bd = people.birthday
+        p_by = p_bd.year
+        age  = y_now - p_by
+
+        if (age >= 18) and (age <= 60):
+            ppt = 1
+        else:
+            ppt = 2
         
-        if addr_jure_town_name != TOWN_NAME_0: continue
+        curw.execute(s_sqlt1,(ppt, people_id))
+        conw.commit()
         
         countg += 1
-        
-        curw.execute(s_sqlt1,(TOWN_NAME_2, people_id))
-        conw.commit()
         
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Peoples Check 2 Finish  '+localtime)    
