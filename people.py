@@ -410,10 +410,11 @@ def put_sm2mira(db, ar_sm, upd = False):
     dpfs = %s, 
     oms_series = %s, 
     oms_number = %s,
-    enp = %s?,
+    enp = %s,
     ocato = %s,
     mcod = %s,
-    smo_ogrn = %s
+    smo_ogrn = %s,
+    id_done = Null
     WHERE 
     people_id = %s;"""
 
@@ -467,7 +468,7 @@ def put_sm2mira(db, ar_sm, upd = False):
 	else:
 	    if upd:
 		try:
-		    curw.execute(s_sqlu,(lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, amo_ogrn, people_id,))
+		    curw.execute(s_sqlu,(lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn, people_id,))
 		    db.con.commit()	
 		    count_u += 1
 		except Exception, e:

@@ -26,9 +26,11 @@ STEP = 100
 SM2DO_PATH        = "./SM2DO"
 SMDONE_PATH       = "./SMDONE"
 
-CHECK_REGISTERED  = True
-REGISTER_FILE     = True
-MOVE_FILE         = True
+UPDATE_DATA       = True
+
+CHECK_REGISTERED  = False
+REGISTER_FILE     = False
+MOVE_FILE         = False
 
 def register_sm_done(db, mcod, clinic_id, fname):
     import datetime    
@@ -122,7 +124,7 @@ if __name__ == "__main__":
 	    sout = "File has got {0} lines".format(l_ar)
 	    log.info( sout )
 
-	    count_a, count_i, count_u = put_sm2mira(dbmy2, ar_sm, upd = False)
+	    count_a, count_i, count_u = put_sm2mira(dbmy2, ar_sm, upd = UPDATE_DATA)
 
 	    sout = "{0} records have been insrted into mira$peoples table".format(count_i)
 	    log.info( sout )
