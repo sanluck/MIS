@@ -29,6 +29,9 @@ CHECK_LAST_CH  = False
 SM_CH          = u';'
 SM_COUNT       = 17
 
+CHECK_DATES    = True
+i_dates        = [6,10,16]
+
 def get_fnames(path = IN_PATH, file_ext = '.csv'):
 # get file names
     
@@ -75,12 +78,34 @@ def write_st(ar, fout):
     i   = 0
     for line in ar:
 	i += 1
+
 	a_l = line.split(SM_CH)
 	sm_count = len(a_l) - 1
 	if sm_count <> SM_COUNT:
-	    sout = "Wrang line: {0}".format(line.encode('utf-8'))
+	    sout = "Wrong SM_COUNT in the line:"
+	    log.warn( sout )
+	    sout = "   {0}".format(line.encode('utf-8'))
 	    log.warn( sout )
 	    continue
+
+	if CHECK_DATES:
+	    l_wrong = False
+	    sd_w    = ''
+	    for i_d in i_dates:
+		sd = a_l[i_d]
+		if len(sd) == 0: continue
+		if sd[:2] not in (u'"1', u'"2'):
+		    l_wrong = True
+		    sd_w = sd
+		    break
+	    
+	    if l_wrong:
+		sout = "Wrong Date ({0}) in the line:".format(sd)
+		log.warn( sout )
+		sout = "   {0}".format(line.encode('utf-8'))
+		log.warn( sout )
+		continue
+		
 	l_line = len(line)
 	l1 = l_line - 1
 	if (CHECK_LAST_CH) and (l1 >= 0) and (line[l1] == ';'):
