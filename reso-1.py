@@ -111,9 +111,9 @@ def get_plist(fname):
 		dr     = datetime.strptime(s_dr, '%Y-%m-%d')
 		
 		p = PEOPLE()
-		p.lname    = lname
-		p.fname    = fname
-		p.mname    = mname
+		p.lname    = lname.strip()
+		p.fname    = fname.strip()
+		p.mname    = mname.strip()
 		p.birthday = dr
 		
 		plist.append(p)
@@ -167,7 +167,11 @@ if __name__ == "__main__":
     
     row += 1
     
+    counta = 0
     for p in plist:
+	
+	counta += 1
+	
 	lname = p.lname
 	fname = p.fname
 	mname = p.mname
@@ -203,7 +207,7 @@ if __name__ == "__main__":
 		
 		if row % STEP == 0:
 		    
-		    sout = "{0} {1} {2} {3} {4}".format(row, people_id, lname.encode('utf-8'), fname.encode('utf-8'), mname.encode('utf-8'))
+		    sout = "{0}/{1} {2} {3} {4} {5}".format(row, counta, people_id, lname.encode('utf-8'), fname.encode('utf-8'), mname.encode('utf-8'))
 		    log.info( sout )
 
 		ws.write(row,0,lname)
