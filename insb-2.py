@@ -176,7 +176,7 @@ ORDER BY ap.date_beg DESC;"""
 
 	    p_obj.enp = f_enp
 	    p_obj.medical_insurance_series = f_oms_series
-	    patient.medical_insurance_number = f_oms_number
+	    p_obj.medical_insurance_number = f_oms_number
 	    
 	    if mcod == f_mcod:
 		count_e += 1
