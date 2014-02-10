@@ -635,6 +635,9 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
             misn  = s_mis
         else:
             misn  = s_mis + u" № " + s_min
+    
+    if patient.enp is not None:
+        enp = patient.enp    
         
     res = []
     # 1
@@ -687,7 +690,8 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
         else:
             dsn += u" № " + patient.document_number
     res.append(dsn)
-
+    
+    # 11
     if patient.document_when is None:
         res.append(None)
     else:
@@ -695,8 +699,13 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
         sdr = u"%04d%02d%02d" % (dw.year, dw.month, dw.day)
         res.append(sdr)
 
-    res.append(patient.document_who)
+    # 12
+    if patient.document_who is None:
+        res.append(None)
+    else:
+        res.append(patient.document_who.strip().upper())
 
+    # 13
     if patient.insurance_certificate is None:
         SNILS = None
     else:
