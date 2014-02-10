@@ -3,6 +3,7 @@
 # insb-2.py - обработка страховой пренадлежности
 #             Insurance Belongins Request (IBR)
 #             сравнение данных DBMIS и MySQL(mis.sm)
+#             использовать ENP, серию и номер пролисов ОМС из ответов ТФОМС
 #
 
 import logging
@@ -172,6 +173,10 @@ ORDER BY ap.date_beg DESC;"""
 	    f_oms_number = rec[1]
 	    f_enp        = rec[2]
 	    f_mcod       = rec[3]
+
+	    p_obj.enp = f_enp
+	    p_obj.medical_insurance_series = f_oms_series
+	    patient.medical_insurance_number = f_oms_number
 	    
 	    if mcod == f_mcod:
 		count_e += 1
