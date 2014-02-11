@@ -43,6 +43,8 @@ CID_LIST   = False # Use cid_lis (list of clinic_id)
 
 MLIST      = True  # Use mis.mlist table (MySQL)
 
+OCATO      = '01000'
+
 def get_clist(db):
     
     s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
@@ -86,7 +88,7 @@ def plist(dbc, clinic_id, mcod, rows):
     dbmy = DBMY()
     curr = dbmy.con.cursor()
     
-    s_sqlf = """SELECT oms_series, oms_number, enp, mcod
+    s_sqlf = """SELECT oms_series, oms_number, enp, mcod, ocato, smo_code
     FROM
     sm
     WHERE people_id = %s"""
@@ -173,6 +175,8 @@ ORDER BY ap.date_beg DESC;"""
 	    f_oms_number = rec[1]
 	    f_enp        = rec[2]
 	    f_mcod       = rec[3]
+	    f_ocato      = rec[4]
+	    f_smo_code   = rec[5]
 
 	    p_obj.enp = f_enp
 	    p_obj.medical_insurance_series = f_oms_series
@@ -186,7 +190,7 @@ ORDER BY ap.date_beg DESC;"""
 		cur.execute(s_sql_ap,(p_id, ))
 		recs_ap = cur.fetchall()
 		l_print = False
-		if len(recs_ap) == 1:
+		if (len(recs_ap) == 1) and (f_ocato == OCATO):
 		    date_beg = recs_ap[0][2]
 		    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
 		    ps = sss.encode('windows-1251')
@@ -215,7 +219,7 @@ ORDER BY ap.date_beg DESC;"""
 			
 
 			
-			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print):
+			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
 			    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
 			    ps = sss.encode('windows-1251')
 			    l_print = True
