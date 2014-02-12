@@ -35,9 +35,12 @@ DB   = "DBMIS"
 ST2DO_PATH        = "./ST2DO"
 STDONE_PATH       = "./STDONE"
 
+UPDATE            = True
+
 CHECK_REGISTERED  = True
 REGISTER_FILE     = True
 MOVE_FILE         = True
+
 
 
 def get_fnames(path = ST2DO_PATH, file_ext = '.csv'):
@@ -188,7 +191,7 @@ def register_st_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def st_done(db, mcod, w_month = '1311'):
+def st_done(db, mcod, w_month = '1402'):
 
     s_sqlt = """SELECT
     fname, done
@@ -259,7 +262,7 @@ if __name__ == "__main__":
 	    l_ar = len(ar)
 	    sout = "File has got {0} lines".format(l_ar)
 	    log.info( sout )
-	    count_a, count_i, count_u = write_st(dbmy2, ar)
+	    count_a, count_i, count_u = write_st(dbmy2, ar, UPDATE)
 	    sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
 	    log.info( sout )
 	    if REGISTER_FILE: register_st_done(dbmy2, mcod, clinic_id, fname)
