@@ -190,11 +190,12 @@ ORDER BY ap.date_beg DESC;"""
 		cur.execute(s_sql_ap,(p_id, ))
 		recs_ap = cur.fetchall()
 		l_print = False
-		if (len(recs_ap) == 1) and (f_ocato == OCATO):
-		    date_beg = recs_ap[0][2]
-		    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
-		    ps = sss.encode('windows-1251')
-		    l_print = True
+		if (len(recs_ap) == 1):
+		    if (f_ocato == OCATO):
+			date_beg = recs_ap[0][2]
+			sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
+			ps = sss.encode('windows-1251')
+			l_print = True
 
 		else:
 		    count_m += 1

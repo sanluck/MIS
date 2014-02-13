@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# copyf-1.py - read input file line by line
-#               in case last character is <;> delete it
-#               write it to output file
+# copyf-2.py - read input file line by line
+#              in case last character is <;> delete it
+#              write it to output file
+#              read file with same name SDMO path
+#              check line by line and append to output file
 #            
 #
 #
@@ -14,7 +16,7 @@ from cStringIO import StringIO
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_copyf1.out'
+LOG_FILENAME = '_copyf2.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -24,6 +26,7 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 IN_PATH        = "./FIN"
+SDMO_PATH      = "./SDMO"
 OUT_PATH       = "./FOUT"
 CHECK_LAST_CH  = False
 SM_CH          = u';'
@@ -52,6 +55,35 @@ def get_st(fname):
     ins = open( fname, "r" )
 
     array = []
+    for line in ins:
+	u_line = line.decode('cp1251')
+	l_line = len(line)
+	l1 = l_line - 1
+	l2 = l_line - 2
+	
+	if (l2 >= 0) and (u_line[l2] in ('\r','\n')):
+	    u_line = u_line[:l2]
+	elif (l1>= 0) and (u_line[l1] in ('\r','\n')):
+	    u_line = u_line[:l1]
+	
+	array.append( u_line )
+    
+    ins.close()    
+    
+    return array
+
+def append_st(ar, fname):
+# read file line by line, append to arry    
+
+    array = ar
+    
+    try:
+	ins = open( fname, "r" )
+    except:
+	sout = "Cannot read file {0}".format(fname)
+	log.warn( sout )
+	return array
+    
     for line in ins:
 	u_line = line.decode('cp1251')
 	l_line = len(line)
@@ -145,21 +177,40 @@ if __name__ == "__main__":
     sout = "Totally {0} files has been found".format(n_fnames)
     log.info( sout )
     
+    f2names = get_fnames(SDMO_PATH)
+
+    n_f2names = len(f2names)
+    sout = "Totally {0} SDMO files has been found".format(n_f2names)
+    log.info( sout )
     
     for fname in fnames:
 
+	mcod = fname[3:9]
 	f_fname = IN_PATH + "/" + fname
-	sout = "Input file: {0}".format(f_fname)
+	sout = "Input file: {0} mcod: {1}".format(f_fname, mcod)
 	log.info(sout)
     
 	ar = get_st(f_fname)
 	l_ar = len(ar)
 	sout = "File has got {0} lines".format(l_ar)
 	log.info( sout )
+	
+	for f2name in f2names:
+	    f2_mcod = f2name[3:9]
+	    if f2_mcod == mcod:
+		f_fname = SDMO_PATH + "/" + f2name
+		sout = "Input SDMO file: {0}".format(f_fname)
+		log.info(sout)
+	
+		ar2 = append_st(ar, f_fname)
+	
+	l_ar = len(ar2)
+	sout = "Totally {0} lines to be processed".format(l_ar)
+	log.info( sout )
 
 	destination = OUT_PATH + "/" + fname
 	
-	write_st(ar, destination)
+	write_st(ar2, destination)
 	
 	sout = "Output file: {0}".format(destination)
 	log.info(sout)
