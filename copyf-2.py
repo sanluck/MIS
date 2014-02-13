@@ -195,9 +195,11 @@ if __name__ == "__main__":
 	sout = "File has got {0} lines".format(l_ar)
 	log.info( sout )
 	
+	fout_name = fname
 	for f2name in f2names:
 	    f2_mcod = f2name[3:9]
 	    if f2_mcod == mcod:
+		fout_name = f2name
 		f_fname = SDMO_PATH + "/" + f2name
 		sout = "Input SDMO file: {0}".format(f_fname)
 		log.info(sout)
@@ -208,7 +210,7 @@ if __name__ == "__main__":
 	sout = "Totally {0} lines to be processed".format(l_ar)
 	log.info( sout )
 
-	destination = OUT_PATH + "/" + fname
+	destination = OUT_PATH + "/" + fout_name
 	
 	write_st(ar2, destination)
 	
