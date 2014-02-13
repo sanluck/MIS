@@ -35,9 +35,9 @@ SD2DO_PATH        = "./SD2DO"
 SDDONE_PATH       = "./SDDONE"
 SDMO_PATH         = "./SDMO"
 
-CHECK_REGISTERED  = False
-REGISTER_FILE     = False
-MOVE_FILE         = False
+CHECK_REGISTERED  = True
+REGISTER_FILE     = True
+MOVE_FILE         = True
 
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
 

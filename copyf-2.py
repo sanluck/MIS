@@ -168,7 +168,7 @@ if __name__ == "__main__":
     import os, shutil
     import time
 
-    log.info("======================= COPYF-1 ===========================================")
+    log.info("======================= COPYF-2 ===========================================")
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Copying and processing of files. Start {0}'.format(localtime))
 
