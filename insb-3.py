@@ -240,10 +240,11 @@ order by t.ticket_id desc;"""
 	    
 	if l_print:
 	    
-	    if date_beg is None:
-		dd_beg = None
-	    else:
+	    try:
 		dd_beg = datetime.strptime(date_beg, '%Y-%m-%d')
+	    except:
+		dd_beg = None
+
 	    sss = p2(p_obj, insorg, mcod, cmotive, dd_beg) + "\r\n"
 	    ps = sss.encode('windows-1251')
 	    if l_print:
