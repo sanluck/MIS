@@ -213,6 +213,11 @@ order by t.ticket_id desc;"""
 	p_obj = PatientInfo()
 	p_obj.initFromDb(dbc, people_id)
 	
+	if p_obj.people_id is None:
+	    sout = "Can not find people_id = {0}".format(people_id)
+	    log.warn( sout )
+	    continue
+	
 	curm.execute(s_sqlsm, (people_id,))
 	rec_m = curm.fetchone()
 	ocato = None
