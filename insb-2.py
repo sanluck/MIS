@@ -37,6 +37,10 @@ FNAMEa = "AM{0}T22_14021.csv" # нет среди ответов фонда
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
 FNAMEx = "SD{0}T22_14021.xls" # паценты с несколькими прикреплениями
 
+SD2DO_PATH = "./SD2DO"
+IN_PATH    = "./FIN"
+R_PATH     = "./RESULTS"
+
 STEP = 1000
 
 CID_LIST   = False # Use cid_lis (list of clinic_id)
@@ -116,8 +120,10 @@ ORDER BY ap.date_beg DESC;"""
     sout = "Output to files: {0} | {1} | {2}".format(fnamea, fnameb, fnamex)
     log.info(sout)
 
-    foa = open(fnamea, "wb")
-    fob = open(fnameb, "wb")
+    f_fnamea = R_PATH  + "/" + fnamea
+    foa = open(f_fnamea, "wb")
+    f_fnameb = IN_PATH + "/" + fnameb
+    fob = open(f_fnameb, "wb")
 
     wb = xlwt.Workbook(encoding='cp1251')
     ws = wb.add_sheet('Patients')
@@ -237,7 +243,8 @@ ORDER BY ap.date_beg DESC;"""
 
     foa.close()
     fob.close()
-    wb.save(fnamex)
+    f_fname = SD2DO_PATH + "/" + fnamex
+    wb.save(f_fname)
 
     sout = "Totally {0} of {1} patients have got mcod equal to TFOMS".format(count_e, count)
     log.info( sout )
