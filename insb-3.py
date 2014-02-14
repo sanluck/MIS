@@ -35,8 +35,8 @@ SD2DO_PATH        = "./SD2DO"
 SDDONE_PATH       = "./SDDONE"
 SDMO_PATH         = "./SDMO"
 
-CHECK_REGISTERED  = True
-REGISTER_FILE     = True
+CHECK_REGISTERED  = False
+REGISTER_FILE     = False
 MOVE_FILE         = True
 
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
@@ -203,7 +203,7 @@ order by t.ticket_id desc;"""
 	    elif motive not in (1, 2, 3, 99):
 		count_ += 1
 	
-	if (2 in motives): continue
+	if (2 in motives) or (3 in motives): continue # was taken into account by insb-2
 
 	if not lclinic: continue
 
