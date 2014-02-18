@@ -551,3 +551,77 @@ def get_mira_peoples(db, mcod):
 	ar_sm.append(sm_p)
 	
     return ar_sm
+
+def get_st(fname, mcod = None):
+    from datetime import datetime
+    
+    ins = open( fname, "r" )
+
+    array = []
+    for line in ins:
+	u_line = line.decode('cp1251')
+	a_line = u_line.split("|")
+	if len(a_line) < 15:
+	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+	    log.warn( sout )
+	    continue
+	people_id  = int(a_line[0])
+	lname = a_line[1]
+	fname = a_line[2]
+	mname = a_line[3]
+	s_bd  = a_line[4]
+	
+	try:
+	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
+	except:
+	    bd = None
+	
+	sex   = int(a_line[5])
+	
+	doc_type_id     = a_line[6]
+	document_series = a_line[7]
+	document_number = a_line[8]
+	snils           = a_line[9]
+	
+	smo_ogrn        = a_line[10]
+	ocato           = a_line[11]
+	enp             = a_line[12]
+	
+	dpfs            = a_line[13]
+	s_oms           = a_line[14]
+	n_oms           = a_line[15]
+	
+	sm_p = SM_PEOPLE()
+	
+	sm_p.people_id = people_id
+	sm_p.lname = lname
+	sm_p.fname = fname
+	sm_p.mname = mname
+	sm_p.birthday         = bd
+	sm_p.sex              = sex
+	sm_p.document_type_id = doc_type_id
+
+	if doc_type_id == '14':
+	    sm_p.document_series  = d_series(document_series)
+	else:
+	    sm_p.document_series  = d_number(document_series)
+	sm_p.document_number  = d_number(document_number)
+	sm_p.snils            = snils
+	sm_p.smo_ogrn         = smo_ogrn
+	sm_p.ocato            = ocato
+	sm_p.enp              = enp
+	
+	if len(dpfs) == 0:
+	    sm_p.dpfs = None
+	else:
+	    sm_p.dpfs         = dpfs
+	sm_p.s_oms            = s_oms
+	sm_p.n_oms            = n_oms
+	
+	sm_p.mcod             = mcod
+	
+	array.append( sm_p )
+    
+    ins.close()    
+    
+    return array

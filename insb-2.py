@@ -168,6 +168,7 @@ ORDER BY ap.date_beg DESC;"""
 	rec = curr.fetchone()
 	if rec is None:
 	    count_a += 1
+	    p_obj.enp = None
 	    sss = p1(p_obj, insorg) + "|\n"
 	    ps = sss.encode('windows-1251')
 
