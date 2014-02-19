@@ -28,9 +28,9 @@ STDONE_PATH       = "./STDONE"
 
 APPEND_DATA       = False
 
-CHECK_REGISTERED  = False
-REGISTER_FILE     = False
-MOVE_FILE         = False
+CHECK_REGISTERED  = True
+REGISTER_FILE     = True
+MOVE_FILE         = True
 
 def register_st_done(db, mcod, clinic_id, fname, lcount):
     import datetime    
@@ -135,8 +135,8 @@ if __name__ == "__main__":
 	
 	if MOVE_FILE:
 	# move file
-	    source = SM2DO_PATH + "/" + fname
-	    destination = SMDONE_PATH + "/" + fname
+	    source = ST2DO_PATH + "/" + fname
+	    destination = STDONE_PATH + "/" + fname
 	    shutil.move(source, destination)
     
     localtime = time.asctime( time.localtime(time.time()) )
