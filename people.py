@@ -181,6 +181,18 @@ class SM_PEOPLE:
 	self.n_oms            = None
 	
 	self.mcod             = None
+
+class ST_PEOPLE:
+    def __init__(self):
+        self.people_id  = None
+
+	self.ocato      = None
+	self.smo_code   = None
+	self.dpfs       = None
+	self.oms_series = None
+	self.oms_number = None
+	self.enp        = None
+	self.mcod       = None
     
 def get_registry(table_name):
     import dbf
@@ -561,67 +573,131 @@ def get_st(fname, mcod = None):
     for line in ins:
 	u_line = line.decode('cp1251')
 	a_line = u_line.split("|")
-	if len(a_line) < 15:
+	if len(a_line) < 8:
 	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
 	    log.warn( sout )
 	    continue
-	people_id  = int(a_line[0])
-	lname = a_line[1]
-	fname = a_line[2]
-	mname = a_line[3]
-	s_bd  = a_line[4]
-	
-	try:
-	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
-	except:
-	    bd = None
-	
-	sex   = int(a_line[5])
-	
-	doc_type_id     = a_line[6]
-	document_series = a_line[7]
-	document_number = a_line[8]
-	snils           = a_line[9]
-	
-	smo_ogrn        = a_line[10]
-	ocato           = a_line[11]
-	enp             = a_line[12]
-	
-	dpfs            = a_line[13]
-	s_oms           = a_line[14]
-	n_oms           = a_line[15]
-	
-	sm_p = SM_PEOPLE()
-	
-	sm_p.people_id = people_id
-	sm_p.lname = lname
-	sm_p.fname = fname
-	sm_p.mname = mname
-	sm_p.birthday         = bd
-	sm_p.sex              = sex
-	sm_p.document_type_id = doc_type_id
 
-	if doc_type_id == '14':
-	    sm_p.document_series  = d_series(document_series)
+	people_id  = int(a_line[0])
+	ocato      = a_line[1]
+	s_code     = a_line[2]
+	if len(s_code) == 0:
+	    smo_code = None
 	else:
-	    sm_p.document_series  = d_number(document_series)
-	sm_p.document_number  = d_number(document_number)
-	sm_p.snils            = snils
-	sm_p.smo_ogrn         = smo_ogrn
-	sm_p.ocato            = ocato
-	sm_p.enp              = enp
+	    smo_code = int(s_code)
+	    
+	dpfs       = a_line[3]
+	oms_series = a_line[4]
+	oms_number = a_line[5]
+	enp        = a_line[6]
+	mcod       = a_line[7]
+
+	st_p = ST_PEOPLE()
 	
+	st_p.people_id = people_id
+	
+	st_p.ocato     = ocato
+	st_p.smo_code  = smo_code
+
 	if len(dpfs) == 0:
-	    sm_p.dpfs = None
+	    st_p.dpfs = None
 	else:
-	    sm_p.dpfs         = dpfs
-	sm_p.s_oms            = s_oms
-	sm_p.n_oms            = n_oms
+	    st_p.dpfs = int(dpfs)
+	    
+	st_p.oms_series = oms_series
+	st_p.oms_number = oms_number
+	st_p.enp        = enp 
+
+	if (len(mcod) == 0) or (mcod[0] not in (u'0', u'1', u'2', u'3', u'4', u'5', u'6', u'7', u'8', u'9')):
+	    st_p.mcod = None
+	else:
+	    st_p.mcod = int(mcod)
 	
-	sm_p.mcod             = mcod
-	
-	array.append( sm_p )
+	array.append( st_p )
     
     ins.close()    
     
     return array
+
+def put_st2mira(db, ar_st, append = False):
+    
+    s_sqlf = """SELECT f$smo_code, f$oms_series, f$oms_number, f$enp, f$mcod
+    FROM
+    mira$peoples
+    WHERE people_id = %s"""
+
+    s_sqli = """INSERT INTO
+    mira$peoples
+    (people_id, 
+    f$ocato, f$smo_code,
+    f$dpfs, f$oms_series, f$oms_number, f$enp,
+    f$mcod)
+    VALUES 
+    (%s, 
+    %s, %s, 
+    %s, %s, %s, %s,
+    %s);"""
+
+
+    s_sqlu = """UPDATE
+    mira$peoples
+    SET
+    f$ocato = %s,
+    f$smo_code = %s,
+    f$dpfs = %s,
+    f$oms_series = %s,
+    f$oms_number = %s,
+    f$enp = %s,
+    f$mcod = %s
+    WHERE 
+    people_id = %s;"""
+
+    
+    curr = db.con.cursor()
+    curw = db.con.cursor()
+    count_a = 0
+    count_i = 0
+    count_u = 0
+    
+    for st in ar_st:
+	count_a += 1
+
+	people_id  = st.people_id
+
+	ocato      = st.ocato
+	smo_code   = st.smo_code
+	dpfs       = st.dpfs
+	oms_series = st.oms_series
+	oms_number = st.oms_number
+	enp        = st.enp
+	mcod       = st.mcod
+
+	if count_a % STEP == 0:
+	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
+	    log.info(sout)
+	
+	curr.execute(s_sqlf,(people_id,))
+	rec = curr.fetchone()
+
+	if (rec is None) and append:
+	    try:
+		curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod))
+		db.con.commit()	
+		count_i += 1
+	    except Exception, e:
+		sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
+		log.error(sout)
+		sout = "{0}".format(e)
+		log.error(sout)
+	else:
+	    try:
+		curw.execute(s_sqlu,(ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod, people_id,))
+		db.con.commit()	
+		count_u += 1
+	    except Exception, e:
+		sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
+		log.error(sout)
+		sout = "{0}".format(e)
+		log.error(sout)
+	    
+    return count_a, count_i, count_u

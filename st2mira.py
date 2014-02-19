@@ -26,7 +26,7 @@ STEP = 100
 ST2DO_PATH        = "./ST2DO"
 STDONE_PATH       = "./STDONE"
 
-UPDATE_DATA       = True
+APPEND_DATA       = False
 
 CHECK_REGISTERED  = False
 REGISTER_FILE     = False
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     import os, shutil
     import time
     import datetime
-    from people import get_fnames, get_st
+    from people import get_fnames, get_st, put_st2mira
     from dbmysql_connect import DBMY
     from people import put_sm2mira
     
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     dbmy2 = DBMY()
     
     for fname in fnames:
-	s_mcod  = fname[2:8]
+	s_mcod  = fname[5:11]
 	w_month = fname[12:16]
 	mcod = int(s_mcod)
 	try:
@@ -120,11 +120,11 @@ if __name__ == "__main__":
 	else:
 	    #pfile(f_fname)
 	    ar_st = get_st(f_fname, mcod)
-	    l_ar = len(ar_sm)
+	    l_ar = len(ar_st)
 	    sout = "File has got {0} lines".format(l_ar)
 	    log.info( sout )
 
-	    count_a, count_i, count_u = put_st2mira(dbmy2, ar_sm, upd = UPDATE_DATA)
+	    count_a, count_i, count_u = put_st2mira(dbmy2, ar_st, append = APPEND_DATA)
 
 	    sout = "{0} records have been insrted into mira$peoples table".format(count_i)
 	    log.info( sout )
