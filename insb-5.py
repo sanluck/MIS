@@ -27,114 +27,22 @@ log = logging.getLogger(__name__)
 STEP = 1000
 PRINT_FOUND = False
 
-HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
-
-ST2DO_PATH        = "./MO2DO"
-STDONE_PATH       = "./MODONE"
+MO2DO_PATH        = "./MO2DO"
+MODONE_PATH       = "./MODONE"
 
 UPDATE            = True
 
 CHECK_REGISTERED  = True
 REGISTER_FILE     = True
 MOVE_FILE         = True
-
-def write_st(db, ar, upd = False):
-    
-    s_sqlf = """SELECT oms_series, oms_number, enp, mcod
-    FROM
-    sm
-    WHERE people_id = %s"""
-
-    s_sqli = """INSERT INTO
-    sm
-    (people_id, ocato, 
-    smo_code, dpfs_code, oms_series, oms_number, enp,
-    mcod)
-    VALUES 
-    (%s, %s,
-    %s, %s, %s, %s, %s,
-    %s);"""
-
-
-    s_sqlu = """UPDATE
-    sm
-    SET
-    ocato = %s, 
-    smo_code = %s,
-    dpfs_code = %s,
-    oms_series = %s,
-    oms_number = %s,
-    enp = %s,
-    mcod = %s
-    WHERE 
-    people_id = %s;"""
-
-    
-    curr = db.con.cursor()
-    curw = db.con.cursor()
-    count_a = 0
-    count_i = 0
-    count_u = 0
-    
-    for rec in ar:
-	count_a += 1
 	
-	people_id  = rec[0]
-	ocato      = rec[1]
-	smo_code   = rec[2]
-	dpfs_code  = rec[3]
-	oms_series = rec[4]
-	oms_number = rec[5]
-	enp        = rec[6]
-	mcod       = rec[7]
-
-	if count_a % STEP == 0:
-	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
-	    log.info(sout)
-	
-	curr.execute(s_sqlf,(people_id,))
-	rec = curr.fetchone()
-	if rec is None:
-	    try:
-		curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod,))
-		db.con.commit()	
-		count_i += 1
-	    except Exception, e:
-		sout = "Can't insert into sm table. UID: {0}".format(people_id)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	else:
-	    if upd:
-		try:
-		    curw.execute(s_sqlu,(ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod, people_id,))
-		    db.con.commit()	
-		    count_u += 1
-		except Exception, e:
-		    sout = "Can't update sm table. UID: {0}".format(people_id)
-		    log.error(sout)
-		    sout = "{0}".format(e)
-		    log.error(sout)
-	    if PRINT_FOUND:
-		f_oms_series = rec[0]
-		f_oms_number = rec[1]
-		f_enp        = rec[2]
-		f_mcod       = rec[3]
-		
-		sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
-		log.info(sout)
-		
-	    
-    return count_a, count_i, count_u
-	
-def register_st_done(db, mcod, clinic_id, fname):
+def register_mo_done(db, mcod, clinic_id, fname):
     import datetime    
 
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
     s_sqlt = """INSERT INTO
-    st_done
+    mo_done
     (mcod, clinic_id, fname, done)
     VALUES
     ({0}, {1}, '{2}', '{3}');
@@ -145,12 +53,12 @@ def register_st_done(db, mcod, clinic_id, fname):
     cursor.execute(s_sql)
     db.con.commit()
 
-def st_done(db, mcod, w_month = '1402'):
+def mo_done(db, mcod, w_month = '201402'):
 
     s_sqlt = """SELECT
     fname, done
     FROM
-    st_done
+    mo_done
     WHERE mcod = {0} AND fname LIKE '%{1}%';
     """
 
@@ -170,11 +78,11 @@ if __name__ == "__main__":
     import os, shutil
     import time
     from dbmysql_connect import DBMY
-    from people import get_fnames, get_mo
+    from people import get_fnames, get_mo, put_mo
 
     log.info("======================= INSB-5 ===========================================")
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Registering of Insurance Belonging Replies. Start {0}'.format(localtime))
+    log.info('Registering of MO Files. Start {0}'.format(localtime))
     
 
     fnames = get_fnames(path = MO2DO_PATH, file_ext = '.csv')
@@ -213,23 +121,23 @@ if __name__ == "__main__":
 	    log.warn( sout )
 	else:
 	    #pfile(f_fname)
-	    ar = get_st(f_fname)
+	    ar = get_mo(f_fname)
 	    l_ar = len(ar)
 	    sout = "File has got {0} lines".format(l_ar)
 	    log.info( sout )
-	    count_a, count_i, count_u = write_st(dbmy2, ar, UPDATE)
+	    count_a, count_i, count_u = put_mo(dbmy2, ar, UPDATE)
 	    sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
 	    log.info( sout )
-	    if REGISTER_FILE: register_st_done(dbmy2, mcod, clinic_id, fname)
+	    if REGISTER_FILE: register_mo_done(dbmy2, mcod, clinic_id, fname)
 	
 	if MOVE_FILE:
 	# move file
-	    source = ST2DO_PATH + "/" + fname
-	    destination = STDONE_PATH + "/" + fname
+	    source = MO2DO_PATH + "/" + fname
+	    destination = MODONE_PATH + "/" + fname
 	    shutil.move(source, destination)
     
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Registering of Insurance Belonging Replies. Finish  '+localtime)  
+    log.info('Registering of MO Files. Finish  '+localtime)  
     
     dbmy2.close()
     sys.exit(0)

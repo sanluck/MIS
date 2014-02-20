@@ -225,22 +225,19 @@ ORDER BY ap.date_beg DESC;"""
 			ws.write(ws_row,2,motive_attach)
 			ws.write(ws_row,3,clinic_id_fk)
 			
-
-			
 			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
 			    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
 			    ps = sss.encode('windows-1251')
 			    l_print = True
 			    
 		
-		if l_print:
-		    fob.write(ps)
+	    if l_print:
+		fob.write(ps)
     
-		    fob.flush()
-		    os.fsync(fob.fileno())
-		else:
-		    count_np += 1
-		
+		fob.flush()
+		os.fsync(fob.fileno())
+	    else:
+		count_np += 1
 
     foa.close()
     fob.close()

@@ -25,6 +25,9 @@ DOC_TYPES = {1:u"1",
 
 SKIP_OGRN  = True # Do not put OGRN into IBR
 
+ASSIGN_ATT = True
+ADATE_ATT  = '20131230'
+
 #
 # Код сгенерирован с помощью fldsconv.py 
 #
@@ -607,6 +610,8 @@ def p2join(ar_in):
 def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
 # new format    
     import datetime
+    import re
+    
     now = datetime.datetime.now()
     s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)    
 
@@ -711,7 +716,13 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
     if patient.insurance_certificate is None:
         SNILS = None
     else:
-        SNILS = patient.insurance_certificate
+        s_pattern = re.compile(u"[0-9][0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9] [0-9][0-9]")
+        s_snils = patient.insurance_certificate
+        if s_pattern.match(s_snils):
+            SNILS = s_snils
+        else:
+            SNILS = None
+            
     res.append(SNILS)
     
     # 14
@@ -722,13 +733,18 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
     res.append(s_mcod)
     
     # 15
-    res.append(str(MOTIVE_ATT))
+    if MOTIVE_ATT not in (1,2,3,99):
+        res.append(None)
+    else:
+        res.append(str(MOTIVE_ATT))
     
     # 16
     res.append(None)
     
     # 17
-    if DATE_ATT is None:
+    if ASSIGN_ATT:
+        res.append(ADATE_ATT)
+    elif DATE_ATT is None:
         res.append(None)
     else:
         dw = DATE_ATT

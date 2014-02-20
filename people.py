@@ -5,7 +5,7 @@ import sys
 import logging
 
 STEP = 1000
-PRINT_FOUND = False
+PRINT_FOUND = True
 SM2DO_PATH  = "./SM2DO"
 
 log = logging.getLogger(__name__)
@@ -733,17 +733,20 @@ def mo_item(s_mo_item, itype = 'S' ):
     #       I - Integer
     #
     
-    from datetime import datetime
+    from datetime import date
     
     ls = len(s_mo_item)
-    if ls == 0:
+    if (ls == 0) or (s_mo_item == u'\r\n') or (s_mo_item == u'"NONE"'):
 	return None
     else:
-	sss = s_mo_item[0:ls]
+	sss = s_mo_item[1:ls-1]
 	if itype == 'S':
 	    return sss
 	elif itype == 'D':
-	    ddd = datetime.strptime(sss, '%Y-%m-%d')
+	    year  = int(sss[:4])
+	    month = int(sss[4:6])
+	    day   = int(sss[6:])
+	    ddd = date(year, month, day)
 	    return ddd
 	elif itype == 'I':
 	    iii = int(sss)
@@ -804,7 +807,7 @@ def put_mo(db, ar, upd = False):
     s_sqli = """INSERT INTO
     mo
     (dpfs, oms_sn, enp, 
-    lname, fnmae, mname,
+    lname, fname, mname,
     birthday, birthplace,
     doc_type_id, doc_sn, doc_when, doc_who,
     snils, mcod,
@@ -819,13 +822,13 @@ def put_mo(db, ar, upd = False):
 
 
     s_sqlu = """UPDATE
-    sm
+    mo
     SET
     dpfs = %s,
     oms_sn = %s,
     enp = %s, 
     lname = %s,
-    fnmae = %s,
+    fname = %s,
     mname = %s,
     birthday = %s,
     birthplace = %s,
@@ -879,11 +882,11 @@ def put_mo(db, ar, upd = False):
 	rec = curr.fetchone()
 	if rec is None:
 	    try:
-		curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fnmae, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
+		curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
 		db.con.commit()	
 		count_i += 1
 	    except Exception, e:
-		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(oms_sn, enp)
+		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'))
 		log.error(sout)
 		sout = "{0}".format(e)
 		log.error(sout)
@@ -891,12 +894,22 @@ def put_mo(db, ar, upd = False):
 	    if upd:
 		_id = rec[0]
 		try:
-		    curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fnmae, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
+		    curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
 		    db.con.commit()	
 		    count_u += 1
 		except Exception, e:
-		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(oms_sn, enp)
+		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'))
 		    log.error(sout)
 		    sout = "{0}".format(e)
 		    log.error(sout)
+		    
+	    if PRINT_FOUND:
+		f_oms_series = rec[0]
+		f_oms_number = rec[1]
+		f_enp        = rec[2]
+		f_mcod       = rec[3]
+		
+		sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'), mcod)
+		log.info(sout)
+		    
     return count_a, count_i, count_u
