@@ -49,6 +49,8 @@ MLIST      = True  # Use mis.mlist table (MySQL)
 
 OCATO      = '01000'
 
+PRINT2     = False
+
 def get_clist(db):
     
     s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
@@ -145,11 +147,16 @@ ORDER BY ap.date_beg DESC;"""
     count_m  = 0
     count_np = 0
     noicc    = 0
-    
+
+    p_ids    = []
     for row in rows:
-        count += 1
-        p_id = row[0]
-	p_obj.initFromRec(row)
+	p_id = row[0]
+	
+	if p_id in p_ids: continue
+	p_ids.append(p_id)
+	count += 1
+	
+	p_obj.initFromRec0(row)
 
 	insorg_id   = p_obj.insorg_id
 	try:
@@ -188,6 +195,8 @@ ORDER BY ap.date_beg DESC;"""
 	    p_obj.enp = f_enp
 	    p_obj.medical_insurance_series = f_oms_series
 	    p_obj.medical_insurance_number = f_oms_number
+
+	    l_print = False
 	    
 	    if mcod == f_mcod:
 		count_e += 1
@@ -196,7 +205,6 @@ ORDER BY ap.date_beg DESC;"""
 		
 		cur.execute(s_sql_ap,(p_id, ))
 		recs_ap = cur.fetchall()
-		l_print = False
 		if (len(recs_ap) == 1):
 		    if (f_ocato == OCATO):
 			date_beg = recs_ap[0][2]
@@ -212,8 +220,9 @@ ORDER BY ap.date_beg DESC;"""
 			date_beg       = rec_ap[2]
 			motive_attach  = rec_ap[3]
 			clinic_id_fk   = rec_ap[4]
-			sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
-			log.info( sout )
+			if PRINT2:
+			    sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
+			    log.info( sout )
 			
 			ws_row += 1
 			ws.write(ws_row,0,p_id)
@@ -285,8 +294,6 @@ ORDER BY ap.date_beg DESC;"""
 
     dbmy.close()
 
-
-
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
     import time
@@ -307,7 +314,7 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} cod_mo: {1} clinic_name: {2} clinic_ogrn: {3}".format(clinic_id, mcod, cname, cogrn)
     log.info(sout)
 
-    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+    s_sqlt = """SELECT * FROM peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
@@ -332,6 +339,9 @@ if __name__ == "__main__":
     from dbmysql_connect import DBMY
 
     log.info("======================= INSB-2 ===========================================")
+
+    sout = "database: {0}:{1}".format(HOST, DB)
+    log.info( sout )
     
     if CID_LIST:
 	for clinic_id in cid_list:
