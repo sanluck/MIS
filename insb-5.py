@@ -15,7 +15,7 @@ insorgs = InsorgInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_insb1.out'
+LOG_FILENAME = '_insb5.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -30,58 +30,14 @@ PRINT_FOUND = False
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-ST2DO_PATH        = "./ST2DO"
-STDONE_PATH       = "./STDONE"
+ST2DO_PATH        = "./MO2DO"
+STDONE_PATH       = "./MODONE"
 
 UPDATE            = True
 
 CHECK_REGISTERED  = True
 REGISTER_FILE     = True
 MOVE_FILE         = True
-
-
-
-def get_fnames(path = ST2DO_PATH, file_ext = '.csv'):
-    
-    import os    
-    
-    fnames = []
-    for subdir, dirs, files in os.walk(path):
-        for fname in files:
-            if fname.find(file_ext) > 1:
-                log.info(fname)
-                fnames.append(fname)
-    
-    return fnames    
-
-def get_st(fname):
-    ins = open( fname, "r" )
-
-    array = []
-    for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	people_id  = int(a_line[0])
-	ocato      = a_line[1]
-	s_smo_code = a_line[2]
-	if len(s_smo_code) == 0:
-	    smo_code = None
-	else:
-	    smo_code = int(s_smo_code)
-	dpfs_code  = int(a_line[3])
-	oms_series = a_line[4]
-	oms_number = a_line[5]
-	enp        = a_line[6]
-	if (len(a_line) > 7) and (a_line[7] != u'\r\n'):
-	    mcod = int(a_line[7])
-	else:
-	    mcod    = None
-	a_rec = [people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod]
-	array.append( a_rec )
-    
-    ins.close()    
-    
-    return array
 
 def write_st(db, ar, upd = False):
     
@@ -214,13 +170,14 @@ if __name__ == "__main__":
     import os, shutil
     import time
     from dbmysql_connect import DBMY
+    from people import get_fnames, get_mo
 
-    log.info("======================= INSB-1 ===========================================")
+    log.info("======================= INSB-5 ===========================================")
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Registering of Insurance Belonging Replies. Start {0}'.format(localtime))
     
 
-    fnames = get_fnames()
+    fnames = get_fnames(path = MO2DO_PATH, file_ext = '.csv')
     n_fnames = len(fnames)
     sout = "Totally {0} files has been found".format(n_fnames)
     log.info( sout )
@@ -228,8 +185,8 @@ if __name__ == "__main__":
     dbmy2 = DBMY()
     
     for fname in fnames:
-	s_mcod  = fname[5:11]
-	w_month = fname[12:16]
+	s_mcod  = fname[3:9]
+	w_month = fname[9:15]
 	mcod = int(s_mcod)
     
 	try:
@@ -242,12 +199,12 @@ if __name__ == "__main__":
 	    log.warn(sout)
 	    continue
 
-	f_fname = ST2DO_PATH + "/" + fname
+	f_fname = MO2DO_PATH + "/" + fname
 	sout = "Input file: {0}".format(f_fname)
 	log.info(sout)
     
 	if CHECK_REGISTERED:
-	    ldone, dfname, ddone = st_done(dbmy2, mcod, w_month)
+	    ldone, dfname, ddone = mo_done(dbmy2, mcod, w_month)
 	else:
 	    ldone = False
 	    

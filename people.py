@@ -193,7 +193,30 @@ class ST_PEOPLE:
 	self.oms_number = None
 	self.enp        = None
 	self.mcod       = None
-    
+
+class MO_PEOPLE:
+    def __init__(self):
+        self.people_id   = None
+
+	self.dpfs        = None
+	self.oms_sn      = None
+	self.enp         = None
+	self.lname       = None
+	self.fname       = None
+	self.mname       = None
+	self.birthday    = None
+	self.birthplace  = None
+	self.doc_type_id = None
+	self.doc_sn      = None
+	self.doc_when    = None
+	self.doc_who     = None
+	self.snils       = None
+	self.mcod        = None
+	self.motive_att  = None
+	self.type_att    = None
+	self.date_att    = None
+	self.date_det    = None
+
 def get_registry(table_name):
     import dbf
     
@@ -700,4 +723,180 @@ def put_st2mira(db, ar_st, append = False):
 		sout = "{0}".format(e)
 		log.error(sout)
 	    
+    return count_a, count_i, count_u
+
+def mo_item(s_mo_item, itype = 'S' ):
+    #
+    # itype:
+    #       S - String
+    #       D - Date
+    #       I - Integer
+    #
+    
+    from datetime import datetime
+    
+    ls = len(s_mo_item)
+    if ls == 0:
+	return None
+    else:
+	sss = s_mo_item[0:ls]
+	if itype == 'S':
+	    return sss
+	elif itype == 'D':
+	    ddd = datetime.strptime(sss, '%Y-%m-%d')
+	    return ddd
+	elif itype == 'I':
+	    iii = int(sss)
+	    return iii
+	else:
+	    return sss
+
+def get_mo(fname, mcod = None):
+    from datetime import datetime
+    
+    ins = open( fname, "r" )
+
+    array = []
+    for line in ins:
+	u_line = line.decode('cp1251')
+	a_line = u_line.split(";")
+	if len(a_line) < 18:
+	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+	    log.warn( sout )
+	    continue
+	
+	p_mo = MO_PEOPLE()
+	
+	p_mo.dpfs        = mo_item(a_line[0])
+	p_mo.oms_sn      = mo_item(a_line[1])
+	p_mo.enp         = mo_item(a_line[2])
+	p_mo.lname       = mo_item(a_line[3])
+	p_mo.fname       = mo_item(a_line[4])
+	p_mo.mname       = mo_item(a_line[5])
+	p_mo.birthday    = mo_item(a_line[6],'D')
+	p_mo.birthplace  = mo_item(a_line[7])
+	p_mo.doc_type_id = mo_item(a_line[8],'I')
+	p_mo.doc_sn      = mo_item(a_line[9])
+	p_mo.doc_when    = mo_item(a_line[10],'D')
+	p_mo.doc_who     = mo_item(a_line[11])
+	p_mo.snils       = mo_item(a_line[12])
+	p_mo.mcod        = mo_item(a_line[13],'I')
+	p_mo.motive_att  = mo_item(a_line[14],'I')
+	p_mo.type_att    = mo_item(a_line[15])
+	p_mo.date_att    = mo_item(a_line[16],'D')
+	p_mo.date_det    = mo_item(a_line[17],'D')
+	
+	array.append( p_mo )
+    
+    ins.close()    
+    
+    return array
+
+def put_mo(db, ar, upd = False):
+    
+    s_sqlf = """SELECT id
+    FROM
+    mo
+    WHERE oms_sn = %s
+    AND enp = %s
+    AND mcod = %s"""
+
+    s_sqli = """INSERT INTO
+    mo
+    (dpfs, oms_sn, enp, 
+    lname, fnmae, mname,
+    birthday, birthplace,
+    doc_type_id, doc_sn, doc_when, doc_who,
+    snils, mcod,
+    motive_att, type_att, date_att, date_det)
+    VALUES 
+    (%s, %s, %s,
+    %s, %s, %s,
+    %s, %s,
+    %s, %s, %s, %s,
+    %s, %s,
+    %s, %s, %s, %s);"""
+
+
+    s_sqlu = """UPDATE
+    sm
+    SET
+    dpfs = %s,
+    oms_sn = %s,
+    enp = %s, 
+    lname = %s,
+    fnmae = %s,
+    mname = %s,
+    birthday = %s,
+    birthplace = %s,
+    doc_type_id = %s,
+    doc_sn = %s,
+    doc_when = %s, 
+    doc_who = %s,
+    snils = %s,
+    mcod = %s,
+    motive_att = %s,
+    type_att = %s,
+    date_att = %s,
+    date_det = %s
+    WHERE 
+    id = %s;"""
+
+    
+    curr = db.con.cursor()
+    curw = db.con.cursor()
+    count_a = 0
+    count_i = 0
+    count_u = 0
+    
+    for p_mo in ar:
+	count_a += 1
+
+	dpfs        = p_mo.dpfs
+	oms_sn      = p_mo.oms_sn
+	enp         = p_mo.enp
+	lname       = p_mo.lname
+	fname       = p_mo.fname
+	mname       = p_mo.mname
+	birthday    = p_mo.birthday
+	birthplace  = p_mo.birthplace
+	doc_type_id = p_mo.doc_type_id
+	doc_sn      = p_mo.doc_sn
+	doc_when    = p_mo.doc_when
+	doc_who     = p_mo.doc_who
+	snils       = p_mo.snils
+	mcod        = p_mo.mcod
+	motive_att  = p_mo.motive_att
+	type_att    = p_mo.type_att
+	date_att    = p_mo.date_att
+	date_det    = p_mo.date_det
+	
+	if count_a % STEP == 0:
+	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, oms_sn, enp, mcod)
+	    log.info(sout)
+	
+	curr.execute(s_sqlf,(oms_sn, enp, mcod,))
+	rec = curr.fetchone()
+	if rec is None:
+	    try:
+		curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fnmae, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
+		db.con.commit()	
+		count_i += 1
+	    except Exception, e:
+		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(oms_sn, enp)
+		log.error(sout)
+		sout = "{0}".format(e)
+		log.error(sout)
+	else:
+	    if upd:
+		_id = rec[0]
+		try:
+		    curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fnmae, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
+		    db.con.commit()	
+		    count_u += 1
+		except Exception, e:
+		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(oms_sn, enp)
+		    log.error(sout)
+		    sout = "{0}".format(e)
+		    log.error(sout)
     return count_a, count_i, count_u
