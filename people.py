@@ -875,7 +875,7 @@ def put_mo(db, ar, upd = False):
 	date_det    = p_mo.date_det
 	
 	if count_a % STEP == 0:
-	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, oms_sn, enp, mcod)
+	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, oms_sn.encode('utf-8'), enp.encode('utf-8'), mcod)
 	    log.info(sout)
 	
 	curr.execute(s_sqlf,(oms_sn, enp, mcod,))
@@ -904,11 +904,6 @@ def put_mo(db, ar, upd = False):
 		    log.error(sout)
 		    
 	    if PRINT_FOUND:
-		f_oms_series = rec[0]
-		f_oms_number = rec[1]
-		f_enp        = rec[2]
-		f_mcod       = rec[3]
-		
 		sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'), mcod)
 		log.info(sout)
 		    

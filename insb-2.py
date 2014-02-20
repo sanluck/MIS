@@ -81,10 +81,10 @@ def register_cdone(db, clinic_id):
     cur.execute(s_sql, (sdnow, clinic_id))
 
 
-def plist(dbc, clinic_id, mcod, rows):
+def plist(dbc, clinic_id, mcod, patient_list):
     import xlwt
     from dbmysql_connect import DBMY
-    from PatientInfo import PatientInfo, p1, p2
+    from PatientInfo import p1, p2
     from insorglist import InsorgInfoList
     
     import os    
@@ -112,7 +112,6 @@ AND ap.date_end is Null
 ORDER BY ap.date_beg DESC;"""
     
     
-    p_obj = PatientInfo()
     insorgs = InsorgInfoList()
 
     fnamea = FNAMEa.format(mcod)
@@ -149,15 +148,12 @@ ORDER BY ap.date_beg DESC;"""
     noicc    = 0
 
     p_ids    = []
-    for row in rows:
-	p_id = row[0]
+    for p_obj in patient_list:
+
+	p_id = p_obj.people_id
 	
-	if p_id in p_ids: continue
-	p_ids.append(p_id)
 	count += 1
 	
-	p_obj.initFromRec0(row)
-
 	insorg_id   = p_obj.insorg_id
 	try:
 	    insorg = insorgs[insorg_id]
@@ -196,8 +192,6 @@ ORDER BY ap.date_beg DESC;"""
 	    p_obj.medical_insurance_series = f_oms_series
 	    p_obj.medical_insurance_number = f_oms_number
 
-	    l_print = False
-	    
 	    if mcod == f_mcod:
 		count_e += 1
 	    else:
@@ -205,6 +199,8 @@ ORDER BY ap.date_beg DESC;"""
 		
 		cur.execute(s_sql_ap,(p_id, ))
 		recs_ap = cur.fetchall()
+		
+		l_print = False
 		if (len(recs_ap) == 1):
 		    if (f_ocato == OCATO):
 			date_beg = recs_ap[0][2]
@@ -240,13 +236,13 @@ ORDER BY ap.date_beg DESC;"""
 			    l_print = True
 			    
 		
-	    if l_print:
-		fob.write(ps)
+		if l_print:
+		    fob.write(ps)
     
-		fob.flush()
-		os.fsync(fob.fileno())
-	    else:
-		count_np += 1
+		    fob.flush()
+		    os.fsync(fob.fileno())
+		else:
+		    count_np += 1
 
     foa.close()
     fob.close()
@@ -296,6 +292,7 @@ ORDER BY ap.date_beg DESC;"""
 
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
+    from PatientInfo import get_patient_list
     import time
 
     localtime = time.asctime( time.localtime(time.time()) )
@@ -314,7 +311,7 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} cod_mo: {1} clinic_name: {2} clinic_ogrn: {3}".format(clinic_id, mcod, cname, cogrn)
     log.info(sout)
 
-    s_sqlt = """SELECT * FROM peoples p
+    s_sqlt = """SELECT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
@@ -325,7 +322,16 @@ AND ap.date_end is Null;"""
     cursor.execute(s_sql)
     results = cursor.fetchall()
     
-    plist(dbc, clinic_id, mcod, results)
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('Patients has been selected {0}'.format(localtime))
+    
+    patient_list = get_patient_list(results)
+    
+    npatients = len(patient_list)
+    sout = "clinic has got {0} unique patients".format(npatients)
+    log.info( sout )
+    
+    plist(dbc, clinic_id, mcod, patient_list)
     
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
@@ -340,7 +346,7 @@ if __name__ == "__main__":
 
     log.info("======================= INSB-2 ===========================================")
 
-    sout = "database: {0}:{1}".format(HOST, DB)
+    sout = "Database: {0}:{1}".format(HOST, DB)
     log.info( sout )
     
     if CID_LIST:

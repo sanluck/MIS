@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf8
 
+import logging
 import constants
 
 DOC_TYPES = {1:u"1",
@@ -27,6 +28,9 @@ SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ASSIGN_ATT = True
 ADATE_ATT  = '20131230'
+
+STEP = 1000
+log = logging.getLogger(__name__)
 
 #
 # Код сгенерирован с помощью fldsconv.py 
@@ -846,6 +850,25 @@ def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
     
     return p2join(res)
 
+
+def get_patient_list(recs):
+    
+    patient_list = []
+    
+    p_ids = []
+    nnn   = 0      
+    for rec in recs:
+        p_id = rec[0]
+        if p_id in p_ids: continue
+        p_ids.append(p_id)
+        
+        p_obj = PatientInfo()
+        p_obj.initFromRec(rec)
+        patient_list.append(p_obj)
+        nnn += 1
+        
+    return patient_list
+        
 
 if __name__ == '__main__':
     from  medlib.modules.dbmis_connect import DBMIS
