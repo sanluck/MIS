@@ -28,12 +28,22 @@ log = logging.getLogger(__name__)
 IN_PATH        = "./FIN"
 SDMO_PATH      = "./SDMO"
 OUT_PATH       = "./FOUT"
-CHECK_LAST_CH  = False
+
 SM_CH          = u';'
 SM_COUNT       = 17
 
 CHECK_DATES    = True
 i_dates        = [6,10,16]
+
+CHECK_MOTIVE   = True
+i_motive_att   = 14
+
+CHECK_SNILS    = True
+i_snils        = 12
+
+CHECK_ENP      = True
+i_enp          = 2
+
 
 def get_fnames(path = IN_PATH, file_ext = '.csv'):
 # get file names
@@ -147,16 +157,38 @@ def write_st(ar, fout):
 		sout = "   {0}".format(line.encode('utf-8'))
 		log.warn( sout )
 		continue
+	if CHECK_MOTIVE:
+	    s_motive = a_l[i_motive_att]
+	    if len(s_motive) == 0:
+		a_l[i_motive_att] = '"0"'
+	    elif s_motive not in (u'"0"', u'"1"', u'"2"'):
+		sout = "Wrong Motive_Att ({0}) in the line:".format(s_motive)
+		log.warn( sout )
+		sout = "   {0}".format(line.encode('utf-8'))
+		log.warn( sout )
+		a_l[i_motive_att] = '"2"'
 		
-	l_line = len(line)
-	l1 = l_line - 1
-	if (CHECK_LAST_CH) and (l1 >= 0) and (line[l1] == ';'):
-	    line = line[:l1]
-	    
+	if CHECK_SNILS:
+	    SNILS = a_l[i_snils]
+	    if len(SNILS) > 13:
+		SNILS = SNILS.replace(u" ", "")
+		SNILS = SNILS.replace(u"-", "")
+	    if len(SNILS) <> 13:
+		SNILS = ''
+	    a_l[i_snils] = SNILS
+
+	if CHECK_ENP:
+	    ENP = a_l[i_enp]
+	    l_enp = len(ENP)
+	    if l_enp not in (0, 18):
+		ENP = ''
+		a_l[i_enp] = ENP
+	
+	lll = SM_CH.join(a_l)    
 	if i == nnn: 
-	    lout = line.upper().encode('cp1251')
+	    lout = lll.upper().encode('cp1251')
 	else:
-	    lout = line.upper().encode('cp1251')+"\r\n"
+	    lout = lll.upper().encode('cp1251')+"\r\n"
 	
 	fo.write(lout)
 	         
@@ -196,6 +228,7 @@ if __name__ == "__main__":
 	log.info( sout )
 	
 	fout_name = fname
+	l_appended = False
 	for f2name in f2names:
 	    f2_mcod = f2name[3:9]
 	    if f2_mcod == mcod:
@@ -205,7 +238,9 @@ if __name__ == "__main__":
 		log.info(sout)
 	
 		ar2 = append_st(ar, f_fname)
+		l_appended = True
 	
+	if not l_appended: ar2 = ar
 	l_ar = len(ar2)
 	sout = "Totally {0} lines to be processed".format(l_ar)
 	log.info( sout )
