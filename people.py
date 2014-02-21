@@ -873,9 +873,19 @@ def put_mo(db, ar, upd = False):
 	type_att    = p_mo.type_att
 	date_att    = p_mo.date_att
 	date_det    = p_mo.date_det
+
+	if oms_sn is None:
+	    s_oms_sn = ''
+	else:
+	    s_oms_sn = oms_sn.encode('utf-8')
+	if enp is None:
+	    s_enp = ''
+	else:
+	    s_enp = enp.encode('utf-8')
+
 	
 	if count_a % STEP == 0:
-	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, oms_sn.encode('utf-8'), enp.encode('utf-8'), mcod)
+	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
 	    log.info(sout)
 	
 	curr.execute(s_sqlf,(oms_sn, enp, mcod,))
@@ -886,7 +896,7 @@ def put_mo(db, ar, upd = False):
 		db.con.commit()	
 		count_i += 1
 	    except Exception, e:
-		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'))
+		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
 		log.error(sout)
 		sout = "{0}".format(e)
 		log.error(sout)
@@ -898,13 +908,179 @@ def put_mo(db, ar, upd = False):
 		    db.con.commit()	
 		    count_u += 1
 		except Exception, e:
-		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'))
+		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
 		    log.error(sout)
 		    sout = "{0}".format(e)
 		    log.error(sout)
 		    
 	    if PRINT_FOUND:
-		sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(oms_sn.encode('utf-8'), enp.encode('utf-8'), mcod)
+		sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
 		log.info(sout)
 		    
     return count_a, count_i, count_u
+
+def get_mo_fromdb(db, mcod):
+    from datetime import datetime
+
+    s_sqlt = """SELECT 
+    dpfs, oms_sn, enp, 
+    lname, fname, mname,
+    birthday, birthplace,
+    doc_type_id, doc_sn, doc_when, doc_who,
+    snils, mcod,
+    motive_att, type_att, date_att, date_det
+    FROM mo
+    WHERE mcod = %s;"""
+    
+    curr = db.con.cursor()
+    curr.execute(s_sqlt,(mcod,))
+    recs = curr.fetchall()
+
+    array = []
+    for rec in recs:
+	
+	p_mo = MO_PEOPLE()
+	
+	p_mo.dpfs        = rec[0]
+	p_mo.oms_sn      = rec[1]
+	p_mo.enp         = rec[2]
+	p_mo.lname       = rec[3]
+	p_mo.fname       = rec[4]
+	p_mo.mname       = rec[5]
+	p_mo.birthday    = rec[6]
+	p_mo.birthplace  = rec[7]
+	p_mo.doc_type_id = rec[8]
+	p_mo.doc_sn      = rec[9]
+	p_mo.doc_when    = rec[10]
+	p_mo.doc_who     = rec[11]
+	p_mo.snils       = rec[12]
+	p_mo.mcod        = rec[13]
+	p_mo.motive_att  = rec[14]
+	p_mo.type_att    = rec[15]
+	p_mo.date_att    = rec[16]
+	p_mo.date_det    = rec[17]
+	
+	array.append( p_mo )
+    
+    return array
+
+def mo_string(p_mo):
+
+    sss = u''
+    
+    if p_mo.dpfs is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.dpfs + u'";'
+	
+    if p_mo.oms_sn is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.oms_sn + u'";'
+
+    if p_mo.enp is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.enp + u'";'
+	
+    if p_mo.lname is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.lname + u'";'
+
+    if p_mo.fname is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.fname + u'";'
+
+    if p_mo.mname is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.mname + u'";'
+	
+    if p_mo.birthday is None:
+	sss += u';'
+    else:
+	sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
+	sss += u'"' + sdd + u'";'
+    
+    if p_mo.birthplace is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.birthplace + u'";'
+    
+    if p_mo.doc_type_id is None:
+	sss += u';'
+    else:
+	sss += u'"' + str(p_mo.doc_type_id) + u'";'
+	
+    if p_mo.doc_sn is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.doc_sn + u'";'
+    
+    if p_mo.doc_when is None:
+	sss += u';'
+    else:
+	sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
+	sss += u'"' + sdd + u'";'
+    
+    if p_mo.doc_who is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.doc_who + u'";'
+    
+    if p_mo.snils is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.snils + u'";'
+    
+    if p_mo.mcod is None:
+	sss += u';'
+    else:
+	sss += u'"' + str(p_mo.mcod) + u'";'
+
+    if p_mo.motive_att is None:
+	sss += u';'
+    else:
+	sss += u'"' + str(p_mo.motive_att) + u'";'
+
+    if p_mo.type_att is None:
+	sss += u';'
+    else:
+	sss += u'"' + p_mo.type_att + u'";'
+	
+    if p_mo.date_att is None:
+	sss += u';'
+    else:
+	sdd = "%04d%02d%02d" % (p_mo.date_att.year, p_mo.date_att.month, p_mo.date_att.day)
+	sss += u'"' + sdd + u'";'
+
+    if p_mo.date_det is not None:
+	sdd = "%04d%02d%02d" % (p_mo.date_det.year, p_mo.date_det.month, p_mo.date_det.day)
+	sss += u'"' + sdd + u'"'
+
+    return sss
+    
+
+def write_mo(ar, fname):
+    
+    fo = open(fname, "wb")
+    
+    l_ar = len(ar)
+    i = 0
+    for p_mo in ar:
+	
+	i += 1
+	if i == l_ar:
+	    sss = mo_string(p_mo)
+	else:
+	    sss = mo_string(p_mo) + u"\r\n"
+	ps = sss.encode('windows-1251')
+	fo.write(ps)
+	
+    fo.close()
+    
+    return l_ar
+
+	
