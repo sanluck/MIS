@@ -804,6 +804,24 @@ def put_mo(db, ar, upd = False):
     AND enp = %s
     AND mcod = %s"""
 
+    s_sqlf_enp = """SELECT id
+    FROM
+    mo
+    WHERE enp = %s;"""
+
+    s_sqlf_oms_sn = """SELECT id
+    FROM
+    mo
+    WHERE oms_sn = %s;"""
+
+    s_sqlf_fio_dr = """SELECT id
+    FROM
+    mo
+    WHERE lname = %s
+    AND fname = %s
+    AND mname = %s
+    AND birthday = %s;"""
+
     s_sqli = """INSERT INTO
     mo
     (dpfs, oms_sn, enp, 
@@ -888,7 +906,12 @@ def put_mo(db, ar, upd = False):
 	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
 	    log.info(sout)
 	
-	curr.execute(s_sqlf,(oms_sn, enp, mcod,))
+	if enp is not None:
+	    curr.execute(s_sqlf_enp,(enp,))
+	elif oms_sn is not None:
+	    curr.execute(s_sqlf_oms_sn,(oms_sn,))
+	else:
+	    curr.execute(s_sqlf_fio_dr,(lname, fname, mname, birthday,))
 	rec = curr.fetchone()
 	if rec is None:
 	    try:
