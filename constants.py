@@ -9,7 +9,7 @@ GENDER_MALE = "M"
 GENDER_FEMALE = "F"
 
 class MedLibException(Exception):
-	pass
+    pass
 
 class MoNotFoundException(MedLibException):
     pass
@@ -95,7 +95,7 @@ class CMGZ_List:
         for elm in m:
             item = CMGZ_Item( elm[0], elm[1] )
             self.idxByCode[ elm[0] ] = item
-	    self.idxByNumber.append(item)
+            self.idxByNumber.append(item)
 
     def mgzInfoByCode(self, code):
         if not code in self.idxByCode:
