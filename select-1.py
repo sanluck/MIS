@@ -49,6 +49,11 @@ AND td.line = 1
 AND ((td.diagnosis_id_fk LIKE 'B35%') OR (td.diagnosis_id_fk LIKE 'B36%') OR (td.diagnosis_id_fk LIKE 'B37.2%'))
 ORDER BY t.visit_date;"""
 
+s_sqli = """INSERT INTO a$tickets
+(ticket_id, people_id, clinic_id, visit_date, diagnosis_id, visit_type_id)
+VALUES
+(%s, %s, %s, %s, %s, %s);"""
+
 def get_clist(mgz = MGZ):
     from constants import CMGZ_List
     
@@ -116,6 +121,7 @@ if __name__ == "__main__":
     import time
     from datetime import datetime
     from dbmis_connect2 import DBMIS
+    from dbmysql_connect import DBMY
  
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('--------------------------------------------------------------------')
@@ -136,6 +142,13 @@ if __name__ == "__main__":
     curr = dbc.con.cursor()
     curr.execute(s_sqlt1, (d_begin, d_end, ))
     recs = curr.fetchall()
+
+
+    dbmy = DBMY()
+    curw = dbmy.con.cursor()
+    # clear a$tickets table
+    s_sql = "TRUNCATE TABLE a$tickets;"
+    curw.execute(s_sql)
     
     t_count = 0
     w_count = 0
@@ -162,6 +175,8 @@ if __name__ == "__main__":
 	p_id   = rec[1]
 	c_id   = rec[2]
 	v_date = rec[3]
+	d_id   = rec[4]
+	v_type = rec[5]
 	
 	if t_count % STEP == 0: 
 	    sout = "{0} {1} {2} {3}".format(t_count, t_id, p_id, c_id)
@@ -171,6 +186,7 @@ if __name__ == "__main__":
 	
 	
 	tid_arr.append(t_id)
+	curw.execute(s_sqli,(t_id, p_id, c_id, v_date, d_id, v_type,))
 	tmgz_count += 1
 	
 	if (v_date >= d00) and (v_date <= d01):
@@ -192,6 +208,7 @@ if __name__ == "__main__":
     
     
     dbc.close()
+    dbmy.close()
     
     write_clist(clist)
     
