@@ -89,16 +89,27 @@ class PEOPLE:
         self.document_series = None
         self.document_number = None
         self.citizenship = None
+	
+	self.fio  = None
+	self.f1io = None
         
     
     def initFromRec(self, rec):
         self.people_id = rec[0]
         self.lname = rec[1].strip()
+        _f  = self.lname
+	_f1 = _f[:1]
         self.fname = rec[2].strip()
+	_fio  = _f  + u" " + self.fname
+	_f1io = _f1 + u" " + self.fname
         if rec[3] is None:
-            self.mname = rec[3]
+            self.mname = None
         else:
             self.mname = rec[3].strip()
+            _fio  += u" " + self.mname
+            _f1io += u" " + self.mname
+        self.fio  = _fio
+        self.f1io = _f1io
         self.birthday = rec[4]
         self.p_payment_type_id_fk = rec[5]
         self.medical_insurance_region_id_fk = rec[6]
