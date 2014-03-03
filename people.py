@@ -18,7 +18,8 @@ p.addr_jure_region_code, p.addr_jure_area_code, p.addr_jure_area_name,
 p.addr_jure_town_code, p.addr_jure_town_name,
 p.birthplace,
 p.document_type_id_fk, p.document_series, p.document_number,
-p.citizenship
+p.citizenship,
+p.sex, p.work_place
 FROM peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
@@ -89,6 +90,9 @@ class PEOPLE:
         self.document_series = None
         self.document_number = None
         self.citizenship = None
+
+	self.sex = None
+	self.work_place = None
 	
 	self.fio  = None
 	self.f1io = None
@@ -143,6 +147,9 @@ class PEOPLE:
         self.document_number = rec[18]
 
         self.citizenship = rec[19]
+	
+	self.sex = rec[20]
+	self.work_place = rec[21]
 
     
     def initFromDBF(self, rec):

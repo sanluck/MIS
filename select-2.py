@@ -43,7 +43,8 @@ p.addr_jure_region_code, p.addr_jure_area_code, p.addr_jure_area_name,
 p.addr_jure_town_code, p.addr_jure_town_name,
 p.birthplace,
 p.document_type_id_fk, p.document_series, p.document_number,
-p.citizenship
+p.citizenship,
+p.sex, p.work_place
 FROM peoples p
 WHERE p.people_id = ?;"""
 
@@ -131,12 +132,14 @@ if __name__ == "__main__":
     ws.write(row,0,u'people_id')
     ws.write(row,1,u'FIO')
     ws.write(row,2,u'BD')
-    ws.write(row,3,u'I')
-    ws.write(row,4,u'II')
-    ws.write(row,5,u'III')
-    ws.write(row,6,u'IV')
-    ws.write(row,7,u'DS main')
-    ws.write(row,8,u'DS plus')
+    ws.write(row,3,u'SEX')
+    ws.write(row,4,u'WORK_PLACE')
+    ws.write(row,5,u'I')
+    ws.write(row,6,u'II')
+    ws.write(row,7,u'III')
+    ws.write(row,8,u'IV')
+    ws.write(row,9,u'DS main')
+    ws.write(row,10,u'DS plus')
 
     row += 1
 
@@ -175,7 +178,7 @@ if __name__ == "__main__":
 	if c_id not in clist: continue
 	
 	if p_id <> p_id0:
-	    if p_id0 <> 0:
+	    if (p_id0 <> 0) and ((n1<>0) or (n2<>0) or (n3<>0) or (n4<>0)):
 		p_count += 1
 		row += 1
 		ws.write(row,0,p_id0)
@@ -186,12 +189,14 @@ if __name__ == "__main__":
 		else:
 		    s_bd = "%04d-%02d-%02d" % (bd.year, bd.month, bd.day)
 		ws.write(row,2,s_bd)
-		ws.write(row,3,n1)
-		ws.write(row,4,n2)
-		ws.write(row,5,n3)
-		ws.write(row,6,n4)
-		ws.write(row,7,dsm_list)
-		ws.write(row,8,dsp_list)
+		ws.write(row,3,people.sex)
+		ws.write(row,4,people.work_place)
+		ws.write(row,5,n1)
+		ws.write(row,6,n2)
+		ws.write(row,7,n3)
+		ws.write(row,8,n4)
+		ws.write(row,9,dsm_list)
+		ws.write(row,10,dsp_list)
 	    
 	    p_id0 = p_id
 	    curc.execute(s_sqlp1,(p_id,))
@@ -213,6 +218,8 @@ if __name__ == "__main__":
 	    dsm_list = d_id
 	else:
 	    dsm_list += u", " + d_id
+
+	if v_type <> 1: continue 
 	
 	if (v_date >= d00) and (v_date <= d01):
 	    n1 += 1
