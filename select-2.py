@@ -210,7 +210,7 @@ if __name__ == "__main__":
 		for recc in reccs:
 		    ds  = recc[2]
 		    if ds is None: continue
-		    ds2 = ds[:2]
+		    ds2 = ds[:3]
 		    if ds2 in IGNORE_LIST: continue
 		    if len(dsp_list) == 0:
 			dsp_list = ds
