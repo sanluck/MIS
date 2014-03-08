@@ -30,6 +30,8 @@ d_int = [["2013-01-01", "2013-03-31"],["2013-04-01", "2013-06-30"],["2013-07-01"
 
 D_LIST = ["B35%", "B36%", "B37.2%"]
 
+IGNORE_LIST = ["B35", "B36", "B37", "A00", "A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "J00", "J01", "J02", "J03", "J04", "J05", "J06", "J07", "J08", "J09", "J10", "J11", "J12", "J13", "J14", "J15", "J16", "J17", "J18", "J19", "J20", "J21", "J22"]
+
 F_PATH = "./ANALYSIS"
 F_NAME = "analysis2.xls"
 
@@ -51,6 +53,11 @@ s_sqld = """SELECT diagnosis_id_fk
 FROM ticket_diagnosis
 WHERE ticket_id_fk = ?
 AND line <> 1;"""
+
+s_sqld_all = """SELECT t.ticket_id, td.line, td.diagnosis_id_fk
+FROM tickets t
+LEFT JOIN ticket_diagnosis td ON t.ticket_id = td.ticket_id_fk
+WHERE t.people_id_fk = ?;"""
 
 def get_clist(mgz = MGZ):
     from constants import CMGZ_List
@@ -191,6 +198,20 @@ if __name__ == "__main__":
 		ws.write(row,5,n3)
 		ws.write(row,6,n4)
 		ws.write(row,7,dsm_list)
+
+		curc.execute(s_sqld_all,(p_id0,))
+		reccs = curc.fetchall()
+		dsp_list == u""
+		for recc in reccs:
+		    ds  = recc[2]
+		    if ds is None: continue
+		    ds2 = ds[:2]
+		    if ds2 in IGNORE_LIST: continue
+		    if len(dsp_list) == 0:
+			dsp_list = ds
+		    else:
+			dsp_list += u"; " + ds
+		
 		ws.write(row,8,dsp_list)
 	    
 	    p_id0 = p_id
@@ -224,15 +245,6 @@ if __name__ == "__main__":
 	    n4 += 1
 	else:
 	    w_count += 1
-
-	curc.execute(s_sqld,(t_id,))
-	reccs = curc.fetchall()
-	for recc in reccs:
-	    if len(dsp_list) == 0:
-		dsp_list = recc[0]
-	    else:
-		dsp_list += u", " + recc[0]
-	    
 
     wb.save(f_fname)
     
