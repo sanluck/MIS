@@ -27,6 +27,7 @@ SM2DO_PATH        = "./SM2DO"
 SMDONE_PATH       = "./SMDONE"
 
 UPDATE_DATA       = True
+UPD_ID_DONE       = False
 
 CHECK_REGISTERED  = False
 REGISTER_FILE     = False
@@ -124,7 +125,7 @@ if __name__ == "__main__":
 	    sout = "File has got {0} lines".format(l_ar)
 	    log.info( sout )
 
-	    count_a, count_i, count_u = put_sm2mira(dbmy2, ar_sm, upd = UPDATE_DATA)
+	    count_a, count_i, count_u = put_sm2mira(dbmy2, ar_sm, upd = UPDATE_DATA, upd_id_done = UPD_ID_DONE)
 
 	    sout = "{0} records have been insrted into mira$peoples table".format(count_i)
 	    log.info( sout )

@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
-clist = [220124]
+clist = [220121]
 
 cid_list = [95,98]
 
@@ -106,9 +106,9 @@ def pclinic(clinic_id, mcod):
 
     for sm in sm_ar:
 
-	counta  += 1
+        counta  += 1
 	
-	mp_id   = sm.people_id
+        mp_id    = sm.people_id
         u_lname  = sm.lname
         u_fname  = sm.fname
         u_mname  = sm.mname
@@ -121,22 +121,22 @@ def pclinic(clinic_id, mcod):
         else:
             mname = u_mname.encode('utf-8')
 
-	d_type_id = sm.document_type_id
-	d_series  = sm.document_series
-	d_number  = sm.document_number
+        d_type_id = sm.document_type_id
+        d_series  = sm.document_series
+        d_number  = sm.document_number
 
-	dpfs      = sm.dpfs
-	s_oms     = sm.s_oms
-	n_oms     = sm.n_oms
+        dpfs      = sm.dpfs
+        s_oms     = sm.s_oms
+        n_oms     = sm.n_oms
 
 
         if counta % STEP == 0:
-	    ss_oms = s_oms.encode('utf-8')
-	    nn_oms = n_oms.encode('utf-8')
-	    if d_series is not None:
-		d_sss = d_series.encode('utf-8')
-	    else:
-		d_sss = 'None'
+            ss_oms = s_oms.encode('utf-8')
+            nn_oms = n_oms.encode('utf-8')
+            if d_series is not None:
+                d_sss = d_series.encode('utf-8')
+            else:
+                d_sss = 'None'
             sout = "{0} {1} {2} {3} {4} {5} {6} {7}".format(counta, lname, fname, mname, birthday, dpfs, ss_oms, nn_oms)
             log.info( sout )
 	    

@@ -5,7 +5,7 @@ import sys
 import logging
 
 STEP = 1000
-PRINT_FOUND = True
+PRINT_FOUND = False
 SM2DO_PATH  = "./SM2DO"
 
 log = logging.getLogger(__name__)
@@ -426,7 +426,7 @@ def get_sm(fname, mcod = None):
     
     return array
 
-def put_sm2mira(db, ar_sm, upd = False):
+def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
     
     s_sqlf = """SELECT oms_series, oms_number, enp, mcod
     FROM
@@ -448,28 +448,51 @@ def put_sm2mira(db, ar_sm, upd = False):
     %s, %s, %s);"""
 
 
-    s_sqlu = """UPDATE
-    mira$peoples
-    SET
-    lname = %s,
-    fname = %s,
-    mname = %s,
-    birthday = %s,
-    sex = %s,
-    document_type_id_fk = %s,
-    document_series = %s,
-    document_number = %s,
-    snils = %s,
-    dpfs = %s, 
-    oms_series = %s, 
-    oms_number = %s,
-    enp = %s,
-    ocato = %s,
-    mcod = %s,
-    smo_ogrn = %s,
-    id_done = Null
-    WHERE 
-    people_id = %s;"""
+    if upd_id_done:
+        s_sqlu = """UPDATE
+        mira$peoples
+        SET
+        lname = %s,
+        fname = %s,
+        mname = %s,
+        birthday = %s,
+        sex = %s,
+        document_type_id_fk = %s,
+        document_series = %s,
+        document_number = %s,
+        snils = %s,
+        dpfs = %s, 
+        oms_series = %s, 
+        oms_number = %s,
+        enp = %s,
+        ocato = %s,
+        mcod = %s,
+        smo_ogrn = %s,
+        id_done = Null
+        WHERE 
+        people_id = %s;"""
+    else:
+	s_sqlu = """UPDATE
+	mira$peoples
+	SET
+	lname = %s,
+	fname = %s,
+	mname = %s,
+	birthday = %s,
+	sex = %s,
+	document_type_id_fk = %s,
+	document_series = %s,
+	document_number = %s,
+	snils = %s,
+	dpfs = %s, 
+	oms_series = %s, 
+	oms_number = %s,
+	enp = %s,
+	ocato = %s,
+	mcod = %s,
+	smo_ogrn = %s
+	WHERE 
+	people_id = %s;"""
 
     
     curr = db.con.cursor()
