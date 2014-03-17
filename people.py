@@ -19,7 +19,10 @@ p.addr_jure_town_code, p.addr_jure_town_name,
 p.birthplace,
 p.document_type_id_fk, p.document_series, p.document_number,
 p.citizenship,
-p.sex, p.work_place
+p.sex, p.work_place,
+p.addr_fact_region_code, p.addr_fact_area_code, p.addr_fact_area_name, p.addr_fact_area_socr,
+p.addr_fact_town_code, p.addr_fact_town_name, p.addr_fact_town_socr,
+p.addr_fact_country_code, p.addr_fact_country_name, p.addr_fact_country_socr
 FROM peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
@@ -96,6 +99,20 @@ class PEOPLE:
 	
 	self.fio  = None
 	self.f1io = None
+
+	self.addr_fact_region_code = None
+	self.addr_fact_area_code = None
+	self.addr_fact_area_name = None
+	self.addr_fact_area_socr = None
+	self.addr_fact_town_code = None
+	self.addr_fact_town_name = None
+	self.addr_fact_town_socr = None
+	self.addr_fact_country_code = None
+	self.addr_fact_country_name = None
+	self.addr_fact_country_socr = None
+	
+	self.addr_fact = None
+
         
     
     def initFromRec(self, rec):
@@ -124,13 +141,13 @@ class PEOPLE:
         self.addr_jure_area_code = rec[11]
         
         if rec[12] is None:
-            self.addr_jure_area_name = rec[12]
+            self.addr_jure_area_name = None
         else:
             self.addr_jure_area_name = rec[12].strip()
             
         self.addr_jure_town_code = rec[13]
         if rec[14] is None:
-            self.addr_jure_town_name = rec[14]
+            self.addr_jure_town_name = None
         else:
             self.addr_jure_town_name = rec[14].strip()
 
@@ -151,6 +168,55 @@ class PEOPLE:
 	self.sex = rec[20]
 	self.work_place = rec[21]
 
+	self.addr_fact_region_code = rec[22]
+	
+	addr_fact = u""
+	self.addr_fact_area_code = rec[23]
+	if rec[24] is None:
+	    self.addr_fact_area_name = None
+	else:
+	    addr_fact_area_name = rec[24].strip()
+	    self.addr_fact_area_name = addr_fact_area_name
+	    addr_fact = addr_fact_area_name
+	
+	if rec[25] is None:
+	    self.addr_fact_area_socr = None
+	else:
+	    addr_fact_area_socr = rec[25].strip()
+	    self.addr_fact_area_socr = addr_fact_area_socr
+	    addr_fact += " " + addr_fact_area_socr
+	
+	self.addr_fact_town_code = rec[26]
+	if rec[27] is None:
+	    self.addr_fact_town_name = None
+	else:
+	    addr_fact_town_name = rec[27].strip()
+	    self.addr_fact_town_name = addr_fact_town_name
+	    addr_fact = addr_fact_town_name
+	
+	if rec[28] is None:
+	    self.addr_fact_town_socr = None
+	else:
+	    addr_fact_town_socr = rec[28].strip()
+	    self.addr_fact_town_socr = addr_fact_town_socr
+	    addr_fact += " " + addr_fact_town_socr
+
+	self.addr_fact_country_code = rec[29]
+	if rec[30] is None:
+	    self.addr_fact_country_name = None
+	else:
+	    addr_fact_country_name = rec[30].strip()
+	    self.addr_fact_country_name = addr_fact_country_name
+	    addr_fact += ", " + addr_fact_country_name
+	
+	if rec[31] is None:
+	    self.addr_fact_country_socr = None
+	else:
+	    addr_fact_country_socr = rec[31].strip()
+	    self.addr_fact_country_socr = addr_fact_country_socr
+	    addr_fact += " " + addr_fact_country_socr
+	
+	self.addr_fact = addr_fact
     
     def initFromDBF(self, rec):
         self.people_id = rec.number

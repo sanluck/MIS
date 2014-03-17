@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
-clist = [220121]
+clist = [220129]
 
 cid_list = [95,98]
 
