@@ -263,6 +263,13 @@ if __name__ == "__main__":
 
 		col = 6
 		for ds_main in ds_main_list:
+		    
+		    i_out = 0
+		    for dsm in dsm_list:
+			if dsm == ds_main:
+			    i_out = 1
+			    break
+		    ws.write(row,col,i_out)
 		    col += 1
 		    
 		    for n_month in range(1,13):
