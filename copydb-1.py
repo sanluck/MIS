@@ -21,8 +21,8 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 CLINIC_ID = 22
-HOST = "fb.ctmed.ru"
-DB   = "DBMIS"
+HOST = "fb2.ctmed.ru"
+DB   = "DVN4"
 
 TABLE  = "DATABASE_VERSION"
 s_sqld = "DELETE FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
@@ -30,7 +30,7 @@ s_sqlc = "SELECT COUNT(*) FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 s_sqls = "SELECT * FROM {0} WHERE unit_name <>'DATABASE'".format(TABLE)
 
 HOST2 = "fb2.ctmed.ru"
-DB2   = "LBMIS"
+DB2   = "DBMIS"
 
 class DB_REC:
     
@@ -40,12 +40,18 @@ class DB_REC:
         self.workstation         = rec[2]
         self.version_string      = rec[3]
         self.version_string_type = rec[4]
-        self.unit_context        = rec[5]
+        unit_context        = rec[5]
 
-        if self.unit_context is None:
+        if unit_context is None:
+            self.unit_context = None
             unit_len = 0
         else:
-            unit_len = len(self.unit_context)
+            try:
+                self.unit_context = unit_context.read()
+                unit_len = len(self.unit_context)
+            except:
+                self.unit_context = None
+                unit_len = 0
         
         self.unit_len = unit_len
         
@@ -133,7 +139,8 @@ if __name__ == "__main__":
     # Retrieval using the "file-like" methods of BlobReader:
     s_sql = s_sqls
     cur.execute(s_sql)
-    cur.set_stream_blob('A') # Note the capital letter
+    #cur.set_stream_blob('A') # Note the capital letter
+    cur.set_stream_blob('UNIT_CONTEXT')
     
     results = cur.fetchall()
     
@@ -146,8 +153,7 @@ if __name__ == "__main__":
 
         sout = "unit_name: {0} len = {1}".format(unit_name.encode('utf-8'), unit_len)
         log.info( sout )
-        
-        db_rec.insert2(cur2)
+        if unit_len !=0: db_rec.insert2(cur2)
     
     
     dbc.close()
