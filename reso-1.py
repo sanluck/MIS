@@ -25,8 +25,8 @@ DB   = "DBMIS"
 CLINIC_ID = 22
 
 F_PATH    = "./RESO/"
-FIN_NAME  = "reso1.xls"
-FOUT_NAME = "reso1_out.xls"
+FIN_NAME  = "reso2.xls"
+FOUT_NAME = "reso2_out.xls"
 
 STEP = 100
 
@@ -71,6 +71,7 @@ def get_plist(fname):
     
     import xlrd
     from datetime import datetime
+    from datetime import timedelta
     from people import PEOPLE
 
     plist = []
@@ -100,15 +101,18 @@ def get_plist(fname):
 	    c2_type = worksheet.cell_type(curr_row, 1)
 	    c2_value = worksheet.cell_value(curr_row, 1)
 	    
-	    c7_type = worksheet.cell_type(curr_row, 6)
-	    if c7_type == 2:
+	    c4_type = worksheet.cell_type(curr_row, 3)
+	    if c4_type == 3:
 		
 		lname  = worksheet.cell_value(curr_row, 0)
 		fname  = worksheet.cell_value(curr_row, 1)
 		mname  = worksheet.cell_value(curr_row, 2)
 		
-		s_dr   = worksheet.cell_value(curr_row, 3)
-		dr     = datetime.strptime(s_dr, '%Y-%m-%d')
+		#s_dr   = worksheet.cell_value(curr_row, 3)
+		#dr     = datetime.strptime(s_dr, '%Y-%m-%d')
+		xldate = worksheet.cell_value(curr_row, 3)
+		# http://stackoverflow.com/questions/1108428/how-do-i-read-a-date-in-excel-format-in-python
+		dr = datetime(1899, 12, 30) + timedelta(days=xldate)
 		
 		p = PEOPLE()
 		p.lname    = lname.strip()
