@@ -69,6 +69,17 @@ SQLT_FPEOPLE0 = """SELECT FIRST 20
     AND upper(FNAME) starting '{1}' 
     AND BIRTHDAY='{2}';"""
 
+SQLT_PCLINICS = """SELECT 
+ap.area_people_id, ap.area_id_fk, ap.motive_attach_beg_id_fk,
+ar.clinic_area_id_fk, 
+ca.clinic_id_fk, ca.speciality_id_fk, ca.basic_speciality
+FROM area_peoples ap
+LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
+LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ap.people_id_fk = ? 
+AND ap.date_end is Null
+AND ca.basic_speciality = 1;"""
+
 class PEOPLE:
     def __init__(self):
         self.people_id = None
@@ -300,6 +311,17 @@ class MO_PEOPLE:
 	self.type_att    = None
 	self.date_att    = None
 	self.date_det    = None
+
+class P_CLINIC:
+    def __init__(self):
+	self.area_people_id       = None
+	self.area_id              = None
+	self.motive_attach_beg_id = None
+	self.clinic_area_id       = None
+	self.clinic_id            = None
+	self.speciality_id        = None
+	self.basic_speciality     = None
+	
 
 def get_registry(table_name):
     import dbf
@@ -1213,4 +1235,24 @@ def write_mo(ar, fname):
     
     return l_ar
 
+
+def get_pclinics(cur, p_id):
+    
+    cur.execute(SQLT_PCLINICS,(p_id,))
+    result = cur.fetchall()
+    
+    pc_arr = []
+    for rec in result:
+	p_clinic = P_CLINIC()
+	p_clinic.area_people_id       = rec[0]
+	p_clinic.area_id              = rec[1]
+	p_clinic.motive_attach_beg_id = rec[2]
+	p_clinic.clinic_area_id       = rec[3]
+	p_clinic.clinic_id            = rec[4]
+	p_clinic.speciality_id        = rec[5]
+	p_clinic.basic_speciality     = rec[6]
 	
+	pc_arr.append(p_clinic)
+	
+    
+    return pc_arr
