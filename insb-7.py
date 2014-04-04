@@ -25,14 +25,14 @@ log = logging.getLogger(__name__)
 
 STEP = 1000
 
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 FNAME  = "STAT{0}{1}.xls" # в ТФОМС на внесение изменений
 R_PATH = "./INSB7STAT"
 
 
-REGISTER_SOFF = False
+REGISTER_SOFF = True
 
 SET_DATE_END = True
 DATE_END = "2013-12-30"
@@ -176,7 +176,7 @@ def do_clinic(clinic_id, mcod, mo_ar):
 			
 	    
 	    if stat_code == -1: n_minus += 1
-	    if stat_code == 9: n_many_m += 1
+	    if stat_code == 9: n_many_n += 1
 	    if l_pc_arr > 1: n_many += 1
 	    row += 1
 	    
