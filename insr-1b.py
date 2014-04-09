@@ -58,6 +58,19 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
 REGISTER_DONE = True
 
+SQLT_INSTP = """INSERT INTO tfoms_peoples
+(people_id, clinic_id, date_from_mis)
+VALUES
+(%s, %s, %s);"""
+
+def wrtie_to_dbmy(curm, p_id, clinic_id, s_now):
+    
+    try:
+	curm.execute(SQLT_INSTP, (p_id, clinic_id, s_now, ))
+	return True
+    except:
+	return False
+
 def p1(patient, insorg):
     import datetime
     now = datetime.datetime.now()
@@ -168,7 +181,7 @@ def p1(patient, insorg):
     
     return u"|".join(res)
 
-def plist(dbc, fname, rows):
+def plist(dbc, fname, rows, clinic_id):
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
     
@@ -179,6 +192,9 @@ def plist(dbc, fname, rows):
     now = datetime.datetime.now()
     s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)    
     y_now = now.year
+
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
 
     if dbc.ogrn == None:
         CLINIC_OGRN = u""
@@ -200,6 +216,7 @@ def plist(dbc, fname, rows):
     ccount = 0
     noicc  = 0
     p_id_old = 0
+    n_pid_w_err = 0 
     for row in rows:
         ncount += 1
         p_id = row[0]
@@ -247,15 +264,23 @@ def plist(dbc, fname, rows):
                 noicc += 1
             sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
-            fo.write(ps)
+	    if wrtie_to_dbmy(curm, p_id, clinic_id, s_now):
+		fo.write(ps)
+	    else:
+		n_pid_w_err += 1 
+	    
 
     fo.flush()
     os.fsync(fo.fileno())
     fo.close()
+    dbmy.close()
     sout = "candidates: {0} / patients: {1}".format(ccount, ncount)
     log.info( sout )
     sout = "{0} candidates have not got insurance company id".format(noicc)
     log.info( sout )
+    sout = "{0} records have not been written".format(n_pid_w_err)
+    log.info( sout )
+    
     
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
@@ -279,32 +304,13 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
     log.info(sout)
 
-    if DVN_LIST:
-	s_sqlt = """SELECT DISTINCT p.* FROM vw_peoples p
-RIGHT JOIN clinical_checkups cc ON p.people_id = cc.people_id_fk
-WHERE cc.clinic_id_fk = {0} 
-AND (date_end_1 is NOT NULL)
-AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) >= '{1}'
-AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) <= '{2}';"""
-	s_sql = s_sqlt.format(clinic_id, DSTART, DEND)
-    else:
-	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
-	s_sql = s_sqlt.format(clinic_id)
-	
-    if OPLATA:
-	s_sqlt = """SELECT DISTINCT p.* FROM vw_peoples p
-RIGHT JOIN clinical_checkups cc ON p.people_id = cc.people_id_fk
-WHERE cc.clinical_checkup_id IN (SELECT clinical_checkup_id_fk FROM clinical_checkup_stages WHERE oplata > 1) 
-AND cc.clinic_id_fk = {0} 
-AND (date_end_1 is NOT NULL)
-AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) >= '{1}'
-AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) <= '{2}';"""
-	s_sql = s_sqlt.format(clinic_id, DSTART, DEND)
+    s_sql = s_sqlt.format(clinic_id)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
@@ -314,7 +320,7 @@ AND (case when date_end_2 is Null then date_end_1 else date_end_2 end) <= '{2}';
     sout = "Output to file: {0}".format(fname)
     log.info(sout)
     
-    plist(dbc, fname, results)
+    plist(dbc, fname, results, clinic_id)
 
     
     dbc.close()
@@ -327,7 +333,7 @@ def get_clist():
     curm = dbmy.con.cursor()
 
     ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE done is Null;"
-    curm.exeute(ssql)
+    curm.execute(ssql)
     results = curm.fetchall()
     
     clist = []
@@ -348,7 +354,7 @@ def register_done(curm, _id):
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
     
-    s_slqt = """UPDATE insr_list 
+    s_sqlt = """UPDATE insr_list 
     SET done = %s
     WHERE
     id = %s;"""
