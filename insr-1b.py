@@ -63,6 +63,8 @@ SQLT_INSTP = """INSERT INTO tfoms_peoples
 VALUES
 (%s, %s, %s);"""
 
+CLEAR_BEFORE_SELECT = True
+
 def wrtie_to_dbmy(curm, p_id, clinic_id, s_now):
     
     try:
@@ -287,8 +289,11 @@ def pclinic(clinic_id, mcod):
     import time
 
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('------------------------------------------------------------')
+    log.info('-----------------------------------------------------------------------------------')
     log.info('Insurance Belongings Request Start {0}'.format(localtime))
+
+    sout = "Database: {0}:{1}".format(HOST, DB)
+    log.info(sout)
 
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     if dbc.ogrn == None:
@@ -361,7 +366,21 @@ def register_done(curm, _id):
     
     curm.execute(s_sqlt,(dnow, _id, ))
     
+def clear_tfoms_peoples(clinic_id):
 
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+    
+    s_sqlt = "DELETE FROM tfoms_peoples WHERE clinic_id = %s;"
+    curm.execute(s_sqlt, (clinic_id, ))
+    
+    dbmy.con.commit()
+    dbmy.close()
+    
+    log.info('-----------------------------------------------------------------------------------')
+    sout = "All records for clinic_id = {0} have been deleted from the tfoms_peoples table".format(clinic_id)
+    log.info(sout)
+    
 if __name__ == "__main__":
     
     import os    
@@ -375,6 +394,8 @@ if __name__ == "__main__":
 	_id = clinic[0]
 	clinic_id = clinic[1]
 	mcod = clinic[2]
+	if CLEAR_BEFORE_SELECT: clear_tfoms_peoples(clinic_id)
+	
 	pclinic(clinic_id, mcod)
 	
 	if REGISTER_DONE: register_done(curm, _id)
