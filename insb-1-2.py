@@ -88,7 +88,7 @@ if __name__ == "__main__":
 		mo = modb[mcod]
 		lpu_tfoms = mo.mis_code
 	    except:
-		sout = "Clinic not found for mcod = {0}".format(s_mcod)
+		sout = "id: {0} people_id: {1}. Clinic not found for mcod = {2}".format(_id, p_id, mcod)
 		log.warn(sout)
 		lpu_tfoms = None
 		nomcod += 1
