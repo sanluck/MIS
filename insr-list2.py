@@ -29,9 +29,24 @@ SQLT_ILIST = """INSERT INTO insr_list
 VALUES
 (%s, %s, %s);"""
 
+SQLT_FLIST = """SELECT id
+FROM insr_list
+WHERE mcod = %s;"""
+
+SQLT_ULIST = """UPDATE insr_list
+SET 
+clinic_id = %s, 
+mcod = %s, 
+name = %s,
+done = Null
+WHERE id = %s;"""
+
+
 F_NAME = "insr_list.xlsx"
 F_PATH = "./"
 F_FNAME = F_PATH + "/" + F_NAME
+
+UPDATE = True
 
 def get_insr_list(ffname = F_FNAME):
     import xlrd
@@ -76,17 +91,31 @@ if __name__ == "__main__":
     insr_list = get_insr_list()
     
     dbmy = DBMY()
+    curr = dbmy.con.cursor()
     curm = dbmy.con.cursor()
     
-    ssql = "TRUNCATE TABLE insr_list;"
-    curm.execute(ssql)
-    dbmy.con.commit()
+    if UPDATE:
+	for clinic in insr_list:
+	    mcod  = clinic[0]
+	    cname = clinic[1]
+	    c_id  = clinic[2]
+	    curr.execute(SQLT_FLIST,(mcod,))
+	    rec = curr.fetchone()
+	    if rec is None:
+		curm.execute(SQLT_ILIST,(c_id, mcod, cname,))
+	    else:
+		_id = rec[0]
+		curm.execute(SQLT_ULIST,(c_id, mcod, cname, _id, ))	
+    else:
+	ssql = "TRUNCATE TABLE insr_list;"
+	curm.execute(ssql)
+	dbmy.con.commit()
     
-    for clinic in insr_list:
-	mcod  = clinic[0]
-	cname = clinic[1]
-	c_id  = clinic[2]
-	curm.execute(SQLT_ILIST,(c_id, mcod, cname,))
+	for clinic in insr_list:
+	    mcod  = clinic[0]
+	    cname = clinic[1]
+	    c_id  = clinic[2]
+	    curm.execute(SQLT_ILIST,(c_id, mcod, cname,))
 
     dbmy.close()
     localtime = time.asctime( time.localtime(time.time()) )

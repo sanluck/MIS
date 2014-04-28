@@ -45,15 +45,23 @@ STEP = 1000
 
 CID_LIST   = False # Use cid_lis (list of clinic_id)
 
-MLIST      = True  # Use mis.mlist table (MySQL)
+MLIST      = False # Use mis.mlist table (MySQL)
+ILIST      = True  # Use mis.insr_list table (MySQL)
 
 OCATO      = '01000'
 
 PRINT2     = False
 
+#DATE_RANGE = None
+DATE_RANGE = ['2014-04-01','2014-04-30']
+
+
 def get_clist(db):
     
-    s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
+    if MLIST:
+	s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
+    else:
+	s_sql = "SELECT DISTINCT mcod FROM insr_list WHERE done is Null;"
     
     cur = db.con.cursor()
     cur.execute(s_sql)
@@ -72,10 +80,16 @@ def register_cdone(db, clinic_id):
 
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
-
-    s_sql = """UPDATE mlist
-    SET done = %s
-    WHERE clinic_id = %s;"""
+    
+    if MLSIT:
+	s_sql = """UPDATE mlist
+	SET done = %s
+	WHERE clinic_id = %s;"""
+    else:
+	s_sql = """UPDATE insr_list
+	SET done = %s
+	WHERE clinic_id = %s;"""
+	
     
     cur = db.con.cursor()
     cur.execute(s_sql, (sdnow, clinic_id))
@@ -100,8 +114,9 @@ def plist(dbc, clinic_id, mcod, patient_list):
     WHERE people_id = %s"""
 
     cur = dbc.con.cursor()
-    
-    s_sql_ap = """SELECT 
+
+    if DATE_RANGE is None:
+	s_sql_ap = """SELECT 
 ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
 ca.clinic_id_fk
 FROM area_peoples ap
@@ -109,6 +124,20 @@ LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
 LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
 AND ap.date_end is Null
+ORDER BY ap.date_beg DESC;"""
+    else:
+	D1 = DATE_RANGE[0]
+	D2 = DATE_RANGE[1]
+	s_sql_ap = """SELECT 
+ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
+ca.clinic_id_fk
+FROM area_peoples ap
+LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
+LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null
+AND ap.date_beg >= ?
+AND ap.date_beg <= ?
 ORDER BY ap.date_beg DESC;"""
     
     
@@ -197,7 +226,10 @@ ORDER BY ap.date_beg DESC;"""
 	    else:
 		count_b += 1
 		
-		cur.execute(s_sql_ap,(p_id, ))
+		if DATE_RANGE is None:
+		    cur.execute(s_sql_ap,(p_id, ))
+		else:
+		    cur.execute(s_sql_ap,(p_id, D1, D2, ))
 		recs_ap = cur.fetchall()
 		
 		l_print = False
@@ -229,6 +261,9 @@ ORDER BY ap.date_beg DESC;"""
 			ws.write(ws_row,1,s_date_beg)
 			ws.write(ws_row,2,motive_attach)
 			ws.write(ws_row,3,clinic_id_fk)
+			
+			if motive_attach in (None, 3, 9):
+			    motive_attach = 2
 			
 			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
 			    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
@@ -363,7 +398,7 @@ if __name__ == "__main__":
 	    
 	    pclinic(clinic_id, mcod)
     else:
-	if MLIST: 
+	if MLIST or ILIST: 
 	    dbmy = DBMY()
 	    clist = get_clist(dbmy)
 	    mcount = len(clist)
@@ -382,9 +417,9 @@ if __name__ == "__main__":
 		continue
 	    
 	    pclinic(clinic_id, mcod)
-	    if MLIST:
+	    if MLIST or ILIST:
 		register_cdone(dbmy, clinic_id)
 	
-    if MLIST:
+    if MLIST or ILIST:
 	dbmy.close()
     sys.exit(0)
