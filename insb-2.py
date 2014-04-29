@@ -81,7 +81,7 @@ def register_cdone(db, clinic_id):
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
     
-    if MLSIT:
+    if MLIST:
 	s_sql = """UPDATE mlist
 	SET done = %s
 	WHERE clinic_id = %s;"""
