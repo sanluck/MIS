@@ -115,8 +115,7 @@ def plist(dbc, clinic_id, mcod, patient_list):
 
     cur = dbc.con.cursor()
 
-    if DATE_RANGE is None:
-	s_sql_ap = """SELECT 
+    s_sql_ap = """SELECT 
 ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
 ca.clinic_id_fk
 FROM area_peoples ap
@@ -125,21 +124,6 @@ LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
 AND ap.date_end is Null
 ORDER BY ap.date_beg DESC;"""
-    else:
-	D1 = DATE_RANGE[0]
-	D2 = DATE_RANGE[1]
-	s_sql_ap = """SELECT 
-ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
-ca.clinic_id_fk
-FROM area_peoples ap
-LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
-LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
-AND ap.date_end is Null
-AND ap.date_beg >= ?
-AND ap.date_beg <= ?
-ORDER BY ap.date_beg DESC;"""
-    
     
     insorgs = InsorgInfoList()
 
@@ -226,10 +210,7 @@ ORDER BY ap.date_beg DESC;"""
 	    else:
 		count_b += 1
 		
-		if DATE_RANGE is None:
-		    cur.execute(s_sql_ap,(p_id, ))
-		else:
-		    cur.execute(s_sql_ap,(p_id, D1, D2, ))
+		cur.execute(s_sql_ap,(p_id, ))
 		recs_ap = cur.fetchall()
 		
 		l_print = False
@@ -346,13 +327,27 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} cod_mo: {1} clinic_name: {2} clinic_ogrn: {3}".format(clinic_id, mcod, cname, cogrn)
     log.info(sout)
 
-    s_sqlt = """SELECT * FROM vw_peoples p
+    if DATE_RANGE is None:
+	s_sqlt = """SELECT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
-    s_sql = s_sqlt.format(clinic_id)
+	s_sql = s_sqlt.format(clinic_id)
+    else:
+	D1 = DATE_RANGE[0]
+	D2 = DATE_RANGE[1]
+	s_sqlt = """SELECT * FROM vw_peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
+AND ap.date_beg >= '{1}'
+AND ap.date_beg <= '{2}'
+AND ap.date_end is Null;"""
+	s_sql = s_sqlt.format(clinic_id, D1, D2)
+	
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
     results = cursor.fetchall()
