@@ -52,8 +52,8 @@ OCATO      = '01000'
 
 PRINT2     = False
 
-#DATE_RANGE = None
-DATE_RANGE = ['2014-04-01','2014-04-30']
+DATE_RANGE = None
+#DATE_RANGE = ['2014-04-01','2014-04-30']
 
 
 def get_clist(db):

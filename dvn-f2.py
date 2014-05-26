@@ -145,7 +145,7 @@ def register_ccr(dbmy, cc_id):
     today = datetime.datetime.today()
     d_now = "%04d-%02d-%02d" % (today.year, today.month, today.day)
     
-    # register clinical_checkup_results in the MySQL database (bs.ctmed.ru:mis)
+    # register clinical_checkup_results in the MySQL database (ct216.ctmed.ru:mis)
     s_sqlt = """UPDATE clinical_checkups SET
     ccr_dcreated = '{0}'
     WHERE cc_id = {1}

@@ -8,7 +8,7 @@ import logging
 
 import MySQLdb
 
-DBHOST = 'bs.ctmed.ru'
+DBHOST = 'ct216.ctmed.ru'
 DBUSER = 'root'
 DBPASS = '18283848'
 DBNAME = 'mis'
