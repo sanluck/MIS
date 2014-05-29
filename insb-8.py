@@ -73,15 +73,9 @@ def register_cdone(db, clinic_id):
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
     
-    if MLIST:
-	s_sql = """UPDATE mlist
-	SET done = %s
-	WHERE clinic_id = %s;"""
-    else:
-	s_sql = """UPDATE insr_list
-	SET ddone = %s
-	WHERE clinic_id = %s;"""
-	
+    s_sql = """UPDATE insr_list
+    SET ddone = %s
+    WHERE clinic_id = %s;"""
     
     cur = db.con.cursor()
     cur.execute(s_sql, (sdnow, clinic_id))
@@ -116,6 +110,8 @@ LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ap.people_id_fk = ? AND ca.basic_speciality = 1
 AND ap.date_end is Null
 ORDER BY ap.date_beg DESC;"""
+    
+    s_sql_enp = """SELECT enp FROM peoples WHERE people_id = ?;"""
     
     insorgs = InsorgInfoList()
 
@@ -170,7 +166,17 @@ ORDER BY ap.date_beg DESC;"""
 	rec = curr.fetchone()
 	if rec is None:
 	    count_a += 1
-	    p_obj.enp = None
+	    cur.execute(s_sql_enp,(p_id, ))
+	    rec_enp = cur.fetchone()
+	    if rec_enp is None:
+		p_obj.enp = None
+		count_np += 1
+		continue
+	    if rec_enp[0] is None:
+		p_obj.enp = None
+		count_np += 1
+		continue
+	    p_obj.enp = rec_enp[0]
 	else:
 	    f_oms_series = rec[0]
 	    f_oms_number = rec[1]
