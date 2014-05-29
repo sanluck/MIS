@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# insb-2.py - обработка страховой пренадлежности
-#             Insurance Belongins Request (IBR)
-#             сравнение данных DBMIS и MySQL(mis.sm)
-#             использовать ENP, серию и номер пролисов ОМС из ответов ТФОМС
+# insb-8.py - Сформировать файлы МО
+#             для пациентов, прикрепленных в период времени
 #
 
 import logging
@@ -14,7 +12,7 @@ modb = MoInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_insb2.out'
+LOG_FILENAME = '_insb8.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -33,35 +31,29 @@ cid_list = [95,98,101,105,110,119,121,124,125,127,128,131,133,134,140,141,142,14
 
 CLINIC_OGRN = u""
 
-FNAMEa = "AM{0}{1}.csv" # нет среди ответов фонда
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
 FNAMEx = "SD{0}{1}.xls" # паценты с несколькими прикреплениями
 
-SD2DO_PATH = "./SD2DO"
 IN_PATH    = "./FIN"
-R_PATH     = "./RESULTS"
+SD2DO_PATH = "./SD2DO"
 
 STEP = 1000
 
 CID_LIST   = False # Use cid_lis (list of clinic_id)
 
-MLIST      = False # Use mis.mlist table (MySQL)
 ILIST      = True  # Use mis.insr_list table (MySQL)
 
 OCATO      = '01000'
 
 PRINT2     = False
 
-DATE_RANGE = None
-#DATE_RANGE = ['2014-04-01','2014-04-30']
+#DATE_RANGE = None
+DATE_RANGE = ['2014-05-01','2014-05-31']
 
 
 def get_clist(db):
     
-    if MLIST:
-	s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
-    else:
-	s_sql = "SELECT DISTINCT mcod FROM insr_list WHERE done is Null;"
+    s_sql = "SELECT DISTINCT mcod FROM insr_list WHERE ddone is Null;"
     
     cur = db.con.cursor()
     cur.execute(s_sql)
@@ -87,7 +79,7 @@ def register_cdone(db, clinic_id):
 	WHERE clinic_id = %s;"""
     else:
 	s_sql = """UPDATE insr_list
-	SET done = %s
+	SET ddone = %s
 	WHERE clinic_id = %s;"""
 	
     
@@ -128,14 +120,11 @@ ORDER BY ap.date_beg DESC;"""
     insorgs = InsorgInfoList()
 
     stime  = time.strftime("%Y%m%d")
-    fnamea = FNAMEa.format(mcod, stime)
     fnameb = FNAMEb.format(mcod, stime)
     fnamex = FNAMEx.format(mcod, stime)
-    sout = "Output to files: {0} | {1} | {2}".format(fnamea, fnameb, fnamex)
+    sout = "Output to files: {0} | {1}".format( fnameb, fnamex )
     log.info(sout)
 
-    f_fnamea = R_PATH  + "/" + fnamea
-    foa = open(f_fnamea, "wb")
     f_fnameb = IN_PATH + "/" + fnameb
     fob = open(f_fnameb, "wb")
 
@@ -150,11 +139,9 @@ ORDER BY ap.date_beg DESC;"""
     ws.write(2,3,u"clinic_id")
     
     ws_row = 3
-    
+
     count    = 0
-    count_e  = 0
     count_a  = 0
-    count_b  = 0
     count_m  = 0
     count_np = 0
     noicc    = 0
@@ -184,14 +171,6 @@ ORDER BY ap.date_beg DESC;"""
 	if rec is None:
 	    count_a += 1
 	    p_obj.enp = None
-	    sss = p1(p_obj, insorg) + "|\n"
-	    ps = sss.encode('windows-1251')
-
-	    foa.write(ps)
-
-	    foa.flush()
-	    os.fsync(foa.fileno())
-
 	else:
 	    f_oms_series = rec[0]
 	    f_oms_number = rec[1]
@@ -204,104 +183,69 @@ ORDER BY ap.date_beg DESC;"""
 	    p_obj.medical_insurance_series = f_oms_series
 	    p_obj.medical_insurance_number = f_oms_number
 
-	    if mcod == f_mcod:
-		count_e += 1
-	    else:
-		count_b += 1
-		
-		cur.execute(s_sql_ap,(p_id, ))
-		recs_ap = cur.fetchall()
-		
-		l_print = False
-		if (len(recs_ap) == 1):
-		    if (f_ocato == OCATO):
-			date_beg = recs_ap[0][2]
-			sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
-			ps = sss.encode('windows-1251')
-			l_print = True
+	cur.execute(s_sql_ap,(p_id, ))
+	recs_ap = cur.fetchall()
 
+	l_print = False
+	if (len(recs_ap) == 1):
+	    date_beg = recs_ap[0][2]
+	    motive_attach  = recs_ap[0][3]
+	    if motive_attach not in (0, 1, 2):
+		motive_attach = 2
+	    sss = p2(p_obj, insorg, mcod, motive_attach, date_beg) + "\r\n"
+	    ps = sss.encode('windows-1251')
+	    l_print = True
+
+	else:
+	    count_m += 1
+	    for rec_ap in recs_ap:
+		area_people_id = rec_ap[0]
+		area_id_fk     = rec_ap[1]
+		date_beg       = rec_ap[2]
+		motive_attach  = rec_ap[3]
+		clinic_id_fk   = rec_ap[4]
+		if PRINT2:
+		    sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
+		    log.info( sout )
+			
+		ws_row += 1
+		ws.write(ws_row,0,p_id)
+		if date_beg is None:
+		    s_date_beg = u"None"
 		else:
-		    count_m += 1
-		    for rec_ap in recs_ap:
-			area_people_id = rec_ap[0]
-			area_id_fk     = rec_ap[1]
-			date_beg       = rec_ap[2]
-			motive_attach  = rec_ap[3]
-			clinic_id_fk   = rec_ap[4]
-			if PRINT2:
-			    sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
-			    log.info( sout )
+		    s_date_beg = u"%04d-%02d-%02d" % (date_beg.year, date_beg.month, date_beg.day)
+		ws.write(ws_row,1,s_date_beg)
+		ws.write(ws_row,2,motive_attach)
+		ws.write(ws_row,3,clinic_id_fk)
 			
-			ws_row += 1
-			ws.write(ws_row,0,p_id)
-			if date_beg is None:
-			    s_date_beg = u"None"
-			else:
-			    s_date_beg = u"%04d-%02d-%02d" % (date_beg.year, date_beg.month, date_beg.day)
-			ws.write(ws_row,1,s_date_beg)
-			ws.write(ws_row,2,motive_attach)
-			ws.write(ws_row,3,clinic_id_fk)
+		if motive_attach not in (0, 1, 2):
+		    motive_attach = 2
 			
-			if motive_attach in (None, 3, 9):
-			    motive_attach = 2
-			
-			if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
-			    sss = p2(p_obj, insorg, mcod, 2, date_beg) + "\r\n"
-			    ps = sss.encode('windows-1251')
-			    l_print = True
+		if (clinic_id == clinic_id_fk) and (not l_print):
+		    sss = p2(p_obj, insorg, mcod, motive_attach, date_beg) + "\r\n"
+		    ps = sss.encode('windows-1251')
+		    l_print = True
 			    
 		
 		if l_print:
 		    fob.write(ps)
-    
 		    fob.flush()
 		    os.fsync(fob.fileno())
 		else:
 		    count_np += 1
 
-    foa.close()
     fob.close()
     f_fname = SD2DO_PATH + "/" + fnamex
     wb.save(f_fname)
 
-    sout = "Totally {0} of {1} patients have got mcod equal to TFOMS".format(count_e, count)
+    sout = "Totally {0} patients have been processed".format(count)
     log.info( sout )
     sout = "{0} patients have not been identified by TFOMS".format(count_a)
-    log.info( sout )
-    sout = "{0} patients have not got mcod equal to TFOMS".format(count_b)
     log.info( sout )
     sout = "{0} patients have got few attachments".format(count_m)
     log.info( sout )
     sout = "{0} patients have not been printed out".format(count_np)
     log.info( sout )
-
-    # write results into MySQL DB
-    dnow = datetime.datetime.now()
-    sdnow = str(dnow)
-    
-    s_sql = """SELECT id FROM iba WHERE clinic_id = %s;"""
-    curr.execute(s_sql,(clinic_id,))
-    rec = curr.fetchone()
-    if rec is None:
-	s_sql = """INSERT INTO iba
-	(clinic_id, mcod, done, count, count_e, count_a, count_m, count_np)
-	VALUES
-	(%s, %s, %s, %s, %s, %s, %s, %s);"""
-	curr.execute(s_sql,(clinic_id, mcod, sdnow, count, count_e, count_a, count_m, count_np, ))
-	dbmy.con.commit()
-    else:
-	_id = rec[0]
-	s_sql = """UPDATE iba
-	SET 
-	done = %s,
-	count = %s,
-	count_e = %s,
-	count_a = %s,
-	count_m = %s,
-	count_np  = %s
-	WHERE id = %s;"""
-	curr.execute(s_sql,(sdnow, count, count_e, count_a, count_m, count_np, _id, ))
-	dbmy.con.commit()
 
     dbmy.close()
 
@@ -312,7 +256,7 @@ def pclinic(clinic_id, mcod):
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('------------------------------------------------------------')
-    log.info('Insurance Belongings Analysis Start {0}'.format(localtime))
+    log.info('Create MO File. Start {0}'.format(localtime))
 
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     if dbc.ogrn == None:
@@ -364,7 +308,7 @@ AND ap.date_end is Null;"""
     
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Insurance Belongings Analysis Finish  '+localtime)
+    log.info('Create MO File. Finish  '+localtime)
 
 
 if __name__ == "__main__":
@@ -373,10 +317,14 @@ if __name__ == "__main__":
     import datetime
     from dbmysql_connect import DBMY
 
-    log.info("======================= INSB-2 ===========================================")
+    log.info("======================= INSB-8 ===========================================")
 
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info( sout )
+    
+    if DATE_RANGE is not None:
+	sout = "Date Range: ['{0}','{1}']".format(DATE_RANGE[0], DATE_RANGE[1])
+	log.info( sout )
     
     if CID_LIST:
 	for clinic_id in cid_list:
@@ -392,7 +340,7 @@ if __name__ == "__main__":
 	    
 	    pclinic(clinic_id, mcod)
     else:
-	if MLIST or ILIST: 
+	if ILIST: 
 	    dbmy = DBMY()
 	    clist = get_clist(dbmy)
 	    mcount = len(clist)
@@ -411,9 +359,9 @@ if __name__ == "__main__":
 		continue
 	    
 	    pclinic(clinic_id, mcod)
-	    if MLIST or ILIST:
+	    if ILIST:
 		register_cdone(dbmy, clinic_id)
 	
-    if MLIST or ILIST:
+    if ILIST:
 	dbmy.close()
     sys.exit(0)
