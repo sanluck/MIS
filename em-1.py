@@ -27,7 +27,7 @@ DB   = "DBMIS"
 MGZ  = 0
 
 d_begin = "2013-01-01"
-d_end   = "2013-12-31"
+d_end   = "2014-05-31"
 
 STEP = 1000
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 	curw.execute(s_sqli,(t_id, p_id, c_id, v_date, d_id, v_type, d_type, d_state))
 	em_count += 1
     
-    sout = "Totally {0} ticket of {1} have been chosen".format(em_count, t_count)
+    sout = "Totally {0} tickets of {1} have been chosen".format(em_count, t_count)
     log.info( sout )
     
     
