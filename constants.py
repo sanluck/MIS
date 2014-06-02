@@ -65,7 +65,7 @@ class CMGZ_Item:
     # принадлежность клиник к МГЗ
     def __init__(self, clinic_id, mgz_code, clinic_name = None):
         self.clinic_id = clinic_id
-	self.clinic_name = clinic_name
+        self.clinic_name = clinic_name
         self.mgz_code = mgz_code
 
 class CMGZ_List:
@@ -91,7 +91,7 @@ class CMGZ_List:
         # -- DB END --
         
         self.idxByCode = {}
-	self.idxByNumber = []
+        self.idxByNumber = []
         for elm in m:
             item = CMGZ_Item( elm[0], elm[1] )
             self.idxByCode[ elm[0] ] = item
@@ -129,12 +129,12 @@ class CMGZ_List:
                 if c1_type != 2: continue
                 clinic_id = int(worksheet.cell_value(curr_row, 0))
                 c2_type = worksheet.cell_type(curr_row, 1)
-		if c2_type == 1:
-			clinic_name = worksheet.cell_value(curr_row, 1)
-		else:
-			clinic_name = None
-                m.append( [clinic_id, zn, clinic_name] )
-                num_clinics += 1
+        if c2_type == 1:
+            clinic_name = worksheet.cell_value(curr_row, 1)
+        else:
+            clinic_name = None
+            m.append( [clinic_id, zn, clinic_name] )
+            num_clinics += 1
             
             sout = "MGZ: {0} Clinics Number: {1}".format(wsh.encode('utf-8'), num_clinics)
             log.info( sout )
