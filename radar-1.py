@@ -149,11 +149,18 @@ def get_data():
     return m
         
 if __name__ == '__main__':
+    # http://s.arboreus.com/2009/04/cyrillic-letters-in-matplotlibpylab.html
+    from matplotlib import rc
+
+    font = {'family': 'Droid Sans',
+	    'weight': 'normal',
+	    'size': 14}    
+
     N = 12
     theta = radar_factory(N, frame='polygon')
 
-    spoke_labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
-             'Sepember', 'October', 'November', 'December']
+    spoke_labels = [u'Январь', u'Февраль', u'Март', u'Апрель', u'Май', u'Июнь', u'Июль', u'Август',
+             u'Сентябрь', u'Октябрь', u'Ноябрь', u'Декабрь']
 
     a = get_data()
     #print a
@@ -165,6 +172,7 @@ if __name__ == '__main__':
     fig.subplots_adjust(wspace=0.2, hspace=0.2, top=0.85, bottom=0.05)
     title_list = ['Intensity']
     data = {'Intensity': [a, b]}
+    name = {'Intensity': u'Интенсивность'}
     colors = ['b', 'r']
 
     radial_grid = [100., 200., 300.]
@@ -172,7 +180,7 @@ if __name__ == '__main__':
     for n, title in enumerate(title_list):
         ax = fig.add_subplot(1, 1, n + 1, projection='radar')
         plt.rgrids(radial_grid)
-        ax.set_title(title, weight='bold', size='medium', position=(0.5, 1.1),
+        ax.set_title(name[title], weight='bold', size='medium', position=(0.5, 1.1),
                      horizontalalignment='center', verticalalignment='center')
         for d, color in zip(data[title], colors):
             ax.plot(theta, d, color=color)
@@ -183,6 +191,6 @@ if __name__ == '__main__':
     labels = ('2013', '')
     legend = plt.legend(labels, loc=(0.9, .95), labelspacing=0.1)
     plt.setp(legend.get_texts(), fontsize='small')
-    plt.figtext(0.5, 0.965, 'Seasonality Morbidity',
+    plt.figtext(0.5, 0.965, u'Сезонность заболеваемости',
     ha='center', color='black', weight='bold', size='large')
     plt.show()
