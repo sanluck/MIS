@@ -1,3 +1,20 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+
+d_begin = "2013-01-01"
+d_end   = "2013-12-31"
+n_peoples = 621700
+factor = 100000.0/n_peoples
+
+s_sql1 = """SELECT count(id), MONTH(visit_date) FROM mis.em$tickets 
+        WHERE visit_date >= %s AND visit_date <= %s 
+        GROUP BY MONTH(visit_date);"""    
+
+
+# http://matplotlib.org/examples/api/radar_chart.html
+# https://gist.github.com/dschien/8805271
+#
 """
 Example of creating a radar chart (a.k.a. a spider or star chart) [1]_.
 
@@ -111,47 +128,37 @@ def unit_poly_verts(theta):
     verts = [(r*np.cos(t) + x0, r*np.sin(t) + y0) for t in theta]
     return verts
 
+def get_data():
+    from dbmysql_connect import DBMY
+    
+    dbmy = DBMY()
+    curr = dbmy.con.cursor()
 
-def example_data():
-    #The following data is from the Denver Aerosol Sources and Health study.
-    #See  doi:10.1016/j.atmosenv.2008.12.017
-    #
-    #The data are pollution source profile estimates for five modeled pollution
-    #sources (e.g., cars, wood-burning, etc) that emit 7-9 chemical species.
-    #The radar charts are experimented with here to see if we can nicely
-    #visualize how the modeled source profiles change across four scenarios:
-    #  1) No gas-phase species present, just seven particulate counts on
-    #     Sulfate
-    #     Nitrate
-    #     Elemental Carbon (EC)
-    #     Organic Carbon fraction 1 (OC)
-    #     Organic Carbon fraction 2 (OC2)
-    #     Organic Carbon fraction 3 (OC3)
-    #     Pyrolized Organic Carbon (OP)
-    #  2)Inclusion of gas-phase specie carbon monoxide (CO)
-    #  3)Inclusion of gas-phase specie ozone (O3).
-    #  4)Inclusion of both gas-phase speciesis present...
-    data = {
-        'column names':
-            ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
-             'Sepember', 'October', 'November', 'December'],
-        '2013':
-            [[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0],
-             [221.6, 192.5, 206.6, 195.5, 130.6, 136.2, 114.6, 97.1, 147.7, 223.2, 253.3, 289.8]]}
-    return data
+    curr.execute(s_sql1, (d_begin, d_end, ))
 
+    recs = curr.fetchall()
 
+    m = []
+    for rec in recs:
+	n = rec[0]
+	f = n*factor
+	d = rec[1]
+	m.append(f)
+	
+    dbmy.close()
+    return m
+        
 if __name__ == '__main__':
     N = 12
     theta = radar_factory(N, frame='polygon')
 
-    data = example_data()
-    spoke_labels = data.pop('column names')
+    spoke_labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+             'Sepember', 'October', 'November', 'December']
 
-    a = [221.6, 192.5, 206.6, 195.5, 130.6, 136.2, 114.6, 97.1, 147.7, 223.2, 253.3, 289.8] # [6, 7, 5, 6, 8, 4]
+    a = get_data()
+    #print a
     
-    b = [0.5, 0.6, 0.8, 0.7, 0.8, 0.4, 0.5, 0.6, 0.8, 0.7, 0.8, 0.4]
-    b = np.asarray(b) * 10
+    b = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
     
     fig = plt.figure(figsize=(9, 9))
     # adjust spacing around the subplots
@@ -159,7 +166,7 @@ if __name__ == '__main__':
     title_list = ['Intensity']
     data = {'Intensity': [a, b]}
     colors = ['b', 'r']
-    # chemicals range from 0 to 1
+
     radial_grid = [100., 200., 300.]
     # If you don't care about the order, you can loop over data_dict.items()
     for n, title in enumerate(title_list):
@@ -173,7 +180,7 @@ if __name__ == '__main__':
             ax.set_varlabels(spoke_labels)
     # add legend relative to top-left plot
     plt.subplot(1, 1, 1)
-    labels = ('2013', 'B')
+    labels = ('2013', '')
     legend = plt.legend(labels, loc=(0.9, .95), labelspacing=0.1)
     plt.setp(legend.get_texts(), fontsize='small')
     plt.figtext(0.5, 0.965, 'Seasonality Morbidity',
