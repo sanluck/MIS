@@ -154,7 +154,9 @@ if __name__ == '__main__':
 
     font = {'family': 'Droid Sans',
 	    'weight': 'normal',
-	    'size': 14}    
+	    'size': 12}
+    
+    rc('font', **font)
 
     N = 12
     theta = radar_factory(N, frame='polygon')
