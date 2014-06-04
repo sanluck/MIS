@@ -21,7 +21,7 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 CLINIC_ID = 22
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 d_begin = "2014-05-01"
@@ -53,6 +53,7 @@ if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
     import xlwt
     import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
  
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('--------------------------------------------------------------------')
@@ -109,6 +110,7 @@ if __name__ == "__main__":
 	    arr_y = []
 	    d_count = 0
 	    visit_date0 = None
+	    l_graph = False
 	    for rec in recs:
 		visit_date = rec[3]
 		if visit_date0 is None:
@@ -120,14 +122,20 @@ if __name__ == "__main__":
 		    month = visit_date0.month
 		    day = visit_date0.day
 		    n_date = month+day*0.01
-		    arr_x.append(n_date)
+		    #arr_x.append(n_date)
+		    arr_x.append(visit_date0)
 		    arr_y.append(d_count)
+		    l_graph = True
 		    d_count = 0
 		    visit_date0 = visit_date
 	    
-	    if nddd > 0:
-		fig = plt.figure(figsize=(9, 7))
+	    if l_graph:
+		fig = plt.figure(figsize=(13, 7))
+		# http://stackoverflow.com/questions/9627686/plotting-dates-on-the-x-axis-with-pythons-matplotlib
+		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+		plt.gca().xaxis.set_major_locator(mdates.DayLocator())		
 		plt.plot(arr_x, arr_y)
+		plt.gcf().autofmt_xdate()
 		plt.ylabel(ddd)
 		plt.xlabel('Date')
 		f_name = F_PATH + "/" + "em3-{0}-{1}.png".format(clinic_id, ddd)
