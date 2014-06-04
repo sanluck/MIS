@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 #
 
-d_begin = "2013-01-01"
-d_end   = "2013-12-31"
+D_BEGIN = "2013-01-01"
+D_END   = "2013-12-31"
+dates = {2011: ["2011-01-01","2011-12-31"], 2012: ["2012-01-01","2012-12-31"], 2013: ["2013-01-01","2013-12-31"]}
 n_peoples = 621700
 factor = 100000.0/n_peoples
 
@@ -128,7 +129,7 @@ def unit_poly_verts(theta):
     verts = [(r*np.cos(t) + x0, r*np.sin(t) + y0) for t in theta]
     return verts
 
-def get_data():
+def get_data(d_begin = D_BEGIN, d_end = D_END):
     from dbmysql_connect import DBMY
     
     dbmy = DBMY()
@@ -165,18 +166,28 @@ if __name__ == '__main__':
                     u'Май', u'Июнь', u'Июль', u'Август',
                     u'Сентябрь', u'Октябрь', u'Ноябрь', u'Декабрь']
 
-    a = get_data()
-    #print a
+    d_begin = dates[2013][0]
+    d_end   = dates[2013][1]
+    a = get_data(d_begin, d_end)
+
+    d_begin = dates[2012][0]
+    d_end   = dates[2012][1]
+    b = get_data(d_begin, d_end)
+
+    d_begin = dates[2011][0]
+    d_end   = dates[2011][1]
+    c = get_data(d_begin, d_end)
     
-    b = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+    
+    d = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
     
     fig = plt.figure(figsize=(9, 9))
     # adjust spacing around the subplots
     fig.subplots_adjust(wspace=0.2, hspace=0.2, top=0.85, bottom=0.05)
     title_list = ['Intensity']
-    data = {'Intensity': [a, b]}
+    data = {'Intensity': [a, b, c, d]}
     name = {'Intensity': u'Интенсивность'}
-    colors = ['b', 'r']
+    colors = ['b', 'g', 'y', 'r']
 
     radial_grid = [100., 200., 300.]
     # If you don't care about the order, you can loop over data_dict.items()
@@ -191,7 +202,7 @@ if __name__ == '__main__':
             ax.set_varlabels(spoke_labels)
     # add legend relative to top-left plot
     plt.subplot(1, 1, 1)
-    labels = ('2013', '')
+    labels = ('2013', '2012', '2011', '')
     legend = plt.legend(labels, loc=(0.9, .95), labelspacing=0.1)
     plt.setp(legend.get_texts(), fontsize='small')
     plt.figtext(0.5, 0.965, u'Сезонность заболеваемости',

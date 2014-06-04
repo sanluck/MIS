@@ -26,8 +26,9 @@ DB   = "DBMIS"
 
 MGZ  = 0
 
-d_begin = "2013-01-01"
-d_end   = "2014-05-31"
+d_begin = "2011-01-01"
+d_end   = "2011-12-31"
+APPEND  = True
 
 STEP = 1000
 
@@ -89,9 +90,10 @@ if __name__ == "__main__":
 
     dbmy = DBMY()
     curw = dbmy.con.cursor()
-    # clear a$tickets table
-    s_sql = "TRUNCATE TABLE em$tickets;"
-    curw.execute(s_sql)
+    if not APPEND:
+    # clear em$tickets table
+	s_sql = "TRUNCATE TABLE em$tickets;"
+	curw.execute(s_sql)
     
     t_count = 0
     em_count = 0
