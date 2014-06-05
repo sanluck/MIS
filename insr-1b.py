@@ -29,7 +29,7 @@ DB   = "DBMIS"
 
 CLINIC_OGRN = u""
 
-FNAME = "SM{0}T22_14041.csv"
+FNAME = "SM{0}T22_14061.csv"
 
 STEP = 1000
 DOC_TYPES = {1:u"1",
@@ -56,22 +56,44 @@ SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
+NO_ENP     = True # Do IBR only for patients without ENP
+#DATE_RANGE = None
+DATE_RANGE = ["2014-05-01","2014-05-31"] 
+
 REGISTER_DONE = True
+
+SQLT_FTP = """SELECT id, enp FROM tfoms_peoples
+WHERE people_id = %s AND clinic_id = %s;"""
 
 SQLT_INSTP = """INSERT INTO tfoms_peoples
 (people_id, clinic_id, date_from_mis)
 VALUES
 (%s, %s, %s);"""
 
-CLEAR_BEFORE_SELECT = True
+SQLT_UPDTP = """UPDATE tfoms_peoples
+SET date_from_mis = %s
+WHERE id = %s;"""
 
-def wrtie_to_dbmy(curm, p_id, clinic_id, s_now):
+CLEAR_BEFORE_SELECT = False
+
+def write_to_dbmy(curm, p_id, clinic_id, s_now):
     
-    try:
-	curm.execute(SQLT_INSTP, (p_id, clinic_id, s_now, ))
-	return True
-    except:
-	return False
+    curm.execute(SQLT_FTP, (p_id, clinic_id, ))
+    rec = curm.fetchone()
+    if rec is None:
+	try:
+	    curm.execute(SQLT_INSTP, (p_id, clinic_id, s_now, ))
+	    return True
+	except:
+	    return False
+    else:
+	enp = rec[1]
+	if (not NO_ENP) or (enp is None):
+	    _id = rec[0]
+	    curm.execute(SQLT_UPDTP, ( s_now, _id, ))
+	    return True
+	else:
+	    return False
 
 def p1(patient, insorg):
     import datetime
@@ -266,7 +288,7 @@ def plist(dbc, fname, rows, clinic_id):
                 noicc += 1
             sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
-	    if wrtie_to_dbmy(curm, p_id, clinic_id, s_now):
+	    if write_to_dbmy(curm, p_id, clinic_id, s_now):
 		fo.write(ps)
 	    else:
 		n_pid_w_err += 1 
@@ -309,13 +331,27 @@ def pclinic(clinic_id, mcod):
     sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
     log.info(sout)
 
-    s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+    if DATE_RANGE is None:
+	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
-    s_sql = s_sqlt.format(clinic_id)
+	s_sql = s_sqlt.format(clinic_id)
+    else:
+	d_start  = DATE_RANGE[0]
+	d_finish = DATE_RANGE[1]
+	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
+AND ap.date_beg >= '{1}' AND ap.date_beg <= '{2}'
+AND ap.date_end is Null;"""
+	s_sql = s_sqlt.format(clinic_id, d_start, d_finish)
+	sout = "date_beg: [{0}] - [{1}]".format(d_start, d_finish)
+	log.info(sout)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
