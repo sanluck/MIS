@@ -44,7 +44,7 @@ WHERE
 people_id = %s;"""
 
 CLINIC_ID = 22
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 SQLT_PEOPLESU = """UPDATE peoples

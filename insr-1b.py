@@ -387,7 +387,34 @@ def get_clist():
 	
     dbmy.close()
     return clist
+
+def get_1clinic_lock(id_unlock = None):
     
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+    
+    if id_unlock is not None:
+	ssql = "UPDATE insr_list SET c_lock = Null WHERE id = %s;"
+	curm.execute(ssql, (id_unlock, ))
+	dbmy.con.commit()
+
+    ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE (done is Null) AND (c_lock is Null);"
+    curm.execute(ssql)
+    rec = curm.fetchone()
+    
+    if rec is not None:
+	_id  = rec[0]
+	c_id = rec[1]
+	mcod = rec[2]
+	c_rec = [_id, c_id, mcod]
+	ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
+	curm.execute(ssql, (_id, ))
+	dbmy.con.commit()
+    else:
+	c_rec = None
+
+    dbmy.close()
+    return c_rec
 
 def register_done(curm, _id):
     import datetime    
@@ -425,16 +452,18 @@ if __name__ == "__main__":
     dbmy = DBMY()
     curm = dbmy.con.cursor()
 
-    clist = get_clist()
-    for clinic in clist:
-	_id = clinic[0]
-	clinic_id = clinic[1]
-	mcod = clinic[2]
+    c_rec  = get_1clinic_lock()
+    while c_rec is not None:
+	_id = c_rec[0]
+	clinic_id = c_rec[1]
+	mcod = c_rec[2]
 	if CLEAR_BEFORE_SELECT: clear_tfoms_peoples(clinic_id)
 	
 	pclinic(clinic_id, mcod)
 	
 	if REGISTER_DONE: register_done(curm, _id)
+	
+	c_rec  = get_1clinic_lock(_id)
 	
     dbmy.close()
     sys.exit(0)

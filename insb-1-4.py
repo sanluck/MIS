@@ -18,7 +18,7 @@ insorgs = InsorgInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_insb1_3.out'
+LOG_FILENAME = '_insb1_4.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -48,7 +48,7 @@ WHERE
 id = %s;"""
 
 CLINIC_ID = 22
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 SQLT_APR = """SELECT 

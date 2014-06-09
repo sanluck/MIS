@@ -701,7 +701,7 @@ def p2join(ar_in):
                 str_r += u'"' + sss + u'"'
     return str_r
 
-def p2(patient, insorg, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
+def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
 # new format    
     import datetime
     import re
