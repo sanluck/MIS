@@ -112,7 +112,8 @@ def write_st(db, ar, upd = False):
     oms_series = %s,
     oms_number = %s,
     enp = %s,
-    mcod = %s
+    mcod = %s,
+    enp_2_dbmis = Null
     WHERE 
     people_id = %s;"""
 
