@@ -56,7 +56,7 @@ PRINT2     = False
 
 #DATE_RANGE = None
 DATE_RANGE = ['2014-05-01','2014-05-31']
-
+PRINT_ALL  = True # include all patients into MO files
 
 def get_clist(db):
     
@@ -216,7 +216,7 @@ ORDER BY ap.date_beg DESC;"""
 
 	    if mcod == f_mcod:
 		count_e += 1
-		continue
+		if not PRINT_ALL: continue
 	    else:
 		count_b += 1
 		
