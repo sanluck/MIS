@@ -250,7 +250,7 @@ order by t.ticket_id desc;"""
 	    except:
 		dd_beg = None
 
-	    sss = p2(p_obj, insorg, mcod, cmotive, dd_beg) + "\r\n"
+	    sss = p2(p_obj, mcod, cmotive, dd_beg) + "\r\n"
 	    ps = sss.encode('windows-1251')
 	    if l_print:
 		fob.write(ps)
