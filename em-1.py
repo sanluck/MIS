@@ -26,9 +26,11 @@ DB   = "DBMIS"
 
 MGZ  = 0
 
-d_begin = "2011-01-01"
-d_end   = "2011-12-31"
+d_begin = "2014-01-01"
+d_end   = "2014-12-31"
 APPEND  = True
+
+APP_AFTER_MAX_TICKET = True
 
 STEP = 1000
 
@@ -94,6 +96,15 @@ if __name__ == "__main__":
     # clear em$tickets table
 	s_sql = "TRUNCATE TABLE em$tickets;"
 	curw.execute(s_sql)
+
+    max_ticket_id = 0
+    if APP_AFTER_MAX_TICKET:
+	s_sql = "SELECT MAX(ticket_id) FROM em$tickets;"
+	curw.execute(s_sql)
+	rec = curw.fetchone()
+	if rec is not None:
+	    max_ticket_id = rec[0]
+	    
     
     t_count = 0
     em_count = 0
@@ -115,7 +126,7 @@ if __name__ == "__main__":
 	    log.info( sout )	
 
 	if c_id not in clist: continue
-	
+	if t_id <= max_ticket_id: continue
 	
 	curw.execute(s_sqli,(t_id, p_id, c_id, v_date, d_id, v_type, d_type, d_state))
 	em_count += 1
