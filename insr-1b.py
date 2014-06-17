@@ -29,7 +29,8 @@ DB   = "DBMIS"
 
 CLINIC_OGRN = u""
 
-FNAME = "SM{0}T22_14061.csv"
+FNAME = "SM{0}T22_14062.csv"
+FPATH = "./SM"
 
 STEP = 1000
 DOC_TYPES = {1:u"1",
@@ -56,9 +57,9 @@ SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
-NO_ENP     = True # Do IBR only for patients without ENP
-#DATE_RANGE = None
-DATE_RANGE = ["2014-05-01","2014-05-31"] 
+NO_ENP     = False # Do IBR only for patients without ENP
+DATE_RANGE = None
+#DATE_RANGE = ["2014-05-01","2014-05-31"] 
 
 REGISTER_DONE = True
 
@@ -74,7 +75,7 @@ SQLT_UPDTP = """UPDATE tfoms_peoples
 SET date_from_mis = %s
 WHERE id = %s;"""
 
-CLEAR_BEFORE_SELECT = False
+CLEAR_BEFORE_SELECT = True
 
 def write_to_dbmy(curm, p_id, clinic_id, s_now):
     
@@ -357,7 +358,7 @@ AND ap.date_end is Null;"""
     cursor.execute(s_sql)
     results = cursor.fetchall()
     
-    fname = FNAME.format(mcod)
+    fname = FPATH + "/" + FNAME.format(mcod)
     sout = "Output to file: {0}".format(fname)
     log.info(sout)
     
