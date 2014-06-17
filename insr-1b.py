@@ -417,8 +417,11 @@ def get_1clinic_lock(id_unlock = None):
     dbmy.close()
     return c_rec
 
-def register_done(curm, _id):
+def register_done(_id):
     import datetime    
+
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
 
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
@@ -429,6 +432,7 @@ def register_done(curm, _id):
     id = %s;"""
     
     curm.execute(s_sqlt,(dnow, _id, ))
+    dbmy.close()
     
 def clear_tfoms_peoples(clinic_id):
 
@@ -459,7 +463,7 @@ if __name__ == "__main__":
 	
 	pclinic(clinic_id, mcod)
 	
-	if REGISTER_DONE: register_done(curm, _id)
+	if REGISTER_DONE: register_done(_id)
 	
 	c_rec  = get_1clinic_lock(_id)
 	
