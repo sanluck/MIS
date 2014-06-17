@@ -450,9 +450,6 @@ if __name__ == "__main__":
     import os    
     import datetime
 
-    dbmy = DBMY()
-    curm = dbmy.con.cursor()
-
     c_rec  = get_1clinic_lock()
     while c_rec is not None:
 	_id = c_rec[0]
@@ -466,5 +463,4 @@ if __name__ == "__main__":
 	
 	c_rec  = get_1clinic_lock(_id)
 	
-    dbmy.close()
     sys.exit(0)
