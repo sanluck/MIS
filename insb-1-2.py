@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 STEP = 1000
 
-UPDATE            = True
+UPDATE = True
 
 SQLT_TPR = """SELECT tp.id, tp.people_id, tp.clinic_id,
 sm.enp, sm.mcod
