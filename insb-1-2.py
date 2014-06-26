@@ -31,7 +31,7 @@ SQLT_TPR = """SELECT tp.id, tp.people_id, tp.clinic_id,
 sm.enp, sm.mcod
 FROM tfoms_peoples tp 
 LEFT JOIN sm ON tp.people_id = sm.people_id
-WHERE  tp.people_id = 2353993;"""
+WHERE date_from_tfoms is Null;"""
 
 
 SQLT_TPU = """UPDATE tfoms_peoples
