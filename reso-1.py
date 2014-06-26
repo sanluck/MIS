@@ -25,8 +25,8 @@ DB   = "DBMIS"
 CLINIC_ID = 22
 
 F_PATH    = "./RESO/"
-FIN_NAME  = "reso2.xls"
-FOUT_NAME = "reso2_out.xls"
+FIN_NAME  = "reso3.xls"
+FOUT_NAME = "reso3_out.xls"
 
 STEP = 100
 
