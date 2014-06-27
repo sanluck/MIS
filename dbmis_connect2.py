@@ -98,7 +98,13 @@ FROM VW_CLINICS
 """
 
 SQL_TEMPLATE_GETCLINIC = """SELECT
-clinic_name, inn, kpp, ogrn, mcod
+clinic_name, inn, kpp, ogrn, mcod,
+addr_jure_town_name, addr_jure_town_socr, 
+addr_jure_area_name, addr_jure_area_socr,
+addr_jure_country_name, addr_jure_country_socr,
+addr_jure_street_name, addr_jure_street_socr,
+addr_jure_house,
+addr_jure_post_index
 FROM VW_CLINICS
 WHERE CLINIC_ID = {0}
 """
@@ -315,13 +321,52 @@ class DBMIS:
             self.kpp  = None
             self.ogrn = None
             self.mcod = None
+            self.addr_jure = None
         else:
             self.name = rec[0]
             self.inn  = rec[1]
             self.kpp  = rec[2]
             self.ogrn = rec[3]
             self.mcod = rec[4]
-                
+
+            addr_jure_town_name = rec[5]
+            addr_jure_town_socr = rec[6]
+            addr_jure_area_name = rec[7]
+            addr_jure_area_socr = rec[8]
+            addr_jure_country_name = rec[9]
+            addr_jure_country_socr = rec[10]
+            addr_jure_street_name = rec[11]
+            addr_jure_street_socr = rec[12]
+            addr_jure_house = rec[13]
+            addr_jure_post_index = rec[14]
+            
+            if addr_jure_post_index is None:
+                addr_jure = u"Алтайский край, "
+            else:
+                addr_jure = addr_jure_post_index + u", Алтайский край, "
+            
+            if addr_jure_town_socr is not None:
+                addr_jure += addr_jure_town_socr + u". "
+            if addr_jure_town_name is not None:
+                addr_jure += addr_jure_town_name + u", "
+            if addr_jure_area_name is not None:
+                addr_jure += addr_jure_area_name
+                if addr_jure_area_socr is not None:
+                    addr_jure += u" " + addr_jure_area_socr
+                addr_jure +=  u", "
+            if addr_jure_country_socr is not None:
+                addr_jure += addr_jure_country_socr + u". "
+            if addr_jure_country_name is not None:
+                addr_jure += addr_jure_country_name + u", "
+            if addr_jure_street_socr is not None:
+                addr_jure += addr_jure_street_socr + u". "
+            if addr_jure_street_name is not None:
+                addr_jure += addr_jure_street_name + u", "
+            if addr_jure_house is not None:
+                addr_jure += addr_jure_house
+            
+            self.addr_jure = addr_jure
+            
         s_sqlt = """SELECT 
                 a.area_id, a.area_number,
                 ca.clinic_id_fk
