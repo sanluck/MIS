@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# card.py - PROF_EXAM card
+# card.py - PROF_EXAM card (PROF_EXAM_MINOR table)
 #
 
 import sys
