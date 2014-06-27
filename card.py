@@ -24,9 +24,24 @@ p_pf, p_mf, p_ecf, p_rr,
 p_ps_code, p_i_code, p_evs_code,
 f_p, f_ax, f_fa, f_ma, f_me,
 mens1_code, mens2_code, mens3_code,
-b_hr_code, b_pg_code
+b_hr_code, b_pg_code,
+inv, inv_type_code, inv_ds,
+date_inv_first, date_inv_last,
+vnz_inv_list,
+health_group_code, phys_group_code,
+date_end
 FROM prof_exam_minor
 WHERE prof_exam_id = ?;"""
+
+SQLT_D1 = """SELECT
+per.doctor_id_fk,
+d.people_id_fk,
+p.lname, p.fname, p.mname
+FROM prof_exam_results per
+LEFT JOIN doctors d ON per.doctor_id_fk = d.doctor_id
+LEFT JOIN peoples p ON d.people_id_fk = p.people_id
+WHERE per.prof_exam_id_fk = ?
+AND per.cc_line = 1;"""
 
 if __name__ == "__main__":
     LOG_FILENAME = '_card.out'
@@ -44,6 +59,29 @@ def addNode(doc, nodeName, nodeValue):
     doc.putText(nodeValue)
     doc.endNode()
 
+def getDoctor(dbc, exam_id):
+    doc = SimpleXmlConstructor()
+    doc.startNode("zakluchVrachName")
+    cur = dbc.con.cursor()
+    cur.execute(SQLT_D1, (exam_id, ))
+    rec = cur.fetchone()
+    
+    if rec is None:
+        addNode(doc, "last", "Иванов")
+        addNode(doc, "first", "Иван")
+        addNode(doc, "middle", "Иванович")
+    else:
+        last = rec[2]
+        first = rec[3]
+        middle = rec[4]
+        if last is not None: addNode(doc, "last", last.encode('utf-8'))
+        if first is not None: addNode(doc, "first", first.encode('utf-8'))
+        if middle is not None: addNode(doc, "middle", middle.encode('utf-8'))
+
+    doc.endNode() # zakluchVrachName
+    
+    return doc
+    
 class CARD:
     def __init__(self):
         self.idInternal = None
@@ -76,6 +114,18 @@ class CARD:
         
         self.b_hr_code = None
         self.b_pg_code = None
+
+        self.inv = None
+        self.inv_type_code = None
+        self.inv_ds = None
+        self.date_inv_first = None
+        self.date_inv_last = None
+        self.vnz_inv_list = None
+        
+        self.health_group_code = None
+        self.phys_group_code = None
+        
+        self.date_end = None
         
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -119,10 +169,21 @@ class CARD:
 
             self.b_hr_code = rec[21]
             self.b_pg_code = rec[22]
+            
+            self.inv = rec[23]
+            self.inv_type_code = rec[24]
+            self.inv_ds = rec[25]
+            self.date_inv_first = rec[26]
+            self.date_inv_last = rec[27]
+            self.vnz_inv_list = rec[28]
 
+            self.health_group_code = rec[29]
+            self.phys_group_code = rec[30]
+
+            self.date_end = rec[31]
             
     def asXML(self):
-        doc = SimpleXmlConstructor()    
+        doc = SimpleXmlConstructor()
         idInternal = "{0}".format(self.idInternal)
         addNode(doc, "idInternal", idInternal)
         do = self.dateOfObsled
@@ -188,6 +249,29 @@ class CARD:
         addNode(doc, "fizkultGroupBefore", str(self.b_pg_code))
 
         return doc
+    
+    def z_asXML(self):
+	
+        doc = SimpleXmlConstructor()
+
+	health_group_code = self.health_group_code
+	phys_group_code = self.phys_group_code
+
+	de = self.date_end
+	
+	if health_group_code is None: health_group_code = 1
+	addNode(doc, "healthGroup", str(health_group_code))
+	if phys_group_code is None: phys_group_code = 1
+	addNode(doc, "fizkultGroup", str(phys_group_code))
+	
+	if de is None:
+	    zakluchDate = "2014-06-30"
+	else:
+	    zakluchDate = "%04d-%02d-%02d" % (de.year, de.month, de.day)
+	    
+	addNode(doc, "zakluchDate", zakluchDate)
+	    
+	return doc
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
@@ -216,4 +300,10 @@ if __name__ == "__main__":
     log.info(sout)
     cardXML = card.asXML()
     log.info(cardXML.asText())
+    
+    z_XML = card.z_asXML()
+    log.info(z_XML.asText())
+    
+    d_XML = getDoctor(dbc, card_id)
+    log.info(d_XML.asText())
     
