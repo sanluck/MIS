@@ -176,7 +176,7 @@ class CARD:
             
             if (self.mens1_code is not None) and (self.mens1_code > 0):
                 doc.startNode("menses")
-                addNode(doc, "menarhe", "0") # ???
+                addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
                 addNode(doc, "char", str(self.mens1_code))
                 addNode(doc, "char", str(self.mens2_code))
