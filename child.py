@@ -10,9 +10,9 @@ from child_const import KLADR0
 
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
-CLINIC_ID = 22
+CLINIC_ID = 268
 
-PEOPLE_ID = 1778741
+PEOPLE_ID = 1403106
 
 SQLT_P1 = """SELECT
 lname, fname, mname,

@@ -12,10 +12,10 @@ from child_const import TYPE_EXAM_CODE, TYPE_EXAM, TYPE_EXAM0
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 200
+CLINIC_ID = 268
 #PROF_EXAM_ID = 170
 # PROF_EXAM_ID = 6185
-PROF_EXAM_ID = 268
+PROF_EXAM_ID = 423140
 
 SQLT_E1 = """SELECT
 date_begin, type_exam_code, height, weight,
