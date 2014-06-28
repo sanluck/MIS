@@ -222,18 +222,32 @@ class CARD:
         age = self.age
 	
         if age is not None:
-	    if (age < 5) and (self.p_pf is not None) and (self.p_pf > 0):
+	    if (age < 5):
 		doc.startNode("pshycDevelopment")
-		addNode(doc, "poznav", str(self.p_pf))
-		addNode(doc, "motor", str(self.p_mf))
-		addNode(doc, "emot", str(self.p_ecf))
-		addNode(doc, "rech", str(self.p_rr))
+		p_pf = self.p_pf
+		if p_pf is None: p_pf = 0
+		addNode(doc, "poznav", str(p_pf))
+		p_mf = self.p_mf
+		if p_mf is None: p_mf = 0
+		addNode(doc, "motor", str(p_mf))
+		p_ecf = self.p_ecf
+		if p_ecf is None: p_ecf = 0
+		addNode(doc, "emot", str(p_ecf))
+		p_rr = self.p_rr
+		if p_rr is None: p_rr = 0
+		addNode(doc, "rech", str(p_rr))
 		doc.endNode() # pshycDevelopment
-	    if (age >= 5) and (self.p_ps_code is not None) and (self.p_ps_code > 0):
+	    if (age >= 5):
 		doc.startNode("pshycState")
-		addNode(doc, "psihmot", str(self.p_ps_code))
-		addNode(doc, "intel", str(self.p_i_code))
-		addNode(doc, "emotveg", str(self.p_evs_code))
+		p_ps_code = self.p_ps_code
+		if p_ps_code is None: p_ps_code = 1
+		addNode(doc, "psihmot", str(p_ps_code))
+		p_i_code = self.p_i_code
+		if p_i_code is None: p_i_code = 1
+		addNode(doc, "intel", str(p_i_code))
+		p_evs_code = self.p_evs_code
+		if p_evs_code is None: p_evs_code = 1
+		addNode(doc, "emotveg", str(p_evs_code))
 		doc.endNode() # pshycState
 	elif (self.p_pf is not None) and (self.p_pf > 0):
             doc.startNode("pshycDevelopment")
@@ -251,8 +265,12 @@ class CARD:
 	elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
             doc.startNode("pshycState")
             addNode(doc, "psihmot", str(self.p_ps_code))
-            addNode(doc, "intel", str(self.p_i_code))
-            addNode(doc, "emotveg", str(self.p_evs_code))
+            p_i_code = self.p_i_code
+            if p_i_code is None: p_i_code = 1
+            addNode(doc, "intel", str(p_i_code))
+            p_evs_code = self.p_evs_code
+            if p_evs_code is None: p_evs_code = 1
+            addNode(doc, "emotveg", str(p_evs_code))
             doc.endNode() # pshycState
 
         if self.f_fa is not None:
@@ -266,11 +284,13 @@ class CARD:
             addNode(doc, "P", str(self.f_p))
             addNode(doc, "Ma", str(self.f_ma))
             addNode(doc, "Ax", str(self.f_ax))
-            addNode(doc, "Me", str(self.f_me))
+            f_me = self.f_me
+            if f_me is None: f_me = 0
+            addNode(doc, "Me", str(f_me))
             doc.endNode() # sexFormulaFemale
             
             mens1_code = self.mens1_code
-            if (mens1_code is not None) and (mens1_code > 0):
+            if (f_me > 0) and (mens1_code is not None) and (mens1_code > 0):
                 doc.startNode("menses")
                 addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
