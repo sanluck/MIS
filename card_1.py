@@ -27,8 +27,8 @@ CLINIC_ID = 268
 # PROF_EXAM_ID = 392088
 # PEOPLE_ID = 1567963
 # no sex formula
-PROF_EXAM_ID = 345954
-PEOPLE_ID = 960630
+PROF_EXAM_ID = 398602
+PEOPLE_ID = 1558998
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
@@ -95,8 +95,8 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card = CARD()
     card.initFromDB(dbc, card_id)
     dateOfObsled = card.dateOfObsled
-    #age = relativedelta(dateOfObsled, bd).years
-    age = dateOfObsled.year - bd.year
+    age = relativedelta(dateOfObsled, bd).years
+    #age = dateOfObsled.year - bd.year
     card.age = age
     card.sex = child.sex
     cardXML = card.asXML()
