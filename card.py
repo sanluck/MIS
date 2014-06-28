@@ -209,8 +209,12 @@ class CARD:
         addNode(doc, "weight", str(weight)+".000")
 	
 	headSize = self.head_circ
-	
-	if (headSize is not None) and (headSize > 0):
+	if headSize is None: headSize = 0
+
+	age = self.age
+        if (age is not None) and (age < 5):
+	    addNode(doc, "headSize", str(headSize))
+	elif (headSize > 0):
 	    addNode(doc, "headSize", str(headSize))
         
         nfr_code = self.nfr_code
@@ -218,8 +222,6 @@ class CARD:
             doc.startNode("healthProblems")
             addNode(doc, "problem", str(nfr_code))
             doc.endNode()
-        
-        age = self.age
 	
         if age is not None:
 	    if (age < 5):
