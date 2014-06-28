@@ -125,7 +125,9 @@ class CARD_DIAG_B_ARR:
                 addNode(doc, "organ", str(mo1))
                 lv1 = diag_b.lv1
                 if lv1 == 2:
-                    addNode(doc, "notDone", "1")
+                    doc.startNode("notDone")
+                    addNode(doc, "reason", "1")
+                    doc.endNode() # notDone
                 doc.endNode() # lechen
             
             ln2 = diag_b.ln2
@@ -139,7 +141,9 @@ class CARD_DIAG_B_ARR:
                 addNode(doc, "organ", str(mo3))
                 lv2 = diag_b.lv2
                 if lv2 == 2:
-                    addNode(doc, "notDone", "1")
+		    doc.startNode("notDone")
+		    addNode(doc, "reason", "1")
+		    doc.endNode() # notDone
                 doc.endNode() # reabil
 
                 

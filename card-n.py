@@ -18,8 +18,8 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 
-D_START  = "2014-03-06"
-D_FINISH = "2014-03-06"
+D_START  = "2014-03-18"
+D_FINISH = "2014-03-20"
 
 STEP = 100
 
@@ -40,7 +40,7 @@ ORDER by date_begin;"""
 
 SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
 
-SQLT_SNILS = """SELECT insurance_certificate FROM peoples WHERE people_id = ?;"""
+SQLT_SNILS = """SELECT insurance_certificate, document_type_id_fk FROM peoples WHERE people_id = ?;"""
 
 if __name__ == "__main__":
     LOG_FILENAME = '_cardn.out'
@@ -75,6 +75,8 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
         rec2 = cur2.fetchone()
         if rec2 is None: continue
         if rec2[0] is None: continue
+        doc_type = rec2[1]
+        if doc_type not in (3, 14): continue
         date_begin   = rec[2]
         nnn += 1
         arr.append([prof_exam_id, people_id, date_begin])
