@@ -16,10 +16,10 @@ from card_1 import getCard
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 268
+CLINIC_ID = 52
 
-D_START  = "2014-04-01"
-D_FINISH = "2014-04-10"
+D_START  = "2014-01-01"
+D_FINISH = "2014-05-31"
 
 STEP = 100
 
