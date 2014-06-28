@@ -27,7 +27,7 @@ FNAME = "PN{0}.xml"
 FPATH = "./PN"
 
 SQLT_CL = """SELECT
-prof_exam_id, people_id_fk
+prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
 AND type_exam_code = 1
@@ -58,7 +58,8 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
     for rec in recs:
         prof_exam_id = rec[0]
         people_id    = rec[1]
-        arr.append([prof_exam_id, people_id])
+        date_begin   = rec[2]
+        arr.append([prof_exam_id, people_id, date_begin])
     
     nnn = len(arr)
     sout = "Totally {0} cards to be processed".format(nnn)
@@ -104,12 +105,13 @@ if __name__ == "__main__":
         iii += 1
         e_id = ccc[0]
         p_id = ccc[1]
+        d_bg = ccc[2]
         docTXT = getCard(dbc, e_id, p_id)
         fo.write(docTXT)
         fo.flush()
         os.fsync(fo.fileno())
         if iii % STEP == 0:
-            sout = "{0}: {1} {2}".format(iii, e_id, p_id)
+            sout = "{0}: {1} {2} {3}".format(iii, e_id, p_id, d_bg)
             log.info(sout)
 
     fo.close()
