@@ -40,6 +40,8 @@ ORDER by date_begin;"""
 
 SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
 
+SQLT_SNILS = """SELECT insurance_certificate FROM peoples WHERE people_id = ?;"""
+
 if __name__ == "__main__":
     LOG_FILENAME = '_cardn.out'
     logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
@@ -67,6 +69,10 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
         rec2 = cur2.fetchone()
         if rec2 is None: continue
         people_id    = rec[1]
+        cur2.execute(SQLT_SNILS, (people_id, ))
+        rec2 = cur2.fetchone()
+        if rec2 is None: continue
+        if rec2[0] is None: continue
         date_begin   = rec[2]
         arr.append([prof_exam_id, people_id, date_begin])
     

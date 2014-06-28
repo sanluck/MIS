@@ -13,7 +13,7 @@ HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
 CLINIC_ID = 268
-PROF_EXAM_ID = 1567963
+PROF_EXAM_ID = 392088
 
 SQLT_R1 = """SELECT
 cc_line, date_checkup, diagnosis_id_fk
@@ -65,10 +65,11 @@ class CARD_RESULTS:
             self.results = arr
             
     def issledXML(self):
+        arr = self.results
         doc = SimpleXmlConstructor()
         doc.startNode("issled")
         doc.startNode("basic")
-        arr = self.results
+        nn = 0
         for card_result in arr:
             cc_line = card_result.cc_line
             di = card_result.date_checkup
@@ -80,6 +81,7 @@ class CARD_RESULTS:
                 issled_id = "0"
             
             if issled_id > "0":
+                nn += 1
                 doc.startNode("record")
                 addNode(doc, "id", issled_id)
                 dd = "%04d-%02d-%02d" % (di.year, di.month, di.day)
@@ -88,8 +90,11 @@ class CARD_RESULTS:
                 doc.endNode() # record
         doc.endNode() # basic
         doc.endNode() # issled
-
-        return doc
+        
+        if nn == 0:
+            return None
+        else:
+            return doc
 
     def osmotriXML(self):
         doc = SimpleXmlConstructor()
@@ -143,7 +148,7 @@ if __name__ == "__main__":
     log.info(sout)
     log.info(" issled:")
     issledXML = card_results.issledXML()
-    log.info(issledXML.asText())
+    if issledXML is not None: log.info(issledXML.asText())
 
     log.info(" osmotri:")
     osmotriXML = card_results.osmotriXML()

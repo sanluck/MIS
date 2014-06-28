@@ -24,8 +24,8 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 # 1403106
-PROF_EXAM_ID = 2353
-PEOPLE_ID = 1026818
+PROF_EXAM_ID = 392088
+PEOPLE_ID = 1567963
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
@@ -110,7 +110,8 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card_results = CARD_RESULTS()
     card_results.initFromDB(dbc, card_id)
     issledXML = card_results.issledXML()
-    docTXT += issledXML.asText()
+    if issledXML is not None:
+        docTXT += issledXML.asText()
     
     z_XML = card.z_asXML()
     docTXT += z_XML.asText()
