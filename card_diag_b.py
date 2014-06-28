@@ -216,10 +216,9 @@ class CARD_DIAG_A_ARR:
     def asXML(self):
         doc = SimpleXmlConstructor()
         arr = self.diag_a_arr
-	skip_diagnosisAfter = False
         if len(arr) == 0:
             addNode(doc, "healthyMKB", "Z00.0")
-	    skip_diagnosisAfter = True
+	    return doc
 	elif len(arr) > 0:
             diag_a = arr[0]
             mkb = diag_a.mkb
@@ -227,71 +226,70 @@ class CARD_DIAG_A_ARR:
 		mkb3 = mkb[:3]
 		if (mkb3 >= "Z00") and (mkb3 <= "Z10"):
 		    addNode(doc, "healthyMKB", mkb)
-		    skip_diagnosisAfter = True
+		    return doc
 	
-	if (not skip_diagnosisAfter) and len(arr) > 0:
-            doc.startNode("diagnosisAfter")
-	    for diag_a in arr:
-                mkb = diag_a.mkb
-                doc.startNode("diagnosis")
-                addNode(doc, "mkb", mkb.strip())
+	doc.startNode("diagnosisAfter")
+	for diag_a in arr:
+	    mkb = diag_a.mkb
+	    doc.startNode("diagnosis")
+	    addNode(doc, "mkb", mkb.strip())
             
-                if diag_a.uv == 1:
-		    addNode(doc, "firstTime", "1")
-                else:
-		    addNode(doc, "firstTime", "0")
+	    if diag_a.uv == 1:
+		addNode(doc, "firstTime", "1")
+	    else:
+		addNode(doc, "firstTime", "0")
         
-                dn = diag_a.dn
-                if (dn is None) or (dn == 3): dn = 0
-                addNode(doc, "dispNablud", str(dn))
+	    dn = diag_a.dn
+	    if (dn is None) or (dn == 3): dn = 0
+	    addNode(doc, "dispNablud", str(dn))
 
-                ln3 = diag_a.ln3
-                if ln3 == 1:
-		    doc.startNode("lechen")
-		    ul3 = diag_a.ul3
-		    if ul3 is None: ul3 = 1
-		    addNode(doc, "condition", str(ul3))
-		    mo3 = diag_a.mo3
-		    if mo3 is None: mo3 = 2
-		    addNode(doc, "organ", str(mo3))
-		    doc.endNode() # lechen
+	    ln3 = diag_a.ln3
+	    if ln3 == 1:
+		doc.startNode("lechen")
+		ul3 = diag_a.ul3
+		if ul3 is None: ul3 = 1
+		addNode(doc, "condition", str(ul3))
+		mo3 = diag_a.mo3
+		if mo3 is None: mo3 = 2
+		addNode(doc, "organ", str(mo3))
+		doc.endNode() # lechen
 
-		    ln4 = diag_a.ln4
-                if ln4 == 1:
-		    doc.startNode("reabil")
-		    ul4 = diag_a.ul4
-		    if ul4 is None: ul4 = 3
-		    addNode(doc, "condition", str(ul4))
-		    mo4 = diag_a.mo4
-		    if mo4 is None: mo4 = 2
-		    addNode(doc, "organ", str(mo4))
-		    doc.endNode() # reabil
+	    ln4 = diag_a.ln4
+	    if ln4 == 1:
+		doc.startNode("reabil")
+		ul4 = diag_a.ul4
+		if ul4 is None: ul4 = 3
+		addNode(doc, "condition", str(ul4))
+		mo4 = diag_a.mo4
+		if mo4 is None: mo4 = 2
+		addNode(doc, "organ", str(mo4))
+		doc.endNode() # reabil
             
-                in1 = diag_a.in1
-                if in1 == 1:
-		    doc.startNode("consul")
-		    ul1 = diag_a.ul1
-		    if ul1 is None: ul1 = 1
-		    addNode(doc, "condition", str(ul1))
-		    mo1 = diag_a.mo1
-		    if mo1 is None: mo1 = 1
-		    addNode(doc, "organ", str(mo1))
-		    iv2 = diag_a.iv2
-		    if (iv2 is None) or (iv2 == 2): iv2 = 0
-		    addNode(doc, "state", str(iv2))
-		    doc.endNode() # consul
+	    in1 = diag_a.in1
+	    if in1 == 1:
+		doc.startNode("consul")
+		ul1 = diag_a.ul1
+		if ul1 is None: ul1 = 1
+		addNode(doc, "condition", str(ul1))
+		mo1 = diag_a.mo1
+		if mo1 is None: mo1 = 1
+		addNode(doc, "organ", str(mo1))
+		iv2 = diag_a.iv2
+		if (iv2 is None) or (iv2 == 2): iv2 = 0
+		addNode(doc, "state", str(iv2))
+		doc.endNode() # consul
                 
-                vmp = diag_a.vmp
-                if (vmp is None) or (vmp == 2): vmp = 0
-                addNode(doc, "needVMP", str(vmp))
-                addNode(doc, "needSMP", "0")
-                addNode(doc, "needSKL", "0")
+	    vmp = diag_a.vmp
+	    if (vmp is None) or (vmp == 2): vmp = 0
+	    addNode(doc, "needVMP", str(vmp))
+	    addNode(doc, "needSMP", "0")
+	    addNode(doc, "needSKL", "0")
 	    
-                ms_uid = diag_a.ms_uid
-                addNode(doc, "recommendNext", "Нет")
-                doc.endNode() # diagnosis
+	    ms_uid = diag_a.ms_uid
+	    addNode(doc, "recommendNext", "Нет")
+	    doc.endNode() # diagnosis
 
-                doc.endNode() # diagnosisAfter
+	doc.endNode() # diagnosisAfter
 
         return doc
 
