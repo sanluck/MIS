@@ -11,6 +11,8 @@ import logging
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
 
+from dbmysql_connect import DBMY
+
 from card_1 import getCard
 
 HOST      = "fb2.ctmed.ru"
@@ -20,6 +22,7 @@ CLINIC_ID = 52
 
 D_START  = "2014-01-01"
 D_FINISH = "2014-05-31"
+REGISTER_DONE = True
 
 STEP = 100
 
@@ -120,7 +123,8 @@ def do_card_n(clinic_id = CLINIC_ID):
     for arr in arr_arr:
         nnn += 1
         c_list = arr
-        f_fname = FPATH + "/" + FNAME.format(mcod, nnn)
+        s_nnn = "%02d" % (nnn)
+        f_fname = FPATH + "/" + FNAME.format(mcod, s_nnn)
         sout = "Output to file: {0}".format(f_fname)
         log.info(sout)
     
@@ -151,7 +155,64 @@ def do_card_n(clinic_id = CLINIC_ID):
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Prof Exam Export Finish  '+localtime)
 
+def get_1clinic_lock(id_unlock = None):
+    
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+    
+    if id_unlock is not None:
+	ssql = "UPDATE pn_list SET c_lock = Null WHERE id = %s;"
+	curm.execute(ssql, (id_unlock, ))
+	dbmy.con.commit()
+
+    ssql = "SELECT id, clinic_id, mcod FROM pn_list WHERE (done is Null) AND (c_lock is Null);"
+    curm.execute(ssql)
+    rec = curm.fetchone()
+    
+    if rec is not None:
+	_id  = rec[0]
+	c_id = rec[1]
+	mcod = rec[2]
+	c_rec = [_id, c_id, mcod]
+	ssql = "UPDATE pn_list SET c_lock = 1 WHERE id = %s;"
+	curm.execute(ssql, (_id, ))
+	dbmy.con.commit()
+    else:
+	c_rec = None
+
+    dbmy.close()
+    return c_rec
+
+def register_done(_id):
+    import datetime    
+
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+    
+    s_sqlt = """UPDATE pn_list 
+    SET done = %s
+    WHERE
+    id = %s;"""
+    
+    curm.execute(s_sqlt,(dnow, _id, ))
+    dbmy.close()
+
 if __name__ == "__main__":
-    do_card_n(CLINIC_ID)
+    
+    c_rec  = get_1clinic_lock()
+    while c_rec is not None:
+	_id = c_rec[0]
+	clinic_id = c_rec[1]
+	mcod = c_rec[2]
+	
+	do_card_n(clinic_id)
+	
+	if REGISTER_DONE: register_done(_id)
+	
+	c_rec  = get_1clinic_lock(_id)
+    
     sys.exit(0)
     
