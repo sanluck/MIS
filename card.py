@@ -263,18 +263,31 @@ class CARD:
             addNode(doc, "Me", str(self.f_me))
             doc.endNode() # sexFormulaFemale
             
-            if (self.mens1_code is not None) and (self.mens1_code > 0):
+            mens1_code = self.mens1_code
+            if (mens1_code is not None) and (mens1_code > 0):
                 doc.startNode("menses")
                 addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
-                addNode(doc, "char", str(self.mens1_code))
-                addNode(doc, "char", str(self.mens2_code))
-                addNode(doc, "char", str(self.mens3_code))
+                if mens1_code is None: mens1_code = 1
+                addNode(doc, "char", str(mens1_code))
+                mens2_code = self.mens2_code
+                if mens2_code is None: mens2_code = 3
+                addNode(doc, "char", str(mens2_code))
+                mens3_code = self.mens3_code
+                if mens3_code is None: mens3_code = 7
+                addNode(doc, "char", str(mens3_code))
                 doc.endNode() # characters
                 doc.endNode() # menses
-                
-        addNode(doc, "healthGroupBefore", str(self.b_hr_code))
-        addNode(doc, "fizkultGroupBefore", str(self.b_pg_code))
+        
+        b_hr_code = self.b_hr_code
+        if b_hr_code not in (1,2,3,4,5): b_hr_code = 1     
+        addNode(doc, "healthGroupBefore", str(b_hr_code))
+	b_pg_code = self.b_pg_code
+	if b_pg_code == 5:
+	    b_pg_code = -1
+	elif b_pg_code not in (1,2,3,4):
+	    b_pg_code = 1
+        addNode(doc, "fizkultGroupBefore", str(b_pg_code))
 
         return doc
     
@@ -287,9 +300,18 @@ class CARD:
 
 	de = self.date_end
 	
-	if health_group_code is None: health_group_code = 1
+	if health_group_code is None: 
+	    health_group_code = 1
+	elif health_group_code not in (1,2,3,4,5):
+	    health_group_code = 1
 	addNode(doc, "healthGroup", str(health_group_code))
-	if phys_group_code is None: phys_group_code = 1
+	
+	if phys_group_code is None: 
+	    phys_group_code = 1
+	elif phys_group_code == 5:
+	    phys_group_code = -1
+	elif phys_group_code not in (1,2,3,4):
+	    phys_group_code = 1
 	addNode(doc, "fizkultGroup", str(phys_group_code))
 	
 	if de is None:
