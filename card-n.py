@@ -34,7 +34,8 @@ AND type_exam_code = 1
 AND status_code = 2
 AND date_begin >= ?
 AND date_begin <= ?
-AND date_end is not Null;"""
+AND date_end is not Null
+ORDER by date_begin;"""
 
 if __name__ == "__main__":
     LOG_FILENAME = '_cardn.out'
@@ -111,7 +112,8 @@ if __name__ == "__main__":
         fo.flush()
         os.fsync(fo.fileno())
         if iii % STEP == 0:
-            sout = "{0}: {1} {2} {3}".format(iii, e_id, p_id, d_bg)
+            s_iii = "%05d" % (iii)
+            sout = "{0}: {1} {2} {3}".format(s_iii, d_bg, e_id, p_id, d_bg)
             log.info(sout)
 
     fo.close()
