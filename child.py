@@ -177,8 +177,10 @@ class CHILD:
         doc.startNode("address")
         if self.address is not None:
             address = self.address
-            if address.kladrNP is not None:
-                addNode(doc, "kladrNP", address.kladrNP)
+            kladrNP = address.kladrNP
+            if kladrNP is not None:
+                if len(kladrNP) == 12: kladrNP = "0" + kladrNP
+                addNode(doc, "kladrNP", kladrNP)
             else:
                 addNode(doc, "kladrNP", KLADR0)
         else:

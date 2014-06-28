@@ -18,8 +18,8 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 
-D_START  = "2014-03-26"
-D_FINISH = "2014-03-31"
+D_START  = "2014-04-01"
+D_FINISH = "2014-04-10"
 
 STEP = 100
 
@@ -91,7 +91,8 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
     log.info(sout)
     return arr_arr
 
-if __name__ == "__main__":
+def do_card_n(clinic_id = CLINIC_ID):
+
     from dbmis_connect2 import DBMIS
     import time
 
@@ -102,7 +103,6 @@ if __name__ == "__main__":
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
-    clinic_id = CLINIC_ID
     mcod = modb.moCodeByMisId(clinic_id)
 
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
@@ -150,5 +150,8 @@ if __name__ == "__main__":
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Prof Exam Export Finish  '+localtime)
+
+if __name__ == "__main__":
+    do_card_n(CLINIC_ID)
     sys.exit(0)
     
