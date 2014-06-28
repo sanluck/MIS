@@ -243,13 +243,22 @@ class CARD:
 	    if (age >= 5):
 		doc.startNode("pshycState")
 		p_ps_code = self.p_ps_code
-		if p_ps_code is None: p_ps_code = 1
+		if p_ps_code is None:
+		    p_ps_code = 1
+		else:
+		    p_ps_code -= 1
 		addNode(doc, "psihmot", str(p_ps_code))
 		p_i_code = self.p_i_code
-		if p_i_code is None: p_i_code = 1
+		if p_i_code is None: 
+		    p_i_code = 1
+		else:
+		    p_i_code -= 1
 		addNode(doc, "intel", str(p_i_code))
 		p_evs_code = self.p_evs_code
-		if p_evs_code is None: p_evs_code = 1
+		if p_evs_code is None: 
+		    p_evs_code = 1
+		else:
+		    p_evs_code -= 1
 		addNode(doc, "emotveg", str(p_evs_code))
 		doc.endNode() # pshycState
 	elif (self.p_pf is not None) and (self.p_pf > 0):
@@ -267,30 +276,55 @@ class CARD:
             doc.endNode() # pshycDevelopment
 	elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
             doc.startNode("pshycState")
-            addNode(doc, "psihmot", str(self.p_ps_code))
+            addNode(doc, "psihmot", str(self.p_ps_code-1))
             p_i_code = self.p_i_code
-            if p_i_code is None: p_i_code = 1
+            if p_i_code is None: 
+		p_i_code = 1
+	    else:
+		p_i_code -= 1
             addNode(doc, "intel", str(p_i_code))
             p_evs_code = self.p_evs_code
-            if p_evs_code is None: p_evs_code = 1
+            if p_evs_code is None: 
+		p_evs_code = 1
+	    else:
+		p_evs_code -= 1
             addNode(doc, "emotveg", str(p_evs_code))
             doc.endNode() # pshycState
 
         sex_f_printed = False
         if self.f_fa is not None:
             doc.startNode("sexFormulaMale")
-            addNode(doc, "P", str(self.f_p))
-            addNode(doc, "Ax", str(self.f_ax))
-            addNode(doc, "Fa", str(self.f_fa))
+            f_p = self.f_p
+            if f_p is None: f_p = 0
+            if f_p > 3: f_p = 3
+            addNode(doc, "P", str(f_p))
+            f_ax = self.f_ax
+            if f_ax is None: f_ax = 0
+            if f_ax > 3: f_ax = 3
+            addNode(doc, "Ax", str(f_ax))
+            f_fa = self.f_fa
+            if f_fa is None: f_fa = 0
+            if f_fa > 3: f_fa = 3
+            addNode(doc, "Fa", str(f_fa))
             doc.endNode() # sexFormulaMale
             sex_f_printed = True
         elif self.f_p is not None:
             doc.startNode("sexFormulaFemale")
-            addNode(doc, "P", str(self.f_p))
-            addNode(doc, "Ma", str(self.f_ma))
-            addNode(doc, "Ax", str(self.f_ax))
+            f_p = self.f_p
+            if f_p is None: f_p = 0
+            if f_p > 3: f_p = 3
+            addNode(doc, "P", str(f_p))
+            f_ma = self.f_ma
+            if f_ma is None: f_ma = 0
+            if f_ma > 3: f_ma = 3
+            addNode(doc, "Ma", str(f_ma))
+            f_ax = self.f_ax
+            if f_ax is None: f_ax = 0
+            if f_ax > 3: f_ax = 3
+            addNode(doc, "Ax", str(f_ax))
             f_me = self.f_me
             if f_me is None: f_me = 0
+            if f_me > 3: f_me = 3
             addNode(doc, "Me", str(f_me))
             doc.endNode() # sexFormulaFemale
 	    sex_f_printed = True
