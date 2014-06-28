@@ -131,6 +131,7 @@ class CARD:
         self.head_circ = None
 	
 	self.age = None
+	self.sex = None
         
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -275,12 +276,14 @@ class CARD:
             addNode(doc, "emotveg", str(p_evs_code))
             doc.endNode() # pshycState
 
+        sex_f_printed = False
         if self.f_fa is not None:
             doc.startNode("sexFormulaMale")
             addNode(doc, "P", str(self.f_p))
             addNode(doc, "Ax", str(self.f_ax))
             addNode(doc, "Fa", str(self.f_fa))
             doc.endNode() # sexFormulaMale
+            sex_f_printed = True
         elif self.f_p is not None:
             doc.startNode("sexFormulaFemale")
             addNode(doc, "P", str(self.f_p))
@@ -290,7 +293,8 @@ class CARD:
             if f_me is None: f_me = 0
             addNode(doc, "Me", str(f_me))
             doc.endNode() # sexFormulaFemale
-            
+	    sex_f_printed = True
+	    
             mens1_code = self.mens1_code
             if (f_me > 0) and (mens1_code is not None) and (mens1_code > 0):
                 doc.startNode("menses")
@@ -322,7 +326,21 @@ class CARD:
                 addNode(doc, "char", str(mens3_code))
                 doc.endNode() # characters
                 doc.endNode() # menses
-        
+        if (not sex_f_printed) and (age is not None) and (age >= 10) and (self.sex is not None):
+	    if self.sex == u"М":
+		doc.startNode("sexFormulaMale")
+		addNode(doc, "P", "0")
+		addNode(doc, "Ax", "0")
+		addNode(doc, "Fa", "0")
+		doc.endNode() # sexFormulaMale
+	    else:
+		doc.startNode("sexFormulaFemale")
+		addNode(doc, "P", "0")
+		addNode(doc, "Ma", "0")
+		addNode(doc, "Ax", "0")
+		addNode(doc, "Me", "0")
+		doc.endNode() # sexFormulaFemale
+	    
         b_hr_code = self.b_hr_code
         if b_hr_code not in (1,2,3,4,5): b_hr_code = 1     
         addNode(doc, "healthGroupBefore", str(b_hr_code))

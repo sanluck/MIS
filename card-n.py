@@ -18,10 +18,10 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 
-D_START  = "2014-03-05"
-D_FINISH = "2014-03-05"
+D_START  = "2014-03-06"
+D_FINISH = "2014-03-06"
 
-STEP = 50
+STEP = 100
 
 FNAME = "PN{0}_{1}.xml"
 FPATH = "./PN"

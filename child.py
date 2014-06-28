@@ -128,10 +128,14 @@ class CHILD:
         addNode(doc, "idType", IDTYPE)
         
         doc.startNode("name")
-        addNode(doc, "last", self.lname)
-        addNode(doc, "first", self.fname)
+        lname = self.lname
+        if lname is not None:
+            addNode(doc, "last", lname.strip())
+        fname = self.fname
+        if fname is not None:
+            addNode(doc, "first", fname.strip())
         if self.mname is not None:
-            addNode(doc, "middle", self.mname)
+            addNode(doc, "middle", self.mname.strip())
         doc.endNode() # name
 
         if self.sex == u"М":
