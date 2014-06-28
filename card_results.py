@@ -13,8 +13,6 @@ HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
 CLINIC_ID = 200
-#PROF_EXAM_ID = 170
-# PROF_EXAM_ID = 6185
 PROF_EXAM_ID = 268
 
 SQLT_R1 = """SELECT
@@ -74,6 +72,7 @@ class CARD_RESULTS:
         for card_result in arr:
             cc_line = card_result.cc_line
             di = card_result.date_checkup
+            if di is None: continue
             ds = card_result.diagnosis_id_fk
             try:
                 issled_id = ISSLED_ID[cc_line]
@@ -99,6 +98,7 @@ class CARD_RESULTS:
         for card_result in arr:
             cc_line = card_result.cc_line
             di = card_result.date_checkup
+            if di is None: continue
             ds = card_result.diagnosis_id_fk
             try:
                 osmotr_id = OSMOTR_ID[cc_line]
