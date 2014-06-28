@@ -274,13 +274,29 @@ class CARD:
                 doc.startNode("menses")
                 addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
-                if mens1_code is None: mens1_code = 1
+                if mens1_code is None: 
+		    mens1_code = 1
+		elif mens1_code not in (1,2):
+		    mens1_code = 1
                 addNode(doc, "char", str(mens1_code))
                 mens2_code = self.mens2_code
-                if mens2_code is None: mens2_code = 3
+                if mens2_code is None: 
+		    mens2_code = 5
+		else:
+		    mens2_code += 2
+		    if mens2_code not in (3,4,5): 
+			mens2_code = 5
+		    elif mens2_code == 4:
+			mens2_code = 5
+		    elif mens2_code == 5:
+			mens2_code = 4
                 addNode(doc, "char", str(mens2_code))
                 mens3_code = self.mens3_code
-                if mens3_code is None: mens3_code = 7
+                if mens3_code is None: 
+		    mens3_code = 7
+		else:
+		    mens3_code += 5
+		    if mens3_code not in (6,7): mens2_code = 7
                 addNode(doc, "char", str(mens3_code))
                 doc.endNode() # characters
                 doc.endNode() # menses
