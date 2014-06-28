@@ -68,6 +68,7 @@ def getOplata(dbc, card_id):
     
 
 def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
+    from dateutil.relativedelta import relativedelta
     
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
@@ -75,10 +76,11 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     docTXT = "<child>"
 
     child = CHILD()
-
     child.initFromDB(dbc, people_id)
     child.medSanName = cname
     child.medSanAddress = caddr
+    
+    bd = child.birthday
     
     childXML = child.asXML()
     
@@ -89,6 +91,9 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     docTXT += "<card>"
     card = CARD()
     card.initFromDB(dbc, card_id)
+    dateOfObsled = card.dateOfObsled
+    age = relativedelta(dateOfObsled, bd).years
+    card.age = age
     cardXML = card.asXML()
     docTXT += cardXML.asText()
     

@@ -129,6 +129,8 @@ class CARD:
         self.date_end = None
 	
         self.head_circ = None
+	
+	self.age = None
         
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -216,16 +218,31 @@ class CARD:
             doc.startNode("healthProblems")
             addNode(doc, "problem", str(nfr_code))
             doc.endNode()
-            
-        if (self.p_pf is not None) and (self.p_pf > 0):
+        
+        age = self.age
+	
+        if age is not None:
+	    if (age < 5) and (self.p_pf is not None) and (self.p_pf > 0):
+		doc.startNode("pshycDevelopment")
+		addNode(doc, "poznav", str(self.p_pf))
+		addNode(doc, "motor", str(self.p_mf))
+		addNode(doc, "emot", str(self.p_ecf))
+		addNode(doc, "rech", str(self.p_rr))
+		doc.endNode() # pshycDevelopment
+	    if (age >= 5) and (self.p_ps_code is not None) and (self.p_ps_code > 0):
+		doc.startNode("pshycState")
+		addNode(doc, "psihmot", str(self.p_ps_code))
+		addNode(doc, "intel", str(self.p_i_code))
+		addNode(doc, "emotveg", str(self.p_evs_code))
+		doc.endNode() # pshycState
+	elif (self.p_pf is not None) and (self.p_pf > 0):
             doc.startNode("pshycDevelopment")
             addNode(doc, "poznav", str(self.p_pf))
             addNode(doc, "motor", str(self.p_mf))
             addNode(doc, "emot", str(self.p_ecf))
             addNode(doc, "rech", str(self.p_rr))
             doc.endNode() # pshycDevelopment
-
-        if (self.p_ps_code is not None) and (self.p_ps_code > 0):
+	elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
             doc.startNode("pshycState")
             addNode(doc, "psihmot", str(self.p_ps_code))
             addNode(doc, "intel", str(self.p_i_code))
