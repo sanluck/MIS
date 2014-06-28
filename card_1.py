@@ -23,7 +23,8 @@ HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
 CLINIC_ID = 268
-PROF_EXAM_ID = 423140
+# 1403106
+PROF_EXAM_ID = 1753
 PEOPLE_ID = 1403106
 
 FNAME = "PN{0}.xml"

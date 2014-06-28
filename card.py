@@ -29,7 +29,8 @@ inv, inv_type_code, inv_ds,
 date_inv_first, date_inv_last,
 vnz_inv_list,
 health_group_code, phys_group_code,
-date_end
+date_end,
+head_circ
 FROM prof_exam_minor
 WHERE prof_exam_id = ?;"""
 
@@ -126,6 +127,8 @@ class CARD:
         self.phys_group_code = None
         
         self.date_end = None
+	
+        self.head_circ = None
         
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -181,6 +184,9 @@ class CARD:
             self.phys_group_code = rec[30]
 
             self.date_end = rec[31]
+	    
+            self.head_circ = rec[32]
+	    
             
     def asXML(self):
         doc = SimpleXmlConstructor()
@@ -198,7 +204,12 @@ class CARD:
         weight = self.weight
         if weight is None:
             weight = 0
-        addNode(doc, "weight", str(weight))
+        addNode(doc, "weight", str(weight)+".000")
+	
+	headSize = self.head_circ
+	
+	if (headSize is not None) and (headSize > 0):
+	    addNode(doc, "headSize", str(headSize))
         
         nfr_code = self.nfr_code
         if nfr_code is not None:
@@ -206,7 +217,7 @@ class CARD:
             addNode(doc, "problem", str(nfr_code))
             doc.endNode()
             
-        if self.p_pf is not None:
+        if (self.p_pf is not None) and (self.p_pf > 0):
             doc.startNode("pshycDevelopment")
             addNode(doc, "poznav", str(self.p_pf))
             addNode(doc, "motor", str(self.p_mf))
