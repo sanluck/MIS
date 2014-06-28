@@ -110,7 +110,9 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card_results = CARD_RESULTS()
     card_results.initFromDB(dbc, card_id)
     issledXML = card_results.issledXML()
-    if issledXML is not None:
+    if issledXML is None:
+        docTXT += "<issled />"
+    else:
         docTXT += issledXML.asText()
     
     z_XML = card.z_asXML()

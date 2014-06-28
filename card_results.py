@@ -92,9 +92,8 @@ class CARD_RESULTS:
         doc.endNode() # issled
         
         if nn == 0:
-            return None
-        else:
-            return doc
+            doc = None
+        return doc
 
     def osmotriXML(self):
         doc = SimpleXmlConstructor()
@@ -148,7 +147,10 @@ if __name__ == "__main__":
     log.info(sout)
     log.info(" issled:")
     issledXML = card_results.issledXML()
-    if issledXML is not None: log.info(issledXML.asText())
+    if issledXML is None:
+        log.info("<issled />")
+    else:
+        log.info(issledXML.asText())
 
     log.info(" osmotri:")
     osmotriXML = card_results.osmotriXML()
