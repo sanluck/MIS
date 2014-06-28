@@ -18,12 +18,12 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 
-D_START  = "2014-03-03"
-D_FINISH = "2014-03-03"
+D_START  = "2014-03-05"
+D_FINISH = "2014-03-05"
 
-STEP = 100
+STEP = 50
 
-FNAME = "PN{0}.xml"
+FNAME = "PN{0}_{1}.xml"
 FPATH = "./PN"
 
 SQLT_CL = """SELECT
@@ -63,6 +63,8 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
     log.info(sout)
     
     arr = []
+    arr_arr = []
+    nnn = 0
     for rec in recs:
         prof_exam_id = rec[0]
         cur2.execute(SQLT_RL, (prof_exam_id, ))
@@ -74,12 +76,18 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
         if rec2 is None: continue
         if rec2[0] is None: continue
         date_begin   = rec[2]
+        nnn += 1
         arr.append([prof_exam_id, people_id, date_begin])
-    
-    nnn = len(arr)
-    sout = "Totally {0} cards to be processed".format(nnn)
+        if nnn % STEP == 0:
+            arr_arr.append(arr)
+            arr = []
+            
+    if len(arr) > 0: arr_arr.append(arr)
+
+    nn2 = len(arr_arr)
+    sout = "Totally {0} cards {1} files to be processed".format(nnn, nn2)
     log.info(sout)
-    return arr
+    return arr_arr
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
@@ -105,40 +113,38 @@ if __name__ == "__main__":
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
-    c_list = getC_list(dbc)
+    arr_arr = getC_list(dbc)
+    nnn = 0
+    for arr in arr_arr:
+        nnn += 1
+        c_list = arr
+        f_fname = FPATH + "/" + FNAME.format(mcod, nnn)
+        sout = "Output to file: {0}".format(f_fname)
+        log.info(sout)
     
+        fo = open(f_fname, "wb")
+    
+        sout = """<?xml version="1.0" encoding="UTF-8"?>
+        <children>"""
+        fo.write(sout)
 
-    f_fname = FPATH + "/" + FNAME.format(mcod)
-    sout = "Output to file: {0}".format(f_fname)
-    log.info(sout)
     
-    fo = open(f_fname, "wb")
-    
-    sout = """<?xml version="1.0" encoding="UTF-8"?>
-    <children>"""
-    fo.write(sout)
-
-    
-    iii = 0
-    for ccc in c_list:
-        iii += 1
-        e_id = ccc[0]
-        p_id = ccc[1]
-        d_bg = ccc[2]
+        iii = 0
+        for ccc in c_list:
+            iii += 1
+            e_id = ccc[0]
+            p_id = ccc[1]
+            d_bg = ccc[2]
         
-        docTXT = getCard(dbc, e_id, p_id)
-        fo.write(docTXT)
-        fo.flush()
-        os.fsync(fo.fileno())
-        if iii % STEP == 0:
-            s_iii = "%05d" % (iii)
-            sout = "{0}: {1} {2} {3}".format(s_iii, d_bg, e_id, p_id, d_bg)
-            log.info(sout)
+            docTXT = getCard(dbc, e_id, p_id)
+            fo.write(docTXT)
+            fo.flush()
+            os.fsync(fo.fileno())
+        
+        sout = '</children>'
+        fo.write(sout)
+        fo.close()
 
-    sout = '</children>'
-    fo.write(sout)
-    
-    fo.close()
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Prof Exam Export Finish  '+localtime)
