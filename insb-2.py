@@ -55,7 +55,7 @@ OCATO      = '01000'
 PRINT2     = False
 
 #DATE_RANGE = None
-DATE_RANGE = ['2014-05-01','2014-05-31']
+DATE_RANGE = ['2014-06-01','2014-06-30']
 PRINT_ALL  = True # include all patients into MO files
 
 def get_clist(db):

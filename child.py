@@ -45,7 +45,7 @@ class ADDRESS:
     def __init__(self):
         self.kladrNP = None
 
-class CHILD:
+class CHILD:    
     def __init__(self):
         self.people_id = None
         self.lname = None
