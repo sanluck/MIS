@@ -151,7 +151,10 @@ class CHILD:
         
         if self.polisSer is not None:
             addNode(doc, "polisSer", self.polisSer.encode('utf-8'))
-        addNode(doc, "polisNum", self.polisNum.encode('utf-8'))
+        if self.polisNum is None:
+            addNode(doc, "polisNum", "")
+        else:
+            addNode(doc, "polisNum", self.polisNum.encode('utf-8'))
         addNode(doc, "idInsuranceCompany", self.idInsuranceCompany)
         
         if self.medSanName is not None:
