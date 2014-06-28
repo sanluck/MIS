@@ -238,9 +238,15 @@ class CARD:
 	elif (self.p_pf is not None) and (self.p_pf > 0):
             doc.startNode("pshycDevelopment")
             addNode(doc, "poznav", str(self.p_pf))
-            addNode(doc, "motor", str(self.p_mf))
-            addNode(doc, "emot", str(self.p_ecf))
-            addNode(doc, "rech", str(self.p_rr))
+            p_mf = self.p_mf
+            if p_mf is None: p_mf = 0
+            addNode(doc, "motor", str(p_mf))
+            p_ecf = self.p_ecf
+            if p_ecf is None: p_ecf = 0
+            addNode(doc, "emot", str(p_ecf))
+	    p_rr = self.p_rr
+	    if p_rr is None: p_rr = 0
+            addNode(doc, "rech", str(p_rr))
             doc.endNode() # pshycDevelopment
 	elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
             doc.startNode("pshycState")
