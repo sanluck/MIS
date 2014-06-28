@@ -79,7 +79,7 @@ if __name__ == "__main__":
     log.info(sout)
 
     clinic_id = CLINIC_ID
-    mcod = modb.moCodeByMisId(229)
+    mcod = modb.moCodeByMisId(clinic_id)
 
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
 
@@ -99,6 +99,10 @@ if __name__ == "__main__":
     log.info(sout)
     
     fo = open(f_fname, "wb")
+    
+    sout = """<?xml version="1.0" encoding="UTF-8"?>
+    <children>"""
+    fo.write(sout)
 
     
     iii = 0
@@ -107,6 +111,7 @@ if __name__ == "__main__":
         e_id = ccc[0]
         p_id = ccc[1]
         d_bg = ccc[2]
+        
         docTXT = getCard(dbc, e_id, p_id)
         fo.write(docTXT)
         fo.flush()
@@ -116,6 +121,9 @@ if __name__ == "__main__":
             sout = "{0}: {1} {2} {3}".format(s_iii, d_bg, e_id, p_id, d_bg)
             log.info(sout)
 
+    sout = '</children>'
+    fo.write(sout)
+    
     fo.close()
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )

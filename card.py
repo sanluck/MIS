@@ -227,7 +227,7 @@ class CARD:
             addNode(doc, "Ax", str(self.f_ax))
             addNode(doc, "Fa", str(self.f_fa))
             doc.endNode() # sexFormulaMale
-        else:
+        elif self.f_p is not None:
             doc.startNode("sexFormulaFemale")
             addNode(doc, "P", str(self.f_p))
             addNode(doc, "Ma", str(self.f_ma))

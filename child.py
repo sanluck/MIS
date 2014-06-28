@@ -148,7 +148,13 @@ class CHILD:
         addNode(doc, "idDocument", self.idDocument)
         addNode(doc, "documentSer", self.documentSer)
         addNode(doc, "documentNum", self.documentNum)
-        addNode(doc, "snils", self.snils)
+        snils = self.snils
+        if snils is None:
+            snils = "000-000-000-00"
+        else:
+            sinls = snils.strip()
+            snils = snils.replace(" ","-")
+        addNode(doc, "snils", snils)
         
         if self.polisSer is not None:
             addNode(doc, "polisSer", self.polisSer.encode('utf-8'))

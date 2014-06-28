@@ -7,6 +7,9 @@
 import sys
 import logging
 
+from medlib.moinfolist import MoInfoList
+modb = MoInfoList()
+
 from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 
 from child import CHILD
@@ -22,6 +25,9 @@ DB        = "DBMIS"
 CLINIC_ID = 268
 PROF_EXAM_ID = 423140
 PEOPLE_ID = 1403106
+
+FNAME = "PN{0}.xml"
+FPATH = "./PN"
 
 SQLT_O1 = """SELECT
 oplata
@@ -131,17 +137,33 @@ if __name__ == "__main__":
     log.info(sout)
 
     clinic_id = CLINIC_ID
+    mcod = modb.moCodeByMisId(clinic_id)
+    
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
 
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
     
-    sout = "clinic_id: {0} clinic_name: {1}".format(clinic_id, cname)
+    sout = "clinic_id: {0} mcod: {1} clinic_name: {2}".format(clinic_id, mcod, cname)
     log.info(sout)
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
+    f_fname = FPATH + "/" + FNAME.format(mcod)
+    sout = "Output to file: {0}".format(f_fname)
+    log.info(sout)
+    
+    fo = open(f_fname, "wb")
+    
+    sout = """<?xml version="1.0" encoding="UTF-8"?>
+    <children>"""
+    fo.write(sout)
+
     docTXT = getCard(dbc, PROF_EXAM_ID, PEOPLE_ID)
+    fo.write(docTXT)
+    sout = '</children>'
+    fo.write(sout)
+    fo.close()
     
     log.info(docTXT)
     
