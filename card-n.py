@@ -18,8 +18,8 @@ DB        = "DBMIS"
 
 CLINIC_ID = 268
 
-D_START  = "2013-05-03"
-D_FINISH = "2013-05-03"
+D_START  = "2014-03-03"
+D_FINISH = "2014-03-03"
 
 STEP = 100
 
@@ -30,12 +30,15 @@ SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
+AND date_end is not Null
 AND type_exam_code = 1
 AND status_code = 2
-AND date_begin >= ?
-AND date_begin <= ?
-AND date_end is not Null
+AND date_end >= ?
+AND date_end <= ?
+AND date_begin is not Null
 ORDER by date_begin;"""
+
+SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
 
 if __name__ == "__main__":
     LOG_FILENAME = '_cardn.out'
@@ -48,7 +51,9 @@ if __name__ == "__main__":
 log = logging.getLogger(__name__)
 
 def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH):
-    cur = dbc.con.cursor()
+    cur  = dbc.con.cursor()
+    cur2 = dbc.con.cursor()
+    
     cur.execute(SQLT_CL, (clinic_id, d_start, d_finish, ))
     recs = cur.fetchall()
 
@@ -58,6 +63,9 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
     arr = []
     for rec in recs:
         prof_exam_id = rec[0]
+        cur2.execute(SQLT_RL, (prof_exam_id, ))
+        rec2 = cur2.fetchone()
+        if rec2 is None: continue
         people_id    = rec[1]
         date_begin   = rec[2]
         arr.append([prof_exam_id, people_id, date_begin])

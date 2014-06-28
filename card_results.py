@@ -12,8 +12,8 @@ from child_const import ISSLED_ID, OSMOTR_ID
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 200
-PROF_EXAM_ID = 268
+CLINIC_ID = 268
+PROF_EXAM_ID = 1567963
 
 SQLT_R1 = """SELECT
 cc_line, date_checkup, diagnosis_id_fk
