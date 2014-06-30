@@ -109,7 +109,9 @@ class CARD_DIAG_B_ARR:
             mkb = diag_b.mkb
             if mkb is None: continue
             doc.startNode("diagnosis")
-            addNode(doc, "mkb", mkb.strip())
+	    lmkb = len(mkb)
+	    if lmkb > 5: mkb = mkb[:5]
+	    addNode(doc, "mkb", mkb)
             dn = diag_b.dn
             if dn is None: dn = 3
             addNode(doc, "dispNablud", str(dn))
@@ -235,8 +237,11 @@ class CARD_DIAG_A_ARR:
 	doc.startNode("diagnosisAfter")
 	for diag_a in arr:
 	    mkb = diag_a.mkb
+	    if mkb is None: continue
 	    doc.startNode("diagnosis")
-	    addNode(doc, "mkb", mkb.strip())
+	    lmkb = len(mkb)
+	    if lmkb > 5: mkb = mkb[:5]
+	    addNode(doc, "mkb", mkb)
             
 	    if diag_a.uv == 1:
 		addNode(doc, "firstTime", "1")
