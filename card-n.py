@@ -118,7 +118,7 @@ def do_card_n(clinic_id = CLINIC_ID):
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
-    arr_arr = getC_list(dbc)
+    arr_arr = getC_list(dbc, clinic_id)
     nnn = 0
     for arr in arr_arr:
         nnn += 1
