@@ -160,8 +160,10 @@ class CHILD:
             snils = snils.replace(" ","-")
         addNode(doc, "snils", snils)
         
-        if self.polisSer is not None:
-            addNode(doc, "polisSer", self.polisSer.encode('utf-8'))
+        polisSer = self.polisSer
+        if polisSer is not None:
+            polisSer = polisSer.strip()
+            if len(polisSer) > 0: addNode(doc, "polisSer", polisSer.encode('utf-8'))
         if self.polisNum is None:
             addNode(doc, "polisNum", "")
         else:

@@ -66,7 +66,7 @@ def getDoctor(dbc, exam_id):
     cur = dbc.con.cursor()
     cur.execute(SQLT_D1, (exam_id, ))
     rec = cur.fetchone()
-    
+
     if rec is None:
         addNode(doc, "last", "Иванов")
         addNode(doc, "first", "Иван")
@@ -80,9 +80,9 @@ def getDoctor(dbc, exam_id):
         if middle is not None: addNode(doc, "middle", middle.encode('utf-8'))
 
     doc.endNode() # zakluchVrachName
-    
+
     return doc
-    
+
 class CARD:
     def __init__(self):
         self.idInternal = None
@@ -90,29 +90,29 @@ class CARD:
         self.idType = None
         self.height = None
         self.weight = None
-        
+
         self.fr_code  = None
         self.nfr_code = None
-        
+
         self.p_pf = None
         self.p_mf = None
         self.p_ecf = None
         self.p_rr = None
-        
+
         self.p_ps_code = None
         self.p_i_code = None
         self.p_evs_code = None
-        
+
         self.f_p = None
         self.f_ax = None
         self.f_fa = None
         self.f_ma = None
         self.f_me = None
-        
+
         self.mens1_code = None
         self.mens2_code = None
         self.mens3_code = None
-        
+
         self.b_hr_code = None
         self.b_pg_code = None
 
@@ -122,17 +122,18 @@ class CARD:
         self.date_inv_first = None
         self.date_inv_last = None
         self.vnz_inv_list = None
-        
+
         self.health_group_code = None
         self.phys_group_code = None
-        
+
         self.date_end = None
-	
+
         self.head_circ = None
-	
-	self.age = None
-	self.sex = None
-        
+
+	self.age  = None
+	self.mage = None
+	self.sex  = None
+
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
         cur.execute(SQLT_E1, (exam_id, ))
@@ -175,7 +176,7 @@ class CARD:
 
             self.b_hr_code = rec[21]
             self.b_pg_code = rec[22]
-            
+
             self.inv = rec[23]
             self.inv_type_code = rec[24]
             self.inv_ds = rec[25]
@@ -187,10 +188,10 @@ class CARD:
             self.phys_group_code = rec[30]
 
             self.date_end = rec[31]
-	    
+
             self.head_circ = rec[32]
-	    
-            
+
+
     def asXML(self):
         doc = SimpleXmlConstructor()
         idInternal = "{0}".format(self.idInternal)
@@ -198,6 +199,10 @@ class CARD:
         do = self.dateOfObsled
         dateOfObsled = "%04d-%02d-%02d" % (do.year, do.month, do.day)
         addNode(doc, "dateOfObsled", dateOfObsled)
+	mage = self.mage
+	if mage is not None:
+	    addNode(doc, "ageObsled", str(mage))
+
         addNode(doc, "idType", self.idType)
 
         height = self.height
@@ -208,7 +213,7 @@ class CARD:
         if weight is None:
             weight = 0
         addNode(doc, "weight", str(weight)+".000")
-	
+
 	headSize = self.head_circ
 	if headSize is None: headSize = 0
 
@@ -217,13 +222,13 @@ class CARD:
 	    addNode(doc, "headSize", str(headSize))
 	elif (headSize > 0):
 	    addNode(doc, "headSize", str(headSize))
-        
+
         nfr_code = self.nfr_code
-        if nfr_code is not None:
+        if (nfr_code is not None) and nfr_code > 0:
             doc.startNode("healthProblems")
             addNode(doc, "problem", str(nfr_code))
             doc.endNode()
-	
+
         if age is not None:
 	    if (age < 5):
 		doc.startNode("pshycDevelopment")
@@ -249,13 +254,13 @@ class CARD:
 		    p_ps_code -= 1
 		addNode(doc, "psihmot", str(p_ps_code))
 		p_i_code = self.p_i_code
-		if p_i_code is None: 
+		if p_i_code is None:
 		    p_i_code = 1
 		else:
 		    p_i_code -= 1
 		addNode(doc, "intel", str(p_i_code))
 		p_evs_code = self.p_evs_code
-		if p_evs_code is None: 
+		if p_evs_code is None:
 		    p_evs_code = 1
 		else:
 		    p_evs_code -= 1
@@ -278,13 +283,13 @@ class CARD:
             doc.startNode("pshycState")
             addNode(doc, "psihmot", str(self.p_ps_code-1))
             p_i_code = self.p_i_code
-            if p_i_code is None: 
+            if p_i_code is None:
 		p_i_code = 1
 	    else:
 		p_i_code -= 1
             addNode(doc, "intel", str(p_i_code))
             p_evs_code = self.p_evs_code
-            if p_evs_code is None: 
+            if p_evs_code is None:
 		p_evs_code = 1
 	    else:
 		p_evs_code -= 1
@@ -328,23 +333,23 @@ class CARD:
             addNode(doc, "Me", str(f_me))
             doc.endNode() # sexFormulaFemale
 	    sex_f_printed = True
-	    
+
             mens1_code = self.mens1_code
             if (f_me > 0) and (mens1_code is not None) and (mens1_code > 0):
                 doc.startNode("menses")
                 addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
-                if mens1_code is None: 
+                if mens1_code is None:
 		    mens1_code = 1
 		elif mens1_code not in (1,2):
 		    mens1_code = 1
                 addNode(doc, "char", str(mens1_code))
                 mens2_code = self.mens2_code
-                if mens2_code is None: 
+                if mens2_code is None:
 		    mens2_code = 5
 		else:
 		    mens2_code += 2
-		    if mens2_code not in (3,4,5): 
+		    if mens2_code not in (3,4,5):
 			mens2_code = 5
 		    elif mens2_code == 4:
 			mens2_code = 5
@@ -352,7 +357,7 @@ class CARD:
 			mens2_code = 4
                 addNode(doc, "char", str(mens2_code))
                 mens3_code = self.mens3_code
-                if mens3_code is None: 
+                if mens3_code is None:
 		    mens3_code = 7
 		else:
 		    mens3_code += 5
@@ -374,9 +379,9 @@ class CARD:
 		addNode(doc, "Ax", "0")
 		addNode(doc, "Me", "0")
 		doc.endNode() # sexFormulaFemale
-	    
+
         b_hr_code = self.b_hr_code
-        if b_hr_code not in (1,2,3,4,5): b_hr_code = 1     
+        if b_hr_code not in (1,2,3,4,5): b_hr_code = 1
         addNode(doc, "healthGroupBefore", str(b_hr_code))
 	b_pg_code = self.b_pg_code
 	if b_pg_code == 5:
@@ -386,42 +391,42 @@ class CARD:
         addNode(doc, "fizkultGroupBefore", str(b_pg_code))
 
         return doc
-    
+
     def z_asXML(self):
-	
+
         doc = SimpleXmlConstructor()
 
 	health_group_code = self.health_group_code
 	phys_group_code = self.phys_group_code
 
 	de = self.date_end
-	
-	if health_group_code is None: 
+
+	if health_group_code is None:
 	    health_group_code = 1
 	elif health_group_code not in (1,2,3,4,5):
 	    health_group_code = 1
 	addNode(doc, "healthGroup", str(health_group_code))
-	
-	if phys_group_code is None: 
+
+	if phys_group_code is None:
 	    phys_group_code = 1
 	elif phys_group_code == 5:
 	    phys_group_code = -1
 	elif phys_group_code not in (1,2,3,4):
 	    phys_group_code = 1
 	addNode(doc, "fizkultGroup", str(phys_group_code))
-	
+
 	if de is None:
 	    zakluchDate = "2014-06-30"
 	else:
 	    zakluchDate = "%04d-%02d-%02d" % (de.year, de.month, de.day)
-	    
+
 	addNode(doc, "zakluchDate", zakluchDate)
-	    
+
 	return doc
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
@@ -430,26 +435,25 @@ if __name__ == "__main__":
 
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
-    
+
     sout = "clinic_id: {0} clinic_name: {1}".format(clinic_id, cname)
     log.info(sout)
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
     card = CARD()
-    
+
     card_id = PROF_EXAM_ID
-    
+
     card.initFromDB(dbc, card_id)
-    
+
     sout = "card_id: {0}".format(card_id)
     log.info(sout)
     cardXML = card.asXML()
     log.info(cardXML.asText())
-    
+
     z_XML = card.z_asXML()
     log.info(z_XML.asText())
-    
+
     d_XML = getDoctor(dbc, card_id)
     log.info(d_XML.asText())
-    

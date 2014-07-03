@@ -95,9 +95,12 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card = CARD()
     card.initFromDB(dbc, card_id)
     dateOfObsled = card.dateOfObsled
-    age = relativedelta(dateOfObsled, bd).years
+    rd = relativedelta(dateOfObsled, bd)
+    age = rd.years
+    mage = age*12 + rd.months
     #age = dateOfObsled.year - bd.year
     card.age = age
+    card.mage = mage
     card.sex = child.sex
     cardXML = card.asXML()
     docTXT += cardXML.asText()
