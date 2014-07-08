@@ -58,7 +58,7 @@ def getOplata(dbc, card_id):
     cur = dbc.con.cursor()
     cur.execute(SQLT_O1, (card_id, ))
     rec = cur.fetchone()
-    
+
     if rec is None:
         oms = 0
     else:
@@ -68,11 +68,11 @@ def getOplata(dbc, card_id):
     addNode(doc, "oms", str(oms))
 
     return doc
-    
+
 
 def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     from dateutil.relativedelta import relativedelta
-    
+
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
 
@@ -82,13 +82,13 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     child.initFromDB(dbc, people_id)
     child.medSanName = cname
     child.medSanAddress = caddr
-    
+
     bd = child.birthday
-    
+
     childXML = child.asXML()
-    
+
     docTXT += childXML.asText()
-    
+
     docTXT += "<cards>"
 
     docTXT += "<card>"
@@ -97,14 +97,26 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     dateOfObsled = card.dateOfObsled
     rd = relativedelta(dateOfObsled, bd)
     age = rd.years
-    mage = age*12 + rd.months
+    if age < 1:
+        mage = rd.months
+    elif age < 2:
+        mage = 12 + rd.months - (rd.months % 3)
+    elif age < 3:
+        mage = 24 + rd.months - (rd.months % 6)
+    else:
+        mage = (dateOfObsled.year - bd.year)*12
+
+    if mage % 12 <> 0:
+        docTXT = ""
+        return docTXT
+
     #age = dateOfObsled.year - bd.year
     card.age = age
     card.mage = mage
     card.sex = child.sex
     cardXML = card.asXML()
     docTXT += cardXML.asText()
-    
+
     card_diag_b = CARD_DIAG_B_ARR()
     card_diag_b.initFromDB(dbc, card_id)
     asXML = card_diag_b.asXML()
@@ -114,7 +126,7 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card_diag_a.initFromDB(dbc, card_id)
     asXML = card_diag_a.asXML()
     docTXT += asXML.asText()
-    
+
     card_results = CARD_RESULTS()
     card_results.initFromDB(dbc, card_id)
     issledXML = card_results.issledXML()
@@ -122,10 +134,10 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
         docTXT += "<issled />"
     else:
         docTXT += issledXML.asText()
-    
+
     z_XML = card.z_asXML()
     docTXT += z_XML.asText()
-    
+
     d_XML = getDoctor(dbc, card_id)
     docTXT += d_XML.asText()
 
@@ -133,12 +145,12 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     docTXT += osmotriXML.asText()
 
     docTXT += "<recommendZOZH>Режим: Щадящий; питание: Рациональное; иммунопрофилактика: по возрасту</recommendZOZH>"
-    
+
     docTXT += "<privivki><state>1</state></privivki>"
 
     omsXML = getOplata(dbc, card_id)
     docTXT += omsXML.asText()
-    
+
     docTXT += "</card>"
     docTXT += "</cards>"
 
@@ -149,18 +161,18 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
     clinic_id = CLINIC_ID
     mcod = modb.moCodeByMisId(clinic_id)
-    
+
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
 
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
-    
+
     sout = "clinic_id: {0} mcod: {1} clinic_name: {2}".format(clinic_id, mcod, cname)
     log.info(sout)
     sout = "address: {0}".format(caddr)
@@ -169,9 +181,9 @@ if __name__ == "__main__":
     f_fname = FPATH + "/" + FNAME.format(mcod)
     sout = "Output to file: {0}".format(f_fname)
     log.info(sout)
-    
+
     fo = open(f_fname, "wb")
-    
+
     sout = """<?xml version="1.0" encoding="UTF-8"?>
     <children>"""
     fo.write(sout)
@@ -181,9 +193,8 @@ if __name__ == "__main__":
     sout = '</children>'
     fo.write(sout)
     fo.close()
-    
+
     log.info(docTXT)
-    
+
     dbc.close()
     sys.exit(0)
-    

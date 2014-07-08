@@ -218,7 +218,8 @@ class CARD:
 	if headSize is None: headSize = 0
 
 	age = self.age
-        if (age is not None) and (age < 5):
+	# mage 60 = 5*12 (5 years)
+        if (mage is not None) and (mage < 60):
 	    addNode(doc, "headSize", str(headSize))
 	elif (headSize > 0):
 	    addNode(doc, "headSize", str(headSize))
@@ -229,8 +230,8 @@ class CARD:
             addNode(doc, "problem", str(nfr_code))
             doc.endNode()
 
-        if age is not None:
-	    if (age < 5):
+        if mage is not None:
+	    if (mage < 60):
 		doc.startNode("pshycDevelopment")
 		p_pf = self.p_pf
 		if p_pf is None: p_pf = 0
@@ -245,7 +246,7 @@ class CARD:
 		if p_rr is None: p_rr = 0
 		addNode(doc, "rech", str(p_rr))
 		doc.endNode() # pshycDevelopment
-	    if (age >= 5):
+	    if (mage >= 60):
 		doc.startNode("pshycState")
 		p_ps_code = self.p_ps_code
 		if p_ps_code is None:
