@@ -23,12 +23,8 @@ HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
 CLINIC_ID = 268
-# только осмотры, нет исследований
-# PROF_EXAM_ID = 392088
-# PEOPLE_ID = 1567963
-# no sex formula
-PROF_EXAM_ID = 398602
-PEOPLE_ID = 1558998
+PROF_EXAM_ID = 477847
+PEOPLE_ID = 2299272
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
@@ -106,7 +102,7 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     else:
         mage = (dateOfObsled.year - bd.year)*12
 
-    if mage % 12 <> 0:
+    if (mage % 12 <> 0) or (mage == 0):
         docTXT = ""
         return docTXT
 
