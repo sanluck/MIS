@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# diagnosisBefore 
+# diagnosisBefore
 # card_diag_b.py - PROF_EXAM_DIAG_B table
 #
 
@@ -23,7 +23,7 @@ FROM prof_exam_diag_b
 WHERE prof_exam_id = ?;"""
 
 SQLT_D2 = """SELECT
-diag_id, uv, dn, 
+diag_id, uv, dn,
 ln3, ul3, mo3,
 ln4, ul4, mo4,
 in1, ul1, mo1, iv2,
@@ -66,7 +66,7 @@ class CARD_DIAG_B_ARR:
     def __init__(self):
         self.idInternal = None
         self.diag_b_arr = None
-        
+
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
         cur.execute(SQLT_D1, (exam_id, ))
@@ -78,7 +78,7 @@ class CARD_DIAG_B_ARR:
             arr = []
             for rec in recs:
                 card_diag_b = CARD_DIAG_B()
-                
+
                 if rec[0] is None:
 		    card_diag_b.mkb = None
 		else:
@@ -94,15 +94,22 @@ class CARD_DIAG_B_ARR:
                 card_diag_b.mo3 = rec[8]
                 card_diag_b.lv2 = rec[9]
                 card_diag_b.vmp = rec[10]
-                
+
                 arr.append(card_diag_b)
 
             self.diag_b_arr = arr
-            
+
     def asXML(self):
         doc = SimpleXmlConstructor()
         arr = self.diag_b_arr
         if len(arr) == 0:
+	    doc.startNode("diagnosisBefore")
+	    doc.startNode("diagnosis")
+	    addNode(doc, "mkb", "Z00.0")
+	    addNode(doc, "dispNablud", "3")
+	    addNode(doc, "vmp", "0")
+	    doc.endNode() # diagnosis
+	    doc.endNode() # diagnosisBefore
             return doc
         doc.startNode("diagnosisBefore")
         for diag_b in arr:
@@ -131,7 +138,7 @@ class CARD_DIAG_B_ARR:
                     addNode(doc, "reason", "1")
                     doc.endNode() # notDone
                 doc.endNode() # lechen
-            
+
             ln2 = diag_b.ln2
             if ln2 == 1:
                 doc.startNode("reabil")
@@ -148,7 +155,7 @@ class CARD_DIAG_B_ARR:
 		    doc.endNode() # notDone
                 doc.endNode() # reabil
 
-                
+
             if diag_b.vmp == 1:
                 addNode(doc, "vmp", "1")
             else:
@@ -182,7 +189,7 @@ class CARD_DIAG_A_ARR:
     def __init__(self):
         self.idInternal = None
         self.diag_b_arr = None
-        
+
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
         cur.execute(SQLT_D2, (exam_id, ))
@@ -194,7 +201,7 @@ class CARD_DIAG_A_ARR:
             arr = []
             for rec in recs:
                 card_diag_a = CARD_DIAG_A()
-                
+
                 if rec[0] is None:
 		    card_diag_a.mkb = rec[0]
 		else:
@@ -214,11 +221,11 @@ class CARD_DIAG_A_ARR:
                 card_diag_a.iv2 = rec[12]
                 card_diag_a.vmp = rec[13]
                 card_diag_a.ms_uid = rec[14]
-                
+
                 arr.append(card_diag_a)
 
             self.diag_a_arr = arr
-            
+
     def asXML(self):
         doc = SimpleXmlConstructor()
         arr = self.diag_a_arr
@@ -233,7 +240,7 @@ class CARD_DIAG_A_ARR:
 		if (mkb3 >= "Z00") and (mkb3 <= "Z10"):
 		    addNode(doc, "healthyMKB", mkb)
 		    return doc
-	
+
 	doc.startNode("diagnosisAfter")
 	for diag_a in arr:
 	    mkb = diag_a.mkb
@@ -242,12 +249,12 @@ class CARD_DIAG_A_ARR:
 	    lmkb = len(mkb)
 	    if lmkb > 5: mkb = mkb[:5]
 	    addNode(doc, "mkb", mkb)
-            
+
 	    if diag_a.uv == 1:
 		addNode(doc, "firstTime", "1")
 	    else:
 		addNode(doc, "firstTime", "0")
-        
+
 	    dn = diag_a.dn
 	    if (dn is None) or (dn == 3): dn = 0
 	    addNode(doc, "dispNablud", str(dn))
@@ -273,7 +280,7 @@ class CARD_DIAG_A_ARR:
 		if mo4 is None: mo4 = 2
 		addNode(doc, "organ", str(mo4))
 		doc.endNode() # reabil
-            
+
 	    in1 = diag_a.in1
 	    if in1 == 1:
 		doc.startNode("consul")
@@ -287,13 +294,13 @@ class CARD_DIAG_A_ARR:
 		if (iv2 is None) or (iv2 == 2): iv2 = 0
 		addNode(doc, "state", str(iv2))
 		doc.endNode() # consul
-                
+
 	    vmp = diag_a.vmp
 	    if (vmp is None) or (vmp == 2): vmp = 0
 	    addNode(doc, "needVMP", str(vmp))
 	    addNode(doc, "needSMP", "0")
 	    addNode(doc, "needSKL", "0")
-	    
+
 	    ms_uid = diag_a.ms_uid
 	    addNode(doc, "recommendNext", "Нет")
 	    doc.endNode() # diagnosis
@@ -305,7 +312,7 @@ class CARD_DIAG_A_ARR:
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
@@ -314,29 +321,28 @@ if __name__ == "__main__":
 
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
-    
+
     sout = "clinic_id: {0} clinic_name: {1}".format(clinic_id, cname)
     log.info(sout)
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
     card_diag_b = CARD_DIAG_B_ARR()
-    
+
     card_id = PROF_EXAM_ID
-    
+
     card_diag_b.initFromDB(dbc, card_id)
-    
+
     sout = "card_id: {0}".format(card_id)
     asXML = card_diag_b.asXML()
     log.info(asXML.asText())
 
 
     card_diag_a = CARD_DIAG_A_ARR()
-    
+
     card_id = PROF_EXAM_ID
-    
+
     card_diag_a.initFromDB(dbc, card_id)
-    
+
     asXML = card_diag_a.asXML()
     log.info(asXML.asText())
-    
