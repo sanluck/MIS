@@ -366,7 +366,7 @@ class CARD:
                 addNode(doc, "char", str(mens3_code))
                 doc.endNode() # characters
                 doc.endNode() # menses
-        if (not sex_f_printed) and (age is not None) and (age >= 10) and (self.sex is not None):
+        if (not sex_f_printed) and (mage is not None) and (mage >= 120) and (self.sex is not None):
 	    if self.sex == u"М":
 		doc.startNode("sexFormulaMale")
 		addNode(doc, "P", "0")
