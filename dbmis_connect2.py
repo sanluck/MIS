@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #encoding: utf-8
 #
-# dbmis_connect2.py 
-# 
+# dbmis_connect2.py
+#
 
 import sys
 import time
@@ -46,7 +46,7 @@ FROM VW_WORKERS WHERE
   WORKER_ID = {0}
 """
 
-SQL_TEMPLATE_WORKTIME = """SELECT 
+SQL_TEMPLATE_WORKTIME = """SELECT
    work_date, begin_time, end_time, step, visibility_groups_ids
 FROM work_time WHERE
    WORKER_ID_FK={0} AND
@@ -73,7 +73,7 @@ FROM
 SQL_TEMPLATE_TICKETS = """SELECT
 *
 FROM
-  VW_TICKETS 
+  VW_TICKETS
 WHERE
   WORKER_ID_FK = {0} AND VISIT_DATE = '{1}' AND VISIT_TIME = '{2}'
 """
@@ -83,13 +83,13 @@ SET PEOPLE_ID_FK = {0}
 WHERE TICKET_ID = {1};
 """
 
-SQL_TEMPLATE_GETPEOPLE = """SELECT 
-LNAME, FNAME, MNAME, INSURANCE_CERTIFICATE, PEOPLE_ID, BIRTHDAY 
-FROM VW_PEOPLES 
-WHERE 
-UPPER(LNAME) = '{0}' 
-AND UPPER(FNAME)= '{1}' 
-AND UPPER(MNAME)= '{2}' 
+SQL_TEMPLATE_GETPEOPLE = """SELECT
+LNAME, FNAME, MNAME, INSURANCE_CERTIFICATE, PEOPLE_ID, BIRTHDAY
+FROM VW_PEOPLES
+WHERE
+UPPER(LNAME) = '{0}'
+AND UPPER(FNAME)= '{1}'
+AND UPPER(MNAME)= '{2}'
 AND INSURANCE_CERTIFICATE = '{3}';"""
 
 SQL_TEMPLATE_GETCLINICS = """SELECT
@@ -99,7 +99,7 @@ FROM VW_CLINICS
 
 SQL_TEMPLATE_GETCLINIC = """SELECT
 clinic_name, inn, kpp, ogrn, mcod,
-addr_jure_town_name, addr_jure_town_socr, 
+addr_jure_town_name, addr_jure_town_socr,
 addr_jure_area_name, addr_jure_area_socr,
 addr_jure_country_name, addr_jure_country_socr,
 addr_jure_street_name, addr_jure_street_socr,
@@ -123,7 +123,7 @@ def unpack_date(sdate = "2012-10-01"):
 
 class DBMIS:
     'Base class for DBMIS connection'
-    
+
     def __init__(self, clinic_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD, mis_host = HOST, mis_db = DB):
         s_dsn = "%s:%s" % (mis_host, mis_db)
         try:
@@ -136,10 +136,34 @@ class DBMIS:
         sout = "Connection to %s has been established" % (s_dsn)
         log.debug(sout)
         self.clinic_id = clinic_id
-        self.set_context(clinic_id, mis_user, mis_user_pwd)
+#        self.set_context(clinic_id, mis_user, mis_user_pwd)
+        self.dbmis_authentication(clinic_id, mis_user, mis_user_pwd)
         self.get_clinic_info()
-                
-        
+
+
+    def dbmis_authentication(self, lpu_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
+        s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}')"
+        s_sql  = s_sqlt.format(mis_user, mis_user_pwd)
+        try:
+            self.cur.execute(s_sql)
+        except:
+            exctype, value = sys.exc_info()[:2]
+            log.warn( 'DBMIS SP_USER_AUTHENTICATION Error: %s' % value.message )
+            self.con.close()
+            raise
+
+        s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
+        s_sql  = s_sqlt.format(mis_user, lpu_id)
+        try:
+            self.cur.execute(s_sql)
+        except:
+            exctype, value = sys.exc_info()[:2]
+            log.warn( 'DBMIS SP_USER_CHANGE_CLINIC Error: %s' % value.message )
+            self.con.close()
+            raise
+
+        self.lpu_id = lpu_id
+
     def set_context(self, lpu_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
 
         s0 = SET_CONTEXT_SQL_TEMPLATE % (mis_user, mis_user_pwd, lpu_id)
@@ -155,7 +179,7 @@ class DBMIS:
         sout = "Context for user %d, lpu %d has been set" % (MIS_USER, lpu_id)
         log.debug(sout)
         self.lpu_id = lpu_id
-            
+
     def execute(self, ssql):
         try:
             self.cur.execute(ssql)
@@ -164,7 +188,7 @@ class DBMIS:
             log.warn( 'DBMIS execute error: %s' % value.message )
             self.con.close()
             raise
-    
+
     def close(self):
         self.con.close()
 
@@ -174,45 +198,45 @@ class DBMIS:
         self.execute(ssql)
         result = self.cur.fetchone()
         return result
-    
+
     def get_p_ids(self, lname, fname, mname, birthday):
-        s_sqlt = """SELECT 
+        s_sqlt = """SELECT
                     people_id
                     FROM peoples
-                    WHERE 
-                    UPPER(lname) = '{0}' 
-                    AND UPPER(fname)= '{1}' 
-                    AND UPPER(mname)= '{2}' 
+                    WHERE
+                    UPPER(lname) = '{0}'
+                    AND UPPER(fname)= '{1}'
+                    AND UPPER(mname)= '{2}'
                     AND birthday = '{3}';"""
         LNAME = lname.upper().encode('cp1251')
         FNAME = fname.upper().encode('cp1251')
         bd = "%04d-%02d-%02d" % (birthday.year, birthday.month, birthday.day)
         if mname is None:
-            s_sqlt = """SELECT 
+            s_sqlt = """SELECT
                         people_id
                         FROM peoples
-                        WHERE 
-                        UPPER(lname) = '{0}' 
-                        AND UPPER(fname)= '{1}' 
-                        AND mname is Null 
+                        WHERE
+                        UPPER(lname) = '{0}'
+                        AND UPPER(fname)= '{1}'
+                        AND mname is Null
                         AND birthday = '{2}';"""
             s_sql = s_sqlt.format(LNAME, FNAME, bd)
         else:
             MNAME = mname.upper().encode('cp1251')
             s_sql = s_sqlt.format(LNAME, FNAME, MNAME, bd)
-        
+
         self.execute(s_sql)
         results = self.cur.fetchall()
         ar = []
         for rec in results:
             ar.append(rec[0])
-            
+
         return ar
-        
+
 
 
     def get_workers(self, speciality_id = 1):
-    # Get workers list for current LPU_ID, 
+    # Get workers list for current LPU_ID,
     #    self.set_context(lpu_id)
         lpu_id = self.lpu_id
         ssql = SQL_TEMPLATE_WORKERS.format(speciality_id)
@@ -225,7 +249,7 @@ class DBMIS:
             sout = "%d : %s" % (result[0], result[3])
             log.debug(sout)
         return wlist
-    
+
     def get_worker(self, worker_id):
     # Get single worker parameters using current settings, made by setcontext
     # that means the worker is searched among current LPU workers
@@ -252,14 +276,14 @@ class DBMIS:
             if room == None:
                 room = ""
             log.debug("            room: {0}".format(room.encode('utf-8')))
-            worker.append([result[0], # worker ID 
+            worker.append([result[0], # worker ID
                            result[1], # speciality ID
                            result[2], # speciality name
                            result[3], # doctor FIO
                            result[4], # payment type ID
                            room  # room
                            ])
-            
+
         return worker
 
     def get_schedule(self, worker_id, schedule_dates = ["2012-10-01","2012-10-07"], CUR_VGID = u'З'):
@@ -281,15 +305,15 @@ class DBMIS:
                     if schedule.get(d, None) == None:
                         schedule[d] = []
                     schedule[d].append([result[1], result[2]])
-        return schedule, step   
-    
+        return schedule, step
+
     def get_worker_tickets(self, worker_id, visit_date, visit_time):
     # Get tickets for particular worker
         ssql = SQL_TEMPLATE_TICKETS.format(worker_id, visit_date, visit_time)
         self.execute(ssql)
 
     def update_ticket(self, ticket_id, people_id):
-    # Update people_id for ticket with particular ticket_id 
+    # Update people_id for ticket with particular ticket_id
         # Prepare SQL query to UPDATE required records
         ssql = SQL_TEMPLATE_TICKET_UPD.format(people_id, ticket_id)
         # prepare a cursor object using cursor() method
@@ -339,12 +363,12 @@ class DBMIS:
             addr_jure_street_socr = rec[12]
             addr_jure_house = rec[13]
             addr_jure_post_index = rec[14]
-            
+
             if addr_jure_post_index is None:
                 addr_jure = u"Алтайский край, "
             else:
                 addr_jure = addr_jure_post_index + u", Алтайский край, "
-            
+
             if addr_jure_town_socr is not None:
                 addr_jure += addr_jure_town_socr + u". "
             if addr_jure_town_name is not None:
@@ -364,15 +388,15 @@ class DBMIS:
                 addr_jure += addr_jure_street_name + u", "
             if addr_jure_house is not None:
                 addr_jure += addr_jure_house
-            
+
             self.addr_jure = addr_jure
-            
-        s_sqlt = """SELECT 
+
+        s_sqlt = """SELECT
                 a.area_id, a.area_number,
                 ca.clinic_id_fk
                 from areas a
                 left join clinic_areas ca on a.clinic_area_id_fk = ca.clinic_area_id
-                where ca.clinic_id_fk = {0} and ca.basic_speciality = 1;"""        
+                where ca.clinic_id_fk = {0} and ca.basic_speciality = 1;"""
         ssql = s_sqlt.format(clinic_id)
         self.execute(ssql)
         recs = self.cur.fetchall()
@@ -389,7 +413,7 @@ def dset(d1='2013-08-15', d2='2013-09-25'):
     # exlude weekends
     from datetime import datetime, timedelta
     import random
-    
+
     dd1 = datetime.strptime(d1, "%Y-%m-%d").date()
     dd2 = datetime.strptime(d2, "%Y-%m-%d").date()
     ddd = dd2-dd1
@@ -398,26 +422,26 @@ def dset(d1='2013-08-15', d2='2013-09-25'):
         delta = random.randint(0, ddays)
         dd3  = dd1 + timedelta(days=delta)
         if dd3.weekday() not in (5,6): break
-    
+
     d3 = "%04d-%02d-%02d" % (dd3.year, dd3.month, dd3.day)
     return d3
-        
+
 
 if __name__ == "__main__":
     import datetime
-    
+
     dbc = DBMIS(22)
     print dbc.name, dbc.mcod, dbc.ogrn
-    
+
     l_f = u'Кислицина'
     l_i = u'Татьяна'
     l_o = u'Викторовна'
 
     birthday = datetime.datetime.strptime('1971-02-01', "%Y-%m-%d").date()
-    
+
     p_ids = dbc.get_p_ids(l_f, l_i, l_o, birthday)
-    
+
     for p_id in p_ids:
         print "people_id: {0}".format(p_id)
-    
+
     print dset()
