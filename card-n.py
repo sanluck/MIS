@@ -20,16 +20,51 @@ DB        = "DBMIS"
 
 CLINIC_ID = 52
 
-D_START  = "2014-01-01"
-D_FINISH = "2014-06-30"
-REGISTER_DONE = True
+D_START  = "2014-07-01"
+D_FINISH = "2014-07-31"
+REGISTER_DONE  = True
+REGISTER_CARDS = True
 
 STEP = 100
 
 FNAME = "PN{0}_{1}.xml"
 FPATH = "./PN"
 
-SQLT_CL = """SELECT
+# Выбирать:
+# 0 - всех
+# 1 - только инвалидов (inv = 1)
+# 2 - только не инвалидов (inv <> 1)
+INVALIDS = 2
+
+
+if INVALIDS == 2:
+    SQLT_CL = """SELECT
+prof_exam_id, people_id_fk, date_begin
+FROM prof_exam_minor
+WHERE clinic_id_fk = ?
+AND date_end is not Null
+AND type_exam_code = 1
+AND status_code = 2
+AND date_end >= ?
+AND date_end <= ?
+AND date_begin is not Null
+AND inv <> 1
+ORDER by date_begin;"""
+elif INVALIDS == 1:
+    SQLT_CL = """SELECT
+prof_exam_id, people_id_fk, date_begin
+FROM prof_exam_minor
+WHERE clinic_id_fk = ?
+AND date_end is not Null
+AND type_exam_code = 1
+AND status_code = 2
+AND date_end >= ?
+AND date_end <= ?
+AND date_begin is not Null
+AND inv = 1
+ORDER by date_begin;"""
+else:
+    SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
@@ -41,9 +76,12 @@ AND date_end <= ?
 AND date_begin is not Null
 ORDER by date_begin;"""
 
+
 SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
 
 SQLT_SNILS = """SELECT insurance_certificate, document_type_id_fk FROM peoples WHERE people_id = ?;"""
+
+SQLT_REGISTER_CARD = """INSERT INTO pn_cards_out (prof_exam_id, d_out) VALUES (%s, %s);"""
 
 if __name__ == "__main__":
     LOG_FILENAME = '_cardn.out'
@@ -98,6 +136,10 @@ def do_card_n(clinic_id = CLINIC_ID):
 
     from dbmis_connect2 import DBMIS
     import time
+    import datetime
+
+    dbmy = DBMY()
+    curm_card = dbmy.con.cursor()
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('-----------------------------------------------------------------------------------')
@@ -133,7 +175,6 @@ def do_card_n(clinic_id = CLINIC_ID):
         <children>"""
         fo.write(sout)
 
-
         iii = 0
         nout = 0
         for ccc in c_list:
@@ -148,17 +189,20 @@ def do_card_n(clinic_id = CLINIC_ID):
 		fo.flush()
 		os.fsync(fo.fileno())
 		nout += 1
+		if REGISTER_CARDS:
+		    dnow = datetime.datetime.now()
+		    sdnow = str(dnow)
+		    curm_card.execute(SQLT_REGISTER_CARD, (e_id, sdnow, ))
 
         sout = '</children>'
         fo.write(sout)
         fo.close()
         sout = "Output to file: {0} {1} cards".format(f_fname, nout)
         log.info(sout)
-	nout_all += 1
-
-
+	nout_all += nout
 
     dbc.close()
+    dbmy.close()
     sout = "Totally cards: {0} cards".format(nout_all)
     log.info(sout)
     localtime = time.asctime( time.localtime(time.time()) )
@@ -207,7 +251,7 @@ def register_done(_id, nout):
     WHERE
     id = %s;"""
 
-    curm.execute(s_sqlt,(dnow, _id, nout, ))
+    curm.execute(s_sqlt,(dnow, nout, _id, ))
     dbmy.close()
 
 if __name__ == "__main__":
