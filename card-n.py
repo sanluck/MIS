@@ -120,13 +120,12 @@ def do_card_n(clinic_id = CLINIC_ID):
 
     arr_arr = getC_list(dbc, clinic_id)
     nnn = 0
+    nout_all = 0
     for arr in arr_arr:
         nnn += 1
         c_list = arr
-        s_nnn = "%02d" % (nnn)
+        s_nnn = "%03d" % (nnn)
         f_fname = FPATH + "/" + FNAME.format(mcod, s_nnn)
-        sout = "Output to file: {0}".format(f_fname)
-        log.info(sout)
 
         fo = open(f_fname, "wb")
 
@@ -136,6 +135,7 @@ def do_card_n(clinic_id = CLINIC_ID):
 
 
         iii = 0
+        nout = 0
         for ccc in c_list:
             iii += 1
             e_id = ccc[0]
@@ -143,17 +143,27 @@ def do_card_n(clinic_id = CLINIC_ID):
             d_bg = ccc[2]
 
             docTXT = getCard(dbc, e_id, p_id)
-            fo.write(docTXT)
-            fo.flush()
-            os.fsync(fo.fileno())
+	    if len(docTXT) > 0:
+		fo.write(docTXT)
+		fo.flush()
+		os.fsync(fo.fileno())
+		nout += 1
 
         sout = '</children>'
         fo.write(sout)
         fo.close()
+        sout = "Output to file: {0} {1} cards".format(f_fname, nout)
+        log.info(sout)
+	nout_all += 1
+
+
 
     dbc.close()
+    sout = "Totally cards: {0} cards".format(nout_all)
+    log.info(sout)
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Prof Exam Export Finish  '+localtime)
+    return nout_all
 
 def get_1clinic_lock(id_unlock = None):
 
@@ -183,7 +193,7 @@ def get_1clinic_lock(id_unlock = None):
     dbmy.close()
     return c_rec
 
-def register_done(_id):
+def register_done(_id, nout):
     import datetime
 
     dbmy = DBMY()
@@ -193,11 +203,11 @@ def register_done(_id):
     sdnow = str(dnow)
 
     s_sqlt = """UPDATE pn_list
-    SET done = %s
+    SET done = %s, nout_all = %s
     WHERE
     id = %s;"""
 
-    curm.execute(s_sqlt,(dnow, _id, ))
+    curm.execute(s_sqlt,(dnow, _id, nout, ))
     dbmy.close()
 
 if __name__ == "__main__":
@@ -208,9 +218,9 @@ if __name__ == "__main__":
 	clinic_id = c_rec[1]
 	mcod = c_rec[2]
 
-	do_card_n(clinic_id)
+	nout_all = do_card_n(clinic_id)
 
-	if REGISTER_DONE: register_done(_id)
+	if REGISTER_DONE: register_done(_id, nout_all)
 
 	c_rec  = get_1clinic_lock(_id)
 
