@@ -203,7 +203,7 @@ def do_card_n(clinic_id = CLINIC_ID):
 
     dbc.close()
     dbmy.close()
-    sout = "Totally cards: {0} cards".format(nout_all)
+    sout = "Altogether cards has been written: {0}".format(nout_all)
     log.info(sout)
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Prof Exam Export Finish  '+localtime)
