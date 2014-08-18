@@ -20,7 +20,7 @@ DB        = "DBMIS"
 
 CLINIC_ID = 52
 
-D_START  = "2014-07-01"
+D_START  = "2014-01-01"
 D_FINISH = "2014-07-31"
 REGISTER_DONE  = True
 REGISTER_CARDS = True
@@ -192,7 +192,10 @@ def do_card_n(clinic_id = CLINIC_ID):
 		if REGISTER_CARDS:
 		    dnow = datetime.datetime.now()
 		    sdnow = str(dnow)
-		    curm_card.execute(SQLT_REGISTER_CARD, (e_id, sdnow, ))
+		    try:
+			curm_card.execute(SQLT_REGISTER_CARD, (e_id, sdnow, ))
+		    except:
+			pass
 
         sout = '</children>'
         fo.write(sout)
