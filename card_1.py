@@ -16,15 +16,16 @@ from child import CHILD
 from card import CARD
 from card_diag_b import CARD_DIAG_B_ARR
 from card_diag_b import CARD_DIAG_A_ARR
+from card_invalid import CARD_INV
 from card_results import CARD_RESULTS
 from card import getDoctor
 
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 268
-PROF_EXAM_ID = 477847
-PEOPLE_ID = 2299272
+CLINIC_ID = 124
+PROF_EXAM_ID = 63029
+PEOPLE_ID = 965192
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
@@ -121,6 +122,11 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card_diag_a = CARD_DIAG_A_ARR()
     card_diag_a.initFromDB(dbc, card_id)
     asXML = card_diag_a.asXML()
+    docTXT += asXML.asText()
+
+    card_invalid = CARD_INV()
+    card_invalid.initFromDB(dbc, card_id)
+    asXML = card_invalid.asXML()
     docTXT += asXML.asText()
 
     card_results = CARD_RESULTS()

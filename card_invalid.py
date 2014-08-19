@@ -9,6 +9,7 @@
 #                      DATE_INV_FIRST - Дата установления инвалидности
 #                      DATE_INV_LAST - Дата последнего освидетельствования
 #                      ZAB_INV_LIST - Заболевания, обусловившее инвалидность
+#                      VNZ_INV_LIST - Виды нарушения здоровья
 #
 
 import sys
@@ -18,8 +19,8 @@ from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 226
-PROF_EXAM_ID = 325758
+CLINIC_ID = 124
+PROF_EXAM_ID = 63029
 
 SQLT_INV = """SELECT
 inv_type_code, date_inv_first, date_inv_last, inv_ds, zab_inv_list, vnz_inv_list
@@ -36,11 +37,52 @@ if __name__ == "__main__":
 
 log = logging.getLogger(__name__)
 
+INV_GROUP = {}
+INV_GROUP_MAX = 33
+INV_GROUP[33] = ['S00','T98']
+INV_GROUP[32] = ['Q65','Q79']
+INV_GROUP[31] = ['Q20','Q28']
+INV_GROUP[30] = ['Q00','Q07']
+INV_GROUP[29] = ['Q00','Q99']
+INV_GROUP[28] = ['P00','P96']
+INV_GROUP[27] = ['N00','N99']
+INV_GROUP[26] = ['M00','M99']
+INV_GROUP[25] = ['L00','L99']
+INV_GROUP[24] = ['K00','K93']
+INV_GROUP[23] = ['J46','J46']
+INV_GROUP[22] = ['J45','J45']
+INV_GROUP[21] = ['J00','J99']
+INV_GROUP[20] = ['I00','I99']
+INV_GROUP[19] = ['H60','H95']
+INV_GROUP[18] = ['H60','H59']
+INV_GROUP[17] = ['G80','G83']
+INV_GROUP[16] = ['G00','G99']
+INV_GROUP[15] = ['F70','F79']
+INV_GROUP[14] = ['F00','F99']
+INV_GROUP[13] = ['E10','E14']
+INV_GROUP[10] = ['E00','E90']
+INV_GROUP[9]  = ['B24','B24']
+INV_GROUP[6]  = ['D50','D89']
+INV_GROUP[5]  = ['C00','C48']
+INV_GROUP[4]  = ['B20','B24']
+INV_GROUP[3]  = ['A50','A53']
+INV_GROUP[2]  = ['A15','A19']
+INV_GROUP[1]  = ['A00','B99']
 
 def addNode(doc, nodeName, nodeValue):
     doc.startNode(nodeName)
     doc.putText(nodeValue)
     doc.endNode()
+
+def invGroupByDS(DS):
+    DSS = DS[:3]
+    for i in range(INV_GROUP_MAX, 0, -1):
+	if INV_GROUP.has_key(i):
+	    DS1 = INV_GROUP[i][0]
+	    DS2 = INV_GROUP[i][1]
+	    if (DSS >= DS1) and (DSS <= DS2): return str(i)
+
+    return '0'
 
 class CARD_INV:
     def __init__(self):
@@ -59,7 +101,7 @@ class CARD_INV:
         if rec is None:
             self.__init__()
         else:
-            self.idInternal = exam_id
+            self.idInternal     = exam_id
             self.inv_type_code  = rec[0]
             self.date_inv_first = rec[1]
             self.date_inv_last  = rec[2]
@@ -69,214 +111,27 @@ class CARD_INV:
 
     def asXML(self):
         doc = SimpleXmlConstructor()
-        arr = self.diag_b_arr
-        if len(arr) == 0:
-	    doc.startNode("diagnosisBefore")
-	    doc.startNode("diagnosis")
-	    addNode(doc, "mkb", "Z00.0")
-	    addNode(doc, "dispNablud", "3")
-	    addNode(doc, "vmp", "0")
-	    doc.endNode() # diagnosis
-	    doc.endNode() # diagnosisBefore
-            return doc
-        doc.startNode("diagnosisBefore")
-        for diag_b in arr:
-            mkb = diag_b.mkb
-            if mkb is None: continue
-            doc.startNode("diagnosis")
-	    lmkb = len(mkb)
-	    if lmkb > 5: mkb = mkb[:5]
-	    addNode(doc, "mkb", mkb)
-            dn = diag_b.dn
-            if dn is None: dn = 3
-            addNode(doc, "dispNablud", str(dn))
-
-            ln1 = diag_b.ln1
-            if ln1 == 1:
-                doc.startNode("lechen")
-                ul1 = diag_b.ul1
-                if ul1 is None: ul1 = 1
-                addNode(doc, "condition", str(ul1))
-                mo1 = diag_b.mo1
-                if mo1 is None: mo1 = 2
-                addNode(doc, "organ", str(mo1))
-                lv1 = diag_b.lv1
-                if lv1 == 2:
-                    doc.startNode("notDone")
-                    addNode(doc, "reason", "1")
-                    doc.endNode() # notDone
-                doc.endNode() # lechen
-
-            ln2 = diag_b.ln2
-            if ln2 == 1:
-                doc.startNode("reabil")
-                ul3 = diag_b.ul3
-                if ul3 is None: ul3 = 3
-                addNode(doc, "condition", str(ul3))
-                mo3 = diag_b.mo3
-                if mo3 is None: mo3 = 2
-                addNode(doc, "organ", str(mo3))
-                lv2 = diag_b.lv2
-                if lv2 == 2:
-		    doc.startNode("notDone")
-		    addNode(doc, "reason", "1")
-		    doc.endNode() # notDone
-                doc.endNode() # reabil
-
-
-            if diag_b.vmp == 1:
-                addNode(doc, "vmp", "1")
-            else:
-                addNode(doc, "vmp", "0")
-            doc.endNode() # diagnosis
-        doc.endNode() # diagnosisBefore
+        if (self.idInternal is None) or (self.inv_type_code is None) \
+           or (self.date_inv_first is None) or (self.date_inv_last is None) \
+           or (self.inv_ds is None) or (self.vnz_inv_list is None): return doc
+        doc.startNode("invalid")
+        addNode(doc, "type", str(self.inv_type_code))
+        d1 = self.date_inv_first.strftime("%Y-%m-%d")
+        addNode(doc, "dateFirstDetected", d1)
+        d2 = self.date_inv_last.strftime("%Y-%m-%d")
+        addNode(doc, "dateLastConfirmed", d2)
+        doc.startNode("illnesses")
+        illness = invGroupByDS(self.inv_ds)
+        addNode(doc, "illness", illness)
+        doc.endNode() # illnesses
+        doc.startNode("defects")
+        defects = self.vnz_inv_list
+        for defect in defects.split(','):
+            addNode(doc, "defect", defect)
+        doc.endNode() # defects
+        doc.endNode() # invalid
 
         return doc
-
-# DIAG_A
-
-class CARD_DIAG_A:
-    def __init__(self):
-        self.mkb = None
-        self.uv = None
-        self.dn = None
-        self.ln3 = None
-        self.ul3 = None
-        self.mo3 = None
-        self.ln4 = None
-        self.ul4 = None
-        self.mo4 = None
-        self.in1 = None
-        self.ul1 = None
-        self.mo1 = None
-        self.iv2 = None
-        self.vmp = None
-        self.ms_uid = None
-
-class CARD_DIAG_A_ARR:
-    def __init__(self):
-        self.idInternal = None
-        self.diag_b_arr = None
-
-    def initFromDB(self, dbc, exam_id):
-        cur = dbc.con.cursor()
-        cur.execute(SQLT_D2, (exam_id, ))
-        recs = cur.fetchall()
-        if recs is None:
-            self.__init__()
-        else:
-            self.idInternal = exam_id
-            arr = []
-            for rec in recs:
-                card_diag_a = CARD_DIAG_A()
-
-                if rec[0] is None:
-		    card_diag_a.mkb = rec[0]
-		else:
-		    card_diag_a.mkb = rec[0].strip()
-
-                card_diag_a.uv = rec[1]
-                card_diag_a.dn = rec[2]
-                card_diag_a.ln3 = rec[3]
-                card_diag_a.ul3 = rec[4]
-                card_diag_a.mo3 = rec[5]
-                card_diag_a.ln4 = rec[6]
-                card_diag_a.ul4 = rec[7]
-                card_diag_a.mo4 = rec[8]
-                card_diag_a.in1 = rec[9]
-                card_diag_a.ul1 = rec[10]
-                card_diag_a.mo1 = rec[11]
-                card_diag_a.iv2 = rec[12]
-                card_diag_a.vmp = rec[13]
-                card_diag_a.ms_uid = rec[14]
-
-                arr.append(card_diag_a)
-
-            self.diag_a_arr = arr
-
-    def asXML(self):
-        doc = SimpleXmlConstructor()
-        arr = self.diag_a_arr
-        if len(arr) == 0:
-            addNode(doc, "healthyMKB", "Z00.0")
-	    return doc
-	elif len(arr) > 0:
-            diag_a = arr[0]
-            mkb = diag_a.mkb
-            if mkb is not None:
-		mkb3 = mkb[:3]
-		if (mkb3 >= "Z00") and (mkb3 <= "Z10"):
-		    addNode(doc, "healthyMKB", mkb)
-		    return doc
-
-	doc.startNode("diagnosisAfter")
-	for diag_a in arr:
-	    mkb = diag_a.mkb
-	    if mkb is None: continue
-	    doc.startNode("diagnosis")
-	    lmkb = len(mkb)
-	    if lmkb > 5: mkb = mkb[:5]
-	    addNode(doc, "mkb", mkb)
-
-	    if diag_a.uv == 1:
-		addNode(doc, "firstTime", "1")
-	    else:
-		addNode(doc, "firstTime", "0")
-
-	    dn = diag_a.dn
-	    if (dn is None) or (dn == 3): dn = 0
-	    addNode(doc, "dispNablud", str(dn))
-
-	    ln3 = diag_a.ln3
-	    if ln3 == 1:
-		doc.startNode("lechen")
-		ul3 = diag_a.ul3
-		if ul3 is None: ul3 = 1
-		addNode(doc, "condition", str(ul3))
-		mo3 = diag_a.mo3
-		if mo3 is None: mo3 = 2
-		addNode(doc, "organ", str(mo3))
-		doc.endNode() # lechen
-
-	    ln4 = diag_a.ln4
-	    if ln4 == 1:
-		doc.startNode("reabil")
-		ul4 = diag_a.ul4
-		if ul4 is None: ul4 = 3
-		addNode(doc, "condition", str(ul4))
-		mo4 = diag_a.mo4
-		if mo4 is None: mo4 = 2
-		addNode(doc, "organ", str(mo4))
-		doc.endNode() # reabil
-
-	    in1 = diag_a.in1
-	    if in1 == 1:
-		doc.startNode("consul")
-		ul1 = diag_a.ul1
-		if ul1 is None: ul1 = 1
-		addNode(doc, "condition", str(ul1))
-		mo1 = diag_a.mo1
-		if mo1 is None: mo1 = 1
-		addNode(doc, "organ", str(mo1))
-		iv2 = diag_a.iv2
-		if (iv2 is None) or (iv2 == 2): iv2 = 0
-		addNode(doc, "state", str(iv2))
-		doc.endNode() # consul
-
-	    vmp = diag_a.vmp
-	    if (vmp is None) or (vmp == 2): vmp = 0
-	    addNode(doc, "needVMP", str(vmp))
-	    addNode(doc, "needSMP", "0")
-	    addNode(doc, "needSKL", "0")
-
-	    ms_uid = diag_a.ms_uid
-	    addNode(doc, "recommendNext", "Нет")
-	    doc.endNode() # diagnosis
-
-	doc.endNode() # diagnosisAfter
-
-        return doc
-
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
@@ -295,22 +150,17 @@ if __name__ == "__main__":
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
-    card_diag_b = CARD_DIAG_B_ARR()
+    card_invalid = CARD_INV()
 
     card_id = PROF_EXAM_ID
 
-    card_diag_b.initFromDB(dbc, card_id)
+    card_invalid.initFromDB(dbc, card_id)
 
     sout = "card_id: {0}".format(card_id)
-    asXML = card_diag_b.asXML()
-    log.info(asXML.asText())
+    asXML = card_invalid.asXML()
+    xmltxt = asXML.asText()
+    sout = "Text len: {0}".format(len(xmltxt))
+    log.info(sout)
+    log.info(xmltxt)
 
-
-    card_diag_a = CARD_DIAG_A_ARR()
-
-    card_id = PROF_EXAM_ID
-
-    card_diag_a.initFromDB(dbc, card_id)
-
-    asXML = card_diag_a.asXML()
-    log.info(asXML.asText())
+    dbc.close()
