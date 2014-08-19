@@ -18,28 +18,16 @@ from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 200
-PROF_EXAM_ID = 346
+CLINIC_ID = 226
+PROF_EXAM_ID = 325758
 
-SQLT_D1 = """SELECT
-diag_id, dn, ln1, ul1, mo1, lv1,
-ln2, ul3, mo3, lv2,
-vmp
-FROM prof_exam_diag_b
+SQLT_INV = """SELECT
+inv_type_code, date_inv_first, date_inv_last, inv_ds, zab_inv_list, vnz_inv_list
+FROM prof_exam_minor
 WHERE prof_exam_id = ?;"""
-
-SQLT_D2 = """SELECT
-diag_id, uv, dn,
-ln3, ul3, mo3,
-ln4, ul4, mo4,
-in1, ul1, mo1, iv2,
-vmp, ms_uid
-FROM prof_exam_diag_a
-WHERE prof_exam_id = ?;"""
-
 
 if __name__ == "__main__":
-    LOG_FILENAME = '_card_diag_b.out'
+    LOG_FILENAME = '_card_inv.out'
     logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
     console = logging.StreamHandler()
@@ -54,56 +42,30 @@ def addNode(doc, nodeName, nodeValue):
     doc.putText(nodeValue)
     doc.endNode()
 
-class CARD_DIAG_B:
+class CARD_INV:
     def __init__(self):
-        self.mkb = None
-        self.dn = None
-        self.ln1 = None
-        self.ul1 = None
-        self.mo1 = None
-        self.lv1 = None
-        self.ln2 = None
-        self.ul3 = None
-        self.mo3 = None
-        self.lv2 = None
-        self.vmp = None
-
-class CARD_DIAG_B_ARR:
-    def __init__(self):
-        self.idInternal = None
-        self.diag_b_arr = None
+        self.idInternal     = None
+        self.inv_type_code  = None
+        self.date_inv_first = None
+        self.date_inv_last  = None
+        self.inv_ds         = None
+        self.zab_inv_list   = None
+        self.vnz_inv_list   = None
 
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
-        cur.execute(SQLT_D1, (exam_id, ))
-        recs = cur.fetchall()
-        if recs is None:
+        cur.execute(SQLT_INV, (exam_id, ))
+        rec = cur.fetchone()
+        if rec is None:
             self.__init__()
         else:
             self.idInternal = exam_id
-            arr = []
-            for rec in recs:
-                card_diag_b = CARD_DIAG_B()
-
-                if rec[0] is None:
-		    card_diag_b.mkb = None
-		else:
-		    card_diag_b.mkb = rec[0].strip()
-                card_diag_b.dn = rec[1]
-                card_diag_b.ln1 = rec[2]
-                card_diag_b.ul1 = rec[3]
-                card_diag_b.mo1 = rec[4]
-                card_diag_b.lv1 = rec[5]
-
-                card_diag_b.ln2 = rec[6]
-                card_diag_b.ul3 = rec[7]
-                card_diag_b.mo3 = rec[8]
-                card_diag_b.lv2 = rec[9]
-                card_diag_b.vmp = rec[10]
-
-                arr.append(card_diag_b)
-
-            self.diag_b_arr = arr
+            self.inv_type_code  = rec[0]
+            self.date_inv_first = rec[1]
+            self.date_inv_last  = rec[2]
+            self.inv_ds         = rec[3]
+            self.zab_inv_list   = rec[4]
+            self.vnz_inv_list   = rec[5]
 
     def asXML(self):
         doc = SimpleXmlConstructor()
