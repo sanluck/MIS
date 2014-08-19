@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# diagnosisBefore
+# invalid
 # card_invalid.py - PROF_EXAM_MINOR table
 #                      INV - Инвалидность
 #                      INV_TYPE_CODE - Тип инвалидности
