@@ -9,6 +9,8 @@ import time
 import exceptions
 import logging
 import fdb
+from get_lan_ip import get_lan_ip
+
 
 HOST = 'fb2.ctmed.ru'
 DB = 'DBMIS'
@@ -142,8 +144,9 @@ class DBMIS:
 
 
     def dbmis_authentication(self, lpu_id = 22, mis_user = MIS_USER, mis_user_pwd = MIS_USER_PWD):
-        s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}')"
-        s_sql  = s_sqlt.format(mis_user, mis_user_pwd)
+        lan_ip = get_lan_ip()
+        s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}','{2}')"
+        s_sql  = s_sqlt.format(mis_user, mis_user_pwd, lan_ip)
         try:
             self.cur.execute(s_sql)
         except:
