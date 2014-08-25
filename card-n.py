@@ -34,7 +34,7 @@ FPATH = "./PN"
 # 0 - всех
 # 1 - только инвалидов (inv = 1)
 # 2 - только не инвалидов (inv <> 1)
-INVALIDS = 2
+INVALIDS = 1
 
 
 if INVALIDS == 2:
