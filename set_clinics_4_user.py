@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 HOST      = "fb.ctmed.ru"
 DB        = "DBMIS"
 
-USER_ID   = 1007
+USER_ID   = 1128
 CLINIC0   = 22
 
 clist     = [222,229]
@@ -33,6 +33,15 @@ SET STATUS = 1,
 INCLINICBOOL = 1
 WHERE
 ORG_TYPE_ID=1 and USER_ID = ?;"""
+
+SQLT_CLINICF = """SELECT * FROM clinic_users 
+WHERE
+user_id = ? AND clinic_id = ?;"""
+
+SQLT_CLINICI = """INSERT INTO clinic_users 
+(user_id, clinic_id)
+VALUES (?, ?);"""
+
 
 def get_clist(fin = 'clinics.txt'):
     ins = open( fin, "r" )
@@ -69,11 +78,17 @@ if __name__ == "__main__":
     for c_id in clist:
         sout = "clinic_id: {0}".format(c_id)
         log.info(sout)
+        cur.execute(SQLT_CLINICF, (USER_ID, c_id, ))
+        rec = cur.fetchone()
+        if rec is None:
+            cur.execute(SQLT_CLINICI, (USER_ID, c_id, ))
 
-        s_sql  = SQLT1.format(c_id)
-        cur.execute(s_sql)
+#        s_sql  = SQLT1.format(c_id)
+#        cur.execute(s_sql)
 
-        cur.execute(SQLT2,(USER_ID, ))
+#        cur.execute(SQLT2,(USER_ID, ))
+
+
 
     dbc.con.commit()
     dbc.close()
