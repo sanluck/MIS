@@ -116,9 +116,10 @@ class CARD_INV:
            or (self.inv_ds is None) or (self.vnz_inv_list is None): return doc
         doc.startNode("invalid")
         addNode(doc, "type", str(self.inv_type_code))
-        d1 = self.date_inv_first.strftime("%Y-%m-%d")
+        d = self.date_inv_first
+        d1 = "%04d-%02d-%02d" % (d.year, d.month, d.day)
         addNode(doc, "dateFirstDetected", d1)
-	d = self.date_inv_last
+        d = self.date_inv_last
         d2 = "%04d-%02d-%02d" % (d.year, d.month, d.day)
         addNode(doc, "dateLastConfirmed", d2)
         doc.startNode("illnesses")
