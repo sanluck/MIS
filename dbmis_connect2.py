@@ -158,8 +158,7 @@ class DBMIS:
         s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
         s_sql  = s_sqlt.format(mis_user, lpu_id)
         try:
-            pass
-#            self.cur.execute(s_sql)
+            self.cur.execute(s_sql)
         except:
             exctype, value = sys.exc_info()[:2]
             log.warn( 'DBMIS SP_USER_CHANGE_CLINIC Error: %s' % value.message )
