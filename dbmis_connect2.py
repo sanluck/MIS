@@ -15,7 +15,7 @@ from get_lan_ip import get_lan_ip
 HOST = 'fb2.ctmed.ru'
 DB = 'DBMIS'
 DB_USER = 'sysdba'
-DB_PWD = 'Gjkbrkbybrf'
+DB_PWD = 'Fbdbmis1'
 
 #DB_USER = 'clinic'
 #DB_PWD = 'Polyclinic'
