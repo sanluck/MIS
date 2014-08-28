@@ -151,6 +151,7 @@ class DBMIS:
         s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}','{2}')"
         s_sql  = s_sqlt.format(mis_user, mis_user_pwd, lan_ip)
         try:
+            self.con.begin()
             self.cur.execute(s_sql)
             self.con.commit()
         except Exception, e:
@@ -163,6 +164,7 @@ class DBMIS:
         s_sql  = s_sqlt.format(mis_user, lpu_id)
 #        s_sql = SET_CONTEXT_CLINIC % (lpu_id)
         try:
+            self.con.begin()
             self.cur.execute(s_sql)
             self.con.commit()
         except Exception, e:
