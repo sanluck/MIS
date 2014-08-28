@@ -31,6 +31,9 @@ MIS_USER_PWD = '885A4C90411054B6AAA3769BDC19DCBC' # k1a5ter
 
 SET_CONTEXT_SQL_TEMPLATE = """SELECT rdb$set_context('USER_SESSION', 'USER_ID', %d) AS C1, rdb$set_context('USER_SESSION', 'PASSWD', '%s') AS C2, rdb$set_context('USER_SESSION', 'CURRENT_ORG_1', %d) AS C3, current_user, current_role FROM rdb$database"""
 
+SET_CONTEXT_CLINIC = """SELECT rdb$set_context('USER_SESSION', 'CURRENT_ORG_1', %d) AS C3, current_user, current_role FROM rdb$database
+"""
+
 SQL_TEMPLATE_PEOPLE = """SELECT *
 FROM VW_PEOPLES WHERE
   PEOPLE_ID = {0}
@@ -155,8 +158,9 @@ class DBMIS:
             self.con.close()
             raise
 
-        s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
-        s_sql  = s_sqlt.format(mis_user, lpu_id)
+#        s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
+#        s_sql  = s_sqlt.format(mis_user, lpu_id)
+        s_sql = SET_CONTEXT_CLINIC % (lpu_id)
         try:
             self.cur.execute(s_sql)
         except:
