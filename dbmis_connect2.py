@@ -152,20 +152,22 @@ class DBMIS:
         s_sql  = s_sqlt.format(mis_user, mis_user_pwd, lan_ip)
         try:
             self.cur.execute(s_sql)
-        except:
+            self.con.commit()
+        except Exception, e:
             exctype, value = sys.exc_info()[:2]
-            log.warn( 'DBMIS SP_USER_AUTHENTICATION Error: %s' % value.message )
+            log.warn( 'DBMIS SP_USER_AUTHENTICATION Error: {0}'.format(e) )
             self.con.close()
             raise
 
-#        s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
-#        s_sql  = s_sqlt.format(mis_user, lpu_id)
-        s_sql = SET_CONTEXT_CLINIC % (lpu_id)
+        s_sqlt = "EXECUTE PROCEDURE SP_USER_CHANGE_CLINIC({0},{1})"
+        s_sql  = s_sqlt.format(mis_user, lpu_id)
+#        s_sql = SET_CONTEXT_CLINIC % (lpu_id)
         try:
             self.cur.execute(s_sql)
-        except:
+            self.con.commit()
+        except Exception, e:
             exctype, value = sys.exc_info()[:2]
-            log.warn( 'DBMIS SP_USER_CHANGE_CLINIC Error: %s' % value.message )
+            log.warn( 'DBMIS SP_USER_CHANGE_CLINIC Error: {0}'.format(e) )
             self.con.close()
             raise
 
