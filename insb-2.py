@@ -25,7 +25,7 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
+HOST = "fb.ctmed.ru"
 DB   = "DBMIS"
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
@@ -55,7 +55,7 @@ OCATO      = '01000'
 PRINT2     = False
 
 #DATE_RANGE = None
-DATE_RANGE = ['2014-07-01','2014-07-31']
+DATE_RANGE = ['2014-08-01','2014-08-31']
 PRINT_ALL  = True # include all patients into MO files
 
 def get_clist(db):
