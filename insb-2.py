@@ -363,7 +363,7 @@ AND ap.date_end is Null;"""
     results = cursor.fetchall()
 
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Patients has been selected {0}'.format(localtime))
+    log.info('Patients have been selected on {0}'.format(localtime))
 
     patient_list = get_patient_list(results)
 
