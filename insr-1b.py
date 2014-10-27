@@ -59,7 +59,7 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
 NO_ENP     = False # Do IBR only for patients without ENP
 #DATE_RANGE = None
-DATE_RANGE = ["2014-09-01","2014-09-30"] 
+DATE_RANGE = ["2014-10-01","2014-10-31"]
 
 REGISTER_DONE = True
 
@@ -78,7 +78,7 @@ WHERE id = %s;"""
 CLEAR_BEFORE_SELECT = True
 
 def write_to_dbmy(curm, p_id, clinic_id, s_now):
-    
+
     curm.execute(SQLT_FTP, (p_id, clinic_id, ))
     rec = curm.fetchone()
     if rec is None:
@@ -99,8 +99,8 @@ def write_to_dbmy(curm, p_id, clinic_id, s_now):
 def p1(patient, insorg):
     import datetime
     now = datetime.datetime.now()
-    s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)    
-    
+    s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)
+
     res = []
     res.append( u"{0}".format(patient.people_id) )
     res.append( u"{0}".format(patient.lname.strip().upper()) )
@@ -141,7 +141,7 @@ def p1(patient, insorg):
     else:
         SNILS = patient.insurance_certificate
     res.append(SNILS)
-    
+
     ogrn = insorg.ogrn
     if ogrn == None or ogrn == 0 or SKIP_OGRN:
         insorg_ogrn = u""
@@ -168,7 +168,7 @@ def p1(patient, insorg):
         s_min = u""
     else:
         s_min = u"{0}".format(sss)
-    
+
     enp = u""
     if len(s_mis) == 0:
         tdpfs = u"3" # Полис ОМС единого образца
@@ -178,44 +178,44 @@ def p1(patient, insorg):
         tdpfs = u"2" # Временное свидетельство, ....
     else:
         tdpfs = u"1" # Полис ОМС старого образца
-    
-    
+
+
     # ENP
     if SKIP_OGRN:
         if len(enp) > 0:
             s_min = enp
             enp = u""
-            
+
     res.append(enp)
-    
+
     res.append(tdpfs)
-    
+
     res.append(s_mis)
-    
+
     res.append(s_min)
-    
+
     # medical care start
     res.append(s_now)
     # medical care end
     res.append(s_now)
-    
+
     # MO  OGRN
     res.append(CLINIC_OGRN)
     # HEALTHCARE COST
     res.append(u"")
-    
+
     return u"|".join(res)
 
 def plist(dbc, fname, rows, clinic_id):
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
-    
-    import os    
+
+    import os
     import datetime
     import time
 
     now = datetime.datetime.now()
-    s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)    
+    s_now = "%04d-%02d-%02d" % (now.year, now.month, now.day)
     y_now = now.year
 
     dbmy = DBMY()
@@ -225,23 +225,23 @@ def plist(dbc, fname, rows, clinic_id):
         CLINIC_OGRN = u""
     else:
         CLINIC_OGRN = dbc.ogrn
-    
+
     cogrn = CLINIC_OGRN.encode('utf-8')
     cname = dbc.name.encode('utf-8')
     mcod  = dbc.mcod
-    
+
     if SKIP_OGRN: CLINIC_OGRN = u""
-    
+
     p_obj = PatientInfo()
     insorgs = InsorgInfoList()
 
     fo = open(fname, "wb")
-    
+
     ncount = 0
     ccount = 0
     noicc  = 0
     p_id_old = 0
-    n_pid_w_err = 0 
+    n_pid_w_err = 0
     for row in rows:
         ncount += 1
         p_id = row[0]
@@ -256,7 +256,7 @@ def plist(dbc, fname, rows, clinic_id):
         if ncount % STEP == 0:
             sout = " {0}/{1} people_id: {2} age: {3} agem: {4}".format(ccount, ncount, p_id, age, agem)
             log.info(sout)
-            
+
             insorg_id   = p_obj.insorg_id
             try:
                 insorg = insorgs[insorg_id]
@@ -264,7 +264,7 @@ def plist(dbc, fname, rows, clinic_id):
                 sout = "People_id: {0}. Have not got insorg_id: {1}".format(p_id, insorg_id)
                 log.debug(sout)
                 insorg = insorgs[0]
-                
+
             insorg_name = insorg.name.encode('utf-8')
             insorg_ogrn = insorg.ogrn
             sout = "insorg id: {0} name: {1} ogrn:{2}".format(insorg_id, insorg_name, insorg_ogrn)
@@ -273,10 +273,10 @@ def plist(dbc, fname, rows, clinic_id):
             log.debug(ps)
             # To make sure that you're data is written to disk
             # http://stackoverflow.com/questions/608316/is-there-commit-analog-in-python-for-writing-into-a-file
-    
+
             fo.flush()
             os.fsync(fo.fileno())
-            
+
         if ALL_PEOPLE or (age > 20 and agem == 0):
             ccount += 1
             insorg_id   = p_obj.insorg_id
@@ -292,8 +292,8 @@ def plist(dbc, fname, rows, clinic_id):
 	    if write_to_dbmy(curm, p_id, clinic_id, s_now):
 		fo.write(ps)
 	    else:
-		n_pid_w_err += 1 
-	    
+		n_pid_w_err += 1
+
 
     fo.flush()
     os.fsync(fo.fileno())
@@ -305,8 +305,8 @@ def plist(dbc, fname, rows, clinic_id):
     log.info( sout )
     sout = "{0} records have not been written".format(n_pid_w_err)
     log.info( sout )
-    
-    
+
+
 def pclinic(clinic_id, mcod):
     from dbmis_connect2 import DBMIS
     import time
@@ -326,9 +326,9 @@ def pclinic(clinic_id, mcod):
 
     cogrn = CLINIC_OGRN.encode('utf-8')
     cname = dbc.name.encode('utf-8')
-    
+
     if SKIP_OGRN: CLINIC_OGRN = u""
-    
+
     sout = "clinic_id: {0} clinic_name: {1} clinic_ogrn: {2} cod_mo: {3}".format(clinic_id, cname, cogrn, mcod)
     log.info(sout)
 
@@ -357,27 +357,27 @@ AND ap.date_end is Null;"""
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
     results = cursor.fetchall()
-    
+
     fname = FPATH + "/" + FNAME.format(mcod)
     sout = "Output to file: {0}".format(fname)
     log.info(sout)
-    
+
     plist(dbc, fname, results, clinic_id)
 
-    
+
     dbc.close()
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Insurance Belongings Request Finish  '+localtime)
 
 def get_clist():
-    
+
     dbmy = DBMY()
     curm = dbmy.con.cursor()
 
     ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE done is Null;"
     curm.execute(ssql)
     results = curm.fetchall()
-    
+
     clist = []
     for rec in results:
 	_id = rec[0]
@@ -385,15 +385,15 @@ def get_clist():
 	mcod = rec[2]
 	if (mcod is None) or (clinic_id is None): continue
 	clist.append([_id, clinic_id, mcod])
-	
+
     dbmy.close()
     return clist
 
 def get_1clinic_lock(id_unlock = None):
-    
+
     dbmy = DBMY()
     curm = dbmy.con.cursor()
-    
+
     if id_unlock is not None:
 	ssql = "UPDATE insr_list SET c_lock = Null WHERE id = %s;"
 	curm.execute(ssql, (id_unlock, ))
@@ -402,7 +402,7 @@ def get_1clinic_lock(id_unlock = None):
     ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE (done is Null) AND (c_lock is Null);"
     curm.execute(ssql)
     rec = curm.fetchone()
-    
+
     if rec is not None:
 	_id  = rec[0]
 	c_id = rec[1]
@@ -418,40 +418,40 @@ def get_1clinic_lock(id_unlock = None):
     return c_rec
 
 def register_done(_id):
-    import datetime    
+    import datetime
 
     dbmy = DBMY()
     curm = dbmy.con.cursor()
 
     dnow = datetime.datetime.now()
     sdnow = str(dnow)
-    
-    s_sqlt = """UPDATE insr_list 
+
+    s_sqlt = """UPDATE insr_list
     SET done = %s
     WHERE
     id = %s;"""
-    
+
     curm.execute(s_sqlt,(dnow, _id, ))
     dbmy.close()
-    
+
 def clear_tfoms_peoples(clinic_id):
 
     dbmy = DBMY()
     curm = dbmy.con.cursor()
-    
+
     s_sqlt = "DELETE FROM tfoms_peoples WHERE clinic_id = %s;"
     curm.execute(s_sqlt, (clinic_id, ))
-    
+
     dbmy.con.commit()
     dbmy.close()
-    
+
     log.info('-----------------------------------------------------------------------------------')
     sout = "All records for clinic_id = {0} have been deleted from the tfoms_peoples table".format(clinic_id)
     log.info(sout)
-    
+
 if __name__ == "__main__":
-    
-    import os    
+
+    import os
     import datetime
 
     c_rec  = get_1clinic_lock()
@@ -460,11 +460,11 @@ if __name__ == "__main__":
 	clinic_id = c_rec[1]
 	mcod = c_rec[2]
 	if CLEAR_BEFORE_SELECT: clear_tfoms_peoples(clinic_id)
-	
+
 	pclinic(clinic_id, mcod)
-	
+
 	if REGISTER_DONE: register_done(_id)
-	
+
 	c_rec  = get_1clinic_lock(_id)
-	
+
     sys.exit(0)
