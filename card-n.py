@@ -6,7 +6,12 @@
 
 import os
 import sys
+import ConfigParser
 import logging
+
+Config = ConfigParser.ConfigParser()
+PATH = os.path.dirname(sys.argv[0])
+FINI = PATH + "/" + "card-n.ini"
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
@@ -15,27 +20,51 @@ from dbmysql_connect import DBMY
 
 from card_1 import getCard
 
-HOST      = "fb2.ctmed.ru"
-DB        = "DBMIS"
-
 CLINIC_ID = 52
 
-D_START  = "2014-01-01"
-D_FINISH = "2014-12-31"
 REGISTER_DONE  = True
 REGISTER_CARDS = True
 
 STEP = 100
 
 FNAME = "PN{0}_{1}.xml"
-FPATH = "./PN"
+FPATH =  PATH + "/PN"
+
+SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
+
+SQLT_SNILS = """SELECT insurance_certificate, document_type_id_fk FROM peoples WHERE people_id = ?;"""
+
+SQLT_REGISTER_CARD = """INSERT INTO pn_cards_out (prof_exam_id, d_out) VALUES (%s, %s);"""
+
+if __name__ == "__main__":
+    LOG_FILENAME = '_cardn.out'
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console)
+
+log = logging.getLogger(__name__)
+
+from ConfigSection import ConfigSectionMap
+# read INI data
+Config.read(FINI)
+# [DBMIS]
+Config1 = ConfigSectionMap(Config, "DBMIS")
+HOST = Config1['host']
+DB = Config1['db']
+
+# [Cardn]
+Config2 = ConfigSectionMap(Config, "Cardn")
+D_START = Config2['d_start']
+D_FINISH = Config2['d_finish']
+INVALIDS = int(Config2['invalids'])
 
 # Выбирать:
 # 0 - всех
 # 1 - только инвалидов (inv = 1)
 # 2 - всех не инвалидов (inv <> 1)
-INVALIDS = 2
-
+# INVALIDS = 2
 
 if INVALIDS == 2:
     SQLT_CL = """SELECT
@@ -75,23 +104,6 @@ AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
 ORDER by date_begin;"""
-
-
-SQLT_RL = """SELECT * FROM prof_exam_results WHERE prof_exam_id_fk = ?;"""
-
-SQLT_SNILS = """SELECT insurance_certificate, document_type_id_fk FROM peoples WHERE people_id = ?;"""
-
-SQLT_REGISTER_CARD = """INSERT INTO pn_cards_out (prof_exam_id, d_out) VALUES (%s, %s);"""
-
-if __name__ == "__main__":
-    LOG_FILENAME = '_cardn.out'
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
-
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    logging.getLogger('').addHandler(console)
-
-log = logging.getLogger(__name__)
 
 def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH):
     cur  = dbc.con.cursor()
