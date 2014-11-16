@@ -149,6 +149,10 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
 
     docTXT += "<recommendZOZH>Режим: Щадящий; питание: Рациональное; иммунопрофилактика: по возрасту</recommendZOZH>"
 
+    # reabilitation
+    asXML = card_invalid.reabilitationAsXML()
+    docTXT += asXML.asText()
+
     #docTXT += "<privivki><state>1</state></privivki>"
     card_priv = CARD_PRIV()
     card_priv.initFromDB(dbc, card_id)

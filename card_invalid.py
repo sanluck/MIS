@@ -10,6 +10,10 @@
 #                      DATE_INV_LAST - Дата последнего освидетельствования
 #                      ZAB_INV_LIST - Заболевания, обусловившее инвалидность
 #                      VNZ_INV_LIST - Виды нарушения здоровья
+#                      INV_CUR_EXAM - Инвалидность установлена по результатам проф.осмотра
+#                      INV_NEEDED - Требуется реабилитация инвалидности
+#                      INV_DONE - Выполнена реабилитация инвалидности
+#                      DATE_INV_DONE - Дата реабилитация инвалидности
 #
 
 import sys
@@ -19,11 +23,12 @@ from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 124
-PROF_EXAM_ID = 63029
+CLINIC_ID = 134
+PROF_EXAM_ID = 321942
 
 SQLT_INV = """SELECT
-inv_type_code, date_inv_first, date_inv_last, inv_ds, zab_inv_list, vnz_inv_list
+inv_type_code, date_inv_first, date_inv_last, inv_ds, zab_inv_list, vnz_inv_list,
+inv_cur_exam, inv_needed, inv_done, date_inv_done, date_end
 FROM prof_exam_minor
 WHERE prof_exam_id = ?;"""
 
@@ -93,6 +98,11 @@ class CARD_INV:
         self.inv_ds         = None
         self.zab_inv_list   = None
         self.vnz_inv_list   = None
+        self.inv_cur_exam   = None
+        self.inv_needed     = None
+        self.inv_done       = None
+        self.date_inv_done  = None
+        self.date_end       = None
 
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -108,6 +118,11 @@ class CARD_INV:
             self.inv_ds         = rec[3]
             self.zab_inv_list   = rec[4]
             self.vnz_inv_list   = rec[5]
+            self.inv_cur_exam   = rec[6]
+            self.inv_needed     = rec[7]
+            self.inv_done       = rec[8]
+            self.date_inv_done  = rec[9]
+            self.date_end       = rec[10]
 
     def asXML(self):
         doc = SimpleXmlConstructor()
@@ -135,6 +150,24 @@ class CARD_INV:
 
         return doc
 
+    def reabilitationAsXML(self):
+	doc = SimpleXmlConstructor()
+	if self.date_inv_done is None:
+	    return doc
+	
+	doc.startNode("reabilitation")
+	dd = self.date_inv_done
+	date_inv_done = "%04d-%02d-%02d" % (dd.year, dd.month, dd.day) 
+	addNode(doc, "date", date_inv_done)
+	if self.inv_done in (1,2,3,4):
+	    inv_done = str(self.inv_done)
+	else:
+	    inv_done = 4
+	addNode(doc, "state", inv_done)
+	doc.endNode() # reabilitation
+
+	return doc
+
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
 
@@ -160,6 +193,13 @@ if __name__ == "__main__":
 
     sout = "card_id: {0}".format(card_id)
     asXML = card_invalid.asXML()
+    xmltxt = asXML.asText()
+    sout = "Text len: {0}".format(len(xmltxt))
+    log.info(sout)
+    log.info(xmltxt)
+    
+    log.info("reabilitation:")
+    asXML = card_invalid.reabilitationAsXML()
     xmltxt = asXML.asText()
     sout = "Text len: {0}".format(len(xmltxt))
     log.info(sout)
