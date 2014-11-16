@@ -16,6 +16,7 @@ from child import CHILD
 from card import CARD
 from card_diag_b import CARD_DIAG_B_ARR
 from card_diag_b import CARD_DIAG_A_ARR
+from card_vaccination import CARD_PRIV
 from card_invalid import CARD_INV
 from card_results import CARD_RESULTS
 from card import getDoctor
@@ -148,7 +149,11 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
 
     docTXT += "<recommendZOZH>Режим: Щадящий; питание: Рациональное; иммунопрофилактика: по возрасту</recommendZOZH>"
 
-    docTXT += "<privivki><state>1</state></privivki>"
+    #docTXT += "<privivki><state>1</state></privivki>"
+    card_priv = CARD_PRIV()
+    card_priv.initFromDB(dbc, card_id)
+    asXML = card_priv.asXML()
+    docTXT += asXML.asText()    
 
     omsXML = getOplata(dbc, card_id)
     docTXT += omsXML.asText()
