@@ -24,9 +24,9 @@ from card import getDoctor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 124
-PROF_EXAM_ID = 63029
-PEOPLE_ID = 965192
+CLINIC_ID = 268
+PROF_EXAM_ID = 676821
+PEOPLE_ID = 3532812
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
