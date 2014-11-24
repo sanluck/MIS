@@ -27,7 +27,7 @@ DOC_TYPES = {1:u"1",
 SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ASSIGN_ATT = True
-ADATE_ATT  = '20141001'
+ADATE_ATT  = '20141101'
 
 STEP = 1000
 log = logging.getLogger(__name__)
