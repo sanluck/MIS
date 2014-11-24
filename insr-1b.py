@@ -29,7 +29,7 @@ DB   = "DBMIS"
 
 CLINIC_OGRN = u""
 
-FNAME = "SM{0}T22_14111.csv"
+FNAME = "SM{0}T22_14112.csv"
 FPATH = "./SM"
 
 STEP = 1000
