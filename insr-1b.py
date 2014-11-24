@@ -29,7 +29,7 @@ DB   = "DBMIS"
 
 CLINIC_OGRN = u""
 
-FNAME = "SM{0}T22_14111.csv"
+FNAME = "SM{0}T22_14112.csv"
 FPATH = "./SM"
 
 STEP = 1000
@@ -59,7 +59,7 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
 NO_ENP     = False # Do IBR only for patients without ENP
 #DATE_RANGE = None
-DATE_RANGE = ["2014-06-01","2014-10-31"]
+DATE_RANGE = ["2014-11-01","2014-11-30"]
 
 REGISTER_DONE = True
 

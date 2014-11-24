@@ -12,8 +12,8 @@ from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 200
-PROF_EXAM_ID = 346
+CLINIC_ID = 226
+PROF_EXAM_ID = 572627
 
 SQLT_D1 = """SELECT
 diag_id, dn, ln1, ul1, mo1, lv1,
@@ -274,7 +274,7 @@ class CARD_DIAG_A_ARR:
 	    if ln4 == 1:
 		doc.startNode("reabil")
 		ul4 = diag_a.ul4
-		if ul4 is None: ul4 = 3
+		if (ul4 is None) or (ul4 > 3): ul4 = 3
 		addNode(doc, "condition", str(ul4))
 		mo4 = diag_a.mo4
 		if mo4 is None: mo4 = 2
