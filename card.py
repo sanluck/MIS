@@ -199,9 +199,9 @@ class CARD:
         do = self.dateOfObsled
         dateOfObsled = "%04d-%02d-%02d" % (do.year, do.month, do.day)
         addNode(doc, "dateOfObsled", dateOfObsled)
-	mage = self.mage
-	if mage is not None:
-	    addNode(doc, "ageObsled", str(mage))
+        mage = self.mage
+        if mage is not None:
+            addNode(doc, "ageObsled", str(mage))
 
         addNode(doc, "idType", self.idType)
 
@@ -214,15 +214,15 @@ class CARD:
             weight = 0
         addNode(doc, "weight", str(weight)+".000")
 
-	headSize = self.head_circ
-	if headSize is None: headSize = 0
+        headSize = self.head_circ
+        if headSize is None: headSize = 0
 
-	age = self.age
-	# mage 60 = 5*12 (5 years)
+        age = self.age
+        # mage 60 = 5*12 (5 years)
         if (mage is not None) and (mage < 60):
-	    addNode(doc, "headSize", str(headSize))
-	elif (headSize > 0):
-	    addNode(doc, "headSize", str(headSize))
+            addNode(doc, "headSize", str(headSize))
+        elif (headSize > 0):
+            addNode(doc, "headSize", str(headSize))
 
         nfr_code = self.nfr_code
         if (nfr_code is not None) and nfr_code > 0:
@@ -231,43 +231,43 @@ class CARD:
             doc.endNode()
 
         if mage is not None:
-	    if (mage < 60):
-		doc.startNode("pshycDevelopment")
-		p_pf = self.p_pf
-		if p_pf is None: p_pf = 0
-		addNode(doc, "poznav", str(p_pf))
-		p_mf = self.p_mf
-		if p_mf is None: p_mf = 0
-		addNode(doc, "motor", str(p_mf))
-		p_ecf = self.p_ecf
-		if p_ecf is None: p_ecf = 0
-		addNode(doc, "emot", str(p_ecf))
-		p_rr = self.p_rr
-		if p_rr is None: p_rr = 0
-		addNode(doc, "rech", str(p_rr))
-		doc.endNode() # pshycDevelopment
-	    if (mage >= 60):
-		doc.startNode("pshycState")
-		p_ps_code = self.p_ps_code
-		if p_ps_code is None:
-		    p_ps_code = 1
-		else:
-		    p_ps_code -= 1
-		addNode(doc, "psihmot", str(p_ps_code))
-		p_i_code = self.p_i_code
-		if p_i_code is None:
-		    p_i_code = 1
-		else:
-		    p_i_code -= 1
-		addNode(doc, "intel", str(p_i_code))
-		p_evs_code = self.p_evs_code
-		if p_evs_code is None:
-		    p_evs_code = 1
-		else:
-		    p_evs_code -= 1
-		addNode(doc, "emotveg", str(p_evs_code))
-		doc.endNode() # pshycState
-	elif (self.p_pf is not None) and (self.p_pf > 0):
+            if (mage < 60):
+                doc.startNode("pshycDevelopment")
+                p_pf = self.p_pf
+                if p_pf is None: p_pf = 0
+                addNode(doc, "poznav", str(p_pf))
+                p_mf = self.p_mf
+                if p_mf is None: p_mf = 0
+                addNode(doc, "motor", str(p_mf))
+                p_ecf = self.p_ecf
+                if p_ecf is None: p_ecf = 0
+                addNode(doc, "emot", str(p_ecf))
+                p_rr = self.p_rr
+                if p_rr is None: p_rr = 0
+                addNode(doc, "rech", str(p_rr))
+                doc.endNode() # pshycDevelopment
+            if (mage >= 60):
+                doc.startNode("pshycState")
+                p_ps_code = self.p_ps_code
+                if p_ps_code is None:
+                    p_ps_code = 1
+                else:
+                    p_ps_code -= 1
+                addNode(doc, "psihmot", str(p_ps_code))
+                p_i_code = self.p_i_code
+                if p_i_code is None:
+                    p_i_code = 1
+                else:
+                    p_i_code -= 1
+                addNode(doc, "intel", str(p_i_code))
+                p_evs_code = self.p_evs_code
+                if p_evs_code is None:
+                    p_evs_code = 1
+                else:
+                    p_evs_code -= 1
+                addNode(doc, "emotveg", str(p_evs_code))
+                doc.endNode() # pshycState
+        elif (self.p_pf is not None) and (self.p_pf > 0):
             doc.startNode("pshycDevelopment")
             addNode(doc, "poznav", str(self.p_pf))
             p_mf = self.p_mf
@@ -276,24 +276,24 @@ class CARD:
             p_ecf = self.p_ecf
             if p_ecf is None: p_ecf = 0
             addNode(doc, "emot", str(p_ecf))
-	    p_rr = self.p_rr
-	    if p_rr is None: p_rr = 0
+            p_rr = self.p_rr
+            if p_rr is None: p_rr = 0
             addNode(doc, "rech", str(p_rr))
             doc.endNode() # pshycDevelopment
-	elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
+        elif (self.p_ps_code is not None) and (self.p_ps_code > 0):
             doc.startNode("pshycState")
             addNode(doc, "psihmot", str(self.p_ps_code-1))
             p_i_code = self.p_i_code
             if p_i_code is None:
-		p_i_code = 1
-	    else:
-		p_i_code -= 1
+                p_i_code = 1
+            else:
+                p_i_code -= 1
             addNode(doc, "intel", str(p_i_code))
             p_evs_code = self.p_evs_code
             if p_evs_code is None:
-		p_evs_code = 1
-	    else:
-		p_evs_code -= 1
+                p_evs_code = 1
+            else:
+                p_evs_code -= 1
             addNode(doc, "emotveg", str(p_evs_code))
             doc.endNode() # pshycState
 
@@ -333,7 +333,7 @@ class CARD:
             if f_me > 3: f_me = 3
             addNode(doc, "Me", str(f_me))
             doc.endNode() # sexFormulaFemale
-	    sex_f_printed = True
+            sex_f_printed = True
 
             mens1_code = self.mens1_code
             if (f_me > 0) and (mens1_code is not None) and (mens1_code > 0):
@@ -341,54 +341,54 @@ class CARD:
                 addNode(doc, "menarhe", "150") # ???
                 doc.startNode("characters")
                 if mens1_code is None:
-		    mens1_code = 1
-		elif mens1_code not in (1,2):
-		    mens1_code = 1
+                    mens1_code = 1
+                elif mens1_code not in (1,2):
+                    mens1_code = 1
                 addNode(doc, "char", str(mens1_code))
                 mens2_code = self.mens2_code
                 if mens2_code is None:
-		    mens2_code = 5
-		else:
-		    mens2_code += 2
-		    if mens2_code not in (3,4,5):
-			mens2_code = 5
-		    elif mens2_code == 4:
-			mens2_code = 5
-		    elif mens2_code == 5:
-			mens2_code = 4
+                    mens2_code = 5
+                else:
+                    mens2_code += 2
+                    if mens2_code not in (3,4,5):
+                        mens2_code = 5
+                    elif mens2_code == 4:
+                        mens2_code = 5
+                    elif mens2_code == 5:
+                        mens2_code = 4
                 addNode(doc, "char", str(mens2_code))
                 mens3_code = self.mens3_code
                 if mens3_code is None:
-		    mens3_code = 7
-		else:
-		    mens3_code += 5
-		    if mens3_code not in (6,7): mens2_code = 7
+                    mens3_code = 7
+                else:
+                    mens3_code += 5
+                    if mens3_code not in (6,7): mens2_code = 7
                 addNode(doc, "char", str(mens3_code))
                 doc.endNode() # characters
                 doc.endNode() # menses
         if (not sex_f_printed) and (mage is not None) and (mage >= 120) and (self.sex is not None):
-	    if self.sex == u"М":
-		doc.startNode("sexFormulaMale")
-		addNode(doc, "P", "0")
-		addNode(doc, "Ax", "0")
-		addNode(doc, "Fa", "0")
-		doc.endNode() # sexFormulaMale
-	    else:
-		doc.startNode("sexFormulaFemale")
-		addNode(doc, "P", "0")
-		addNode(doc, "Ma", "0")
-		addNode(doc, "Ax", "0")
-		addNode(doc, "Me", "0")
-		doc.endNode() # sexFormulaFemale
+            if self.sex == u"М":
+                doc.startNode("sexFormulaMale")
+                addNode(doc, "P", "0")
+                addNode(doc, "Ax", "0")
+                addNode(doc, "Fa", "0")
+                doc.endNode() # sexFormulaMale
+            else:
+                doc.startNode("sexFormulaFemale")
+                addNode(doc, "P", "0")
+                addNode(doc, "Ma", "0")
+                addNode(doc, "Ax", "0")
+                addNode(doc, "Me", "0")
+                doc.endNode() # sexFormulaFemale
 
         b_hr_code = self.b_hr_code
         if b_hr_code not in (1,2,3,4,5): b_hr_code = 1
         addNode(doc, "healthGroupBefore", str(b_hr_code))
-	b_pg_code = self.b_pg_code
-	if b_pg_code == 5:
-	    b_pg_code = -1
-	elif b_pg_code not in (1,2,3,4):
-	    b_pg_code = 1
+        b_pg_code = self.b_pg_code
+        if b_pg_code == 5:
+            b_pg_code = -1
+        elif b_pg_code not in (1,2,3,4):
+            b_pg_code = 1
         addNode(doc, "fizkultGroupBefore", str(b_pg_code))
 
         return doc
