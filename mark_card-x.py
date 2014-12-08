@@ -81,7 +81,7 @@ WHERE people_id_fk = ?
 AND card_status = 1
 AND status_code = 2
 AND clinic_id_fk = ?
-AND date_end = ?;"""
+AND ((date_begin = ?) OR (date_end = ?));"""
 
 def get_fnames(path = PATH_IN, file_ext = '.xls'):
 # get file names
@@ -164,7 +164,7 @@ def mark_cards(clinic_id, c_arr, date_portal):
 
         for rec in results:
             people_id = rec[0]
-            ro_cur.execute(SQLT_FIND_CARD, (people_id, clinic_id, card_date, ))
+            ro_cur.execute(SQLT_FIND_CARD, (people_id, clinic_id, card_date, card_date, ))
             rcards = ro_cur.fetchall()
 	    if len(rcards) > 1:
 		ncards = len(rcards)
