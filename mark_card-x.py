@@ -78,8 +78,6 @@ AND upper(FNAME) starting '{1}';"""
 SQLT_FIND_CARD = """SELECT prof_exam_id, clinic_id_fk
 FROM prof_exam_minor
 WHERE people_id_fk = ?
-AND card_status = 1
-AND status_code = 2
 AND clinic_id_fk = ?
 AND ((date_begin = ?) OR (date_end = ?));"""
 
