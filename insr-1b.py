@@ -5,8 +5,10 @@
 #              по списку ЛПУ из DBMY (mis.insr_list)
 #
 
-import logging
+import os
 import sys, codecs
+import logging
+import ConfigParser
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
@@ -24,12 +26,27 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
+Config = ConfigParser.ConfigParser()
+PATH = os.path.dirname(sys.argv[0])
+FINI = PATH + "/" + "insr.ini"
+
+from ConfigSection import ConfigSectionMap
+# read INI data
+Config.read(FINI)
+# [DBMIS]
+Config1 = ConfigSectionMap(Config, "DBMIS")
+HOST = Config1['host']
+DB = Config1['db']
+
+# [Insr]
+Config2 = ConfigSectionMap(Config, "Insr")
+D_START = Config2['d_start']
+D_FINISH = Config2['d_finish']
+#FNAME = "SM{0}T22_14112.csv"
+FNAME = Config2['fname']
 
 CLINIC_OGRN = u""
 
-FNAME = "SM{0}T22_14112.csv"
 FPATH = "./SM"
 
 STEP = 1000
@@ -59,7 +76,8 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 
 NO_ENP     = False # Do IBR only for patients without ENP
 #DATE_RANGE = None
-DATE_RANGE = ["2014-11-01","2014-11-30"]
+#DATE_RANGE = ["2014-11-01","2014-11-30"]
+DATE_RANGE = [D_START,D_FINISH]
 
 REGISTER_DONE = True
 
