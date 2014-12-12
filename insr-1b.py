@@ -369,7 +369,7 @@ WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_beg >= '{1}' AND ap.date_beg <= '{2}'
 AND ap.date_end is Null;"""
 	s_sql = s_sqlt.format(clinic_id, d_start, d_finish)
-	sout = "date_beg: [{0}] - [{1}]".format(d_start, d_finish)
+	sout = "date_range: [{0}] - [{1}]".format(d_start, d_finish)
 	log.info(sout)
 
     cursor = dbc.con.cursor()
