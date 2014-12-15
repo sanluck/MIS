@@ -154,16 +154,16 @@ class CARD_INV:
 	doc = SimpleXmlConstructor()
 	if self.date_inv_done is None:
 	    return doc
-	
+
 	doc.startNode("reabilitation")
 	dd = self.date_inv_done
-	date_inv_done = "%04d-%02d-%02d" % (dd.year, dd.month, dd.day) 
+	date_inv_done = "%04d-%02d-%02d" % (dd.year, dd.month, dd.day)
 	addNode(doc, "date", date_inv_done)
 	if self.inv_done in (1,2,3,4):
 	    inv_done = str(self.inv_done)
 	else:
 	    inv_done = 4
-	addNode(doc, "state", inv_done)
+	addNode(doc, "state", str(inv_done))
 	doc.endNode() # reabilitation
 
 	return doc
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     sout = "Text len: {0}".format(len(xmltxt))
     log.info(sout)
     log.info(xmltxt)
-    
+
     log.info("reabilitation:")
     asXML = card_invalid.reabilitationAsXML()
     xmltxt = asXML.asText()
