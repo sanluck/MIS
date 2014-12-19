@@ -23,8 +23,8 @@ from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 268
-PROF_EXAM_ID = 692497
+CLINIC_ID = 288
+PROF_EXAM_ID = 478535
 
 SQLT_INV = """SELECT
 inv_type_code, date_inv_first, date_inv_last, inv_ds, zab_inv_list, vnz_inv_list,
@@ -59,7 +59,7 @@ INV_GROUP[22] = ['J45','J45']
 INV_GROUP[21] = ['J00','J99']
 INV_GROUP[20] = ['I00','I99']
 INV_GROUP[19] = ['H60','H95']
-INV_GROUP[18] = ['H60','H59']
+INV_GROUP[18] = ['H00','H59']
 INV_GROUP[17] = ['G80','G83']
 INV_GROUP[16] = ['G00','G99']
 INV_GROUP[15] = ['F70','F79']
