@@ -27,7 +27,8 @@ DOC_TYPES = {1:u"1",
 SKIP_OGRN  = True # Do not put OGRN into IBR
 
 ASSIGN_ATT = True
-ADATE_ATT  = '20141201'
+
+ADATE_ATT  = '20141101'
 
 STEP = 1000
 log = logging.getLogger(__name__)
@@ -701,7 +702,7 @@ def p2join(ar_in):
                 str_r += u'"' + sss + u'"'
     return str_r
 
-def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
+def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_ATT):
 # new format
     import datetime
     import re
@@ -837,7 +838,7 @@ def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None):
 
     # 17
     if ASSIGN_ATT:
-        res.append(ADATE_ATT)
+        res.append(adate_att)
     elif DATE_ATT is None:
         res.append(None)
     else:

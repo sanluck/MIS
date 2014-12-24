@@ -6,8 +6,10 @@
 #             использовать ENP, серию и номер пролисов ОМС из ответов ТФОМС
 #
 
-import logging
+import os
 import sys, codecs
+import ConfigParser
+import logging
 
 from dbmysql_connect import DBMY
 
@@ -25,8 +27,26 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
+Config = ConfigParser.ConfigParser()
+PATH = os.path.dirname(sys.argv[0])
+FINI = PATH + "/" + "insr.ini"
+
+from ConfigSection import ConfigSectionMap
+# read INI data
+Config.read(FINI)
+# [DBMIS]
+Config1 = ConfigSectionMap(Config, "DBMIS")
+HOST = Config1['host']
+DB = Config1['db']
+
+# [Insr]
+Config2 = ConfigSectionMap(Config, "Insr")
+D_START = Config2['d_start']
+D_FINISH = Config2['d_finish']
+
+# [Insb]
+Config2 = ConfigSectionMap(Config, "Insb")
+ADATE_ATT = Config2['adate_att']
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
 clist = [220011, 220001, 220014]
@@ -55,7 +75,8 @@ OCATO      = '01000'
 PRINT2     = False
 
 #DATE_RANGE = None
-DATE_RANGE = ['2014-12-01','2014-12-31']
+#DATE_RANGE = ['2014-12-01','2014-12-31']
+DATE_RANGE = [D_START,D_FINISH]
 PRINT_ALL  = True # include all patients into MO files
 
 def get_clist(db):
@@ -72,8 +93,8 @@ def get_clist(db):
     ar = []
 
     for rec in result:
-	mcod = rec[0]
-	ar.append(mcod)
+        mcod = rec[0]
+        ar.append(mcod)
 
     return ar
 
@@ -84,13 +105,13 @@ def register_cdone(db, clinic_id):
     sdnow = str(dnow)
 
     if MLIST:
-	s_sql = """UPDATE mlist
-	SET done = %s
-	WHERE clinic_id = %s;"""
+        s_sql = """UPDATE mlist
+        SET done = %s
+        WHERE clinic_id = %s;"""
     else:
-	s_sql = """UPDATE insr_list
-	SET done = %s
-	WHERE clinic_id = %s;"""
+        s_sql = """UPDATE insr_list
+        SET done = %s
+        WHERE clinic_id = %s;"""
 
 
     cur = db.con.cursor()
@@ -163,112 +184,112 @@ ORDER BY ap.date_beg DESC;"""
     p_ids    = []
     for p_obj in patient_list:
 
-	p_id = p_obj.people_id
+        p_id = p_obj.people_id
 
-	count += 1
+        count += 1
 
-	insorg_id   = p_obj.insorg_id
-	try:
-	    insorg = insorgs[insorg_id]
-	except:
-	    sout = "People_id: {0}. Have not got insorg_id: {1}".format(p_id, insorg_id)
-	    log.debug(sout)
-	    insorg = insorgs[0]
-	    noicc += 1
+        insorg_id   = p_obj.insorg_id
+        try:
+            insorg = insorgs[insorg_id]
+        except:
+            sout = "People_id: {0}. Have not got insorg_id: {1}".format(p_id, insorg_id)
+            log.debug(sout)
+            insorg = insorgs[0]
+            noicc += 1
 
-	if count % STEP == 0:
-	    sout = " {0} people_id: {1}".format(count, p_id)
-	    log.info(sout)
+        if count % STEP == 0:
+            sout = " {0} people_id: {1}".format(count, p_id)
+            log.info(sout)
 
-	curr.execute(s_sqlf,(p_id,))
-	rec = curr.fetchone()
-	if rec is None:
-	    count_a += 1
-	    if (p_obj.medical_insurance_series is None) and \
-	       (p_obj.medical_insurance_number is not None) and \
-	       (len(p_obj.medical_insurance_number) == 16):
+        curr.execute(s_sqlf,(p_id,))
+        rec = curr.fetchone()
+        if rec is None:
+            count_a += 1
+            if (p_obj.medical_insurance_series is None) and \
+               (p_obj.medical_insurance_number is not None) and \
+               (len(p_obj.medical_insurance_number) == 16):
 		p_obj.enp = p_obj.medical_insurance_number
 
-	    sss = p1(p_obj, insorg) + "|\n"
-	    ps = sss.encode('windows-1251')
+            sss = p1(p_obj, insorg) + "|\n"
+            ps = sss.encode('windows-1251')
 
-	    foa.write(ps)
+            foa.write(ps)
 
-	    foa.flush()
-	    os.fsync(foa.fileno())
+            foa.flush()
+            os.fsync(foa.fileno())
 
-	    f_oms_series = p_obj.medical_insurance_series
-	    f_oms_number = p_obj.medical_insurance_number
-	    f_enp        = p_obj.enp
-	    f_mcod       = mcod
-	    f_ocato      = OCATO
-	    if f_enp is None: continue
-	else:
-	    f_oms_series = rec[0]
-	    f_oms_number = rec[1]
-	    f_enp        = rec[2]
-	    f_mcod       = rec[3]
-	    f_ocato      = rec[4]
+            f_oms_series = p_obj.medical_insurance_series
+            f_oms_number = p_obj.medical_insurance_number
+            f_enp        = p_obj.enp
+            f_mcod       = mcod
+            f_ocato      = OCATO
+            if f_enp is None: continue
+        else:
+            f_oms_series = rec[0]
+            f_oms_number = rec[1]
+            f_enp        = rec[2]
+            f_mcod       = rec[3]
+            f_ocato      = rec[4]
 
-	    p_obj.enp = f_enp
-	    p_obj.medical_insurance_series = f_oms_series
-	    p_obj.medical_insurance_number = f_oms_number
+            p_obj.enp = f_enp
+            p_obj.medical_insurance_series = f_oms_series
+            p_obj.medical_insurance_number = f_oms_number
 
-	    if mcod == f_mcod:
-		count_e += 1
-		if not PRINT_ALL: continue
-	    else:
-		count_b += 1
+            if mcod == f_mcod:
+                count_e += 1
+                if not PRINT_ALL: continue
+            else:
+                count_b += 1
 
-	cur.execute(s_sql_ap,(p_id, ))
-	recs_ap = cur.fetchall()
+        cur.execute(s_sql_ap,(p_id, ))
+        recs_ap = cur.fetchall()
 
-	l_print = False
-	if (len(recs_ap) == 1):
-	    if (f_ocato == OCATO):
-		date_beg = recs_ap[0][2]
-		sss = p2(p_obj, mcod, 2, date_beg) + "\r\n"
-		ps = sss.encode('windows-1251')
-		l_print = True
+        l_print = False
+        if (len(recs_ap) == 1):
+            if (f_ocato == OCATO):
+                date_beg = recs_ap[0][2]
+                sss = p2(p_obj, mcod, 2, date_beg, ADATE_ATT) + "\r\n"
+                ps = sss.encode('windows-1251')
+                l_print = True
 
-	else:
-	    count_m += 1
-	    for rec_ap in recs_ap:
-		area_people_id = rec_ap[0]
-		area_id_fk     = rec_ap[1]
-		date_beg       = rec_ap[2]
-		motive_attach  = rec_ap[3]
-		clinic_id_fk   = rec_ap[4]
-		if PRINT2:
-		    sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
-		    log.info( sout )
+        else:
+            count_m += 1
+            for rec_ap in recs_ap:
+                area_people_id = rec_ap[0]
+                area_id_fk     = rec_ap[1]
+                date_beg       = rec_ap[2]
+                motive_attach  = rec_ap[3]
+                clinic_id_fk   = rec_ap[4]
+                if PRINT2:
+                    sout = "people_id: {0} date_beg: {1} motive_attach: {2} clinic_id: {3}".format(p_id, date_beg, motive_attach, clinic_id_fk)
+                    log.info( sout )
 
-		ws_row += 1
-		ws.write(ws_row,0,p_id)
-		if date_beg is None:
-		    s_date_beg = u"None"
-		else:
-		    s_date_beg = u"%04d-%02d-%02d" % (date_beg.year, date_beg.month, date_beg.day)
-		ws.write(ws_row,1,s_date_beg)
-		ws.write(ws_row,2,motive_attach)
-		ws.write(ws_row,3,clinic_id_fk)
+                ws_row += 1
+                ws.write(ws_row,0,p_id)
+                if date_beg is None:
+                    s_date_beg = u"None"
+                else:
+                    s_date_beg = u"%04d-%02d-%02d" % (date_beg.year, date_beg.month, date_beg.day)
+                ws.write(ws_row,1,s_date_beg)
+                ws.write(ws_row,2,motive_attach)
+                ws.write(ws_row,3,clinic_id_fk)
 
-		if motive_attach in (None, 3, 9):
-		    motive_attach = 2
+                if motive_attach in (None, 3, 9):
+                    motive_attach = 2
 
-		if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
-		    sss = p2(p_obj, mcod, 2, date_beg) + "\r\n"
-		    ps = sss.encode('windows-1251')
-		    l_print = True
+                if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
+                    sss = p2(p_obj, mcod, 2, date_beg, ADATE_ATT) + "\r\n"
+                    ps = sss.encode('windows-1251')
+                    l_print = True
 
 
-	if l_print:
-	    fob.write(ps)
+        if l_print:
+            fob.write(ps)
 
-	    fob.flush()
-	    os.fsync(fob.fileno())
-	else:
-	    count_np += 1
+            fob.flush()
+            os.fsync(fob.fileno())
+        else:
+            count_np += 1
 
     foa.close()
     fob.close()
@@ -294,25 +315,25 @@ ORDER BY ap.date_beg DESC;"""
     curr.execute(s_sql,(clinic_id,))
     rec = curr.fetchone()
     if rec is None:
-	s_sql = """INSERT INTO iba
-	(clinic_id, mcod, done, count, count_e, count_a, count_m, count_np)
-	VALUES
-	(%s, %s, %s, %s, %s, %s, %s, %s);"""
-	curr.execute(s_sql,(clinic_id, mcod, sdnow, count, count_e, count_a, count_m, count_np, ))
-	dbmy.con.commit()
+        s_sql = """INSERT INTO iba
+        (clinic_id, mcod, done, count, count_e, count_a, count_m, count_np)
+        VALUES
+        (%s, %s, %s, %s, %s, %s, %s, %s);"""
+        curr.execute(s_sql,(clinic_id, mcod, sdnow, count, count_e, count_a, count_m, count_np, ))
+        dbmy.con.commit()
     else:
-	_id = rec[0]
-	s_sql = """UPDATE iba
-	SET
-	done = %s,
-	count = %s,
-	count_e = %s,
-	count_a = %s,
-	count_m = %s,
-	count_np  = %s
-	WHERE id = %s;"""
-	curr.execute(s_sql,(sdnow, count, count_e, count_a, count_m, count_np, _id, ))
-	dbmy.con.commit()
+        _id = rec[0]
+        s_sql = """UPDATE iba
+        SET
+        done = %s,
+        count = %s,
+        count_e = %s,
+        count_a = %s,
+        count_m = %s,
+        count_np  = %s
+        WHERE id = %s;"""
+        curr.execute(s_sql,(sdnow, count, count_e, count_a, count_m, count_np, _id, ))
+        dbmy.con.commit()
 
     dbmy.close()
 
@@ -338,17 +359,17 @@ def pclinic(clinic_id, mcod):
     log.info(sout)
 
     if DATE_RANGE is None:
-	s_sqlt = """SELECT * FROM vw_peoples p
+        s_sqlt = """SELECT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
-	s_sql = s_sqlt.format(clinic_id)
+        s_sql = s_sqlt.format(clinic_id)
     else:
-	D1 = DATE_RANGE[0]
-	D2 = DATE_RANGE[1]
-	s_sqlt = """SELECT * FROM vw_peoples p
+        D1 = DATE_RANGE[0]
+        D2 = DATE_RANGE[1]
+        s_sqlt = """SELECT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
@@ -356,7 +377,13 @@ WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_beg >= '{1}'
 AND ap.date_beg <= '{2}'
 AND ap.date_end is Null;"""
-	s_sql = s_sqlt.format(clinic_id, D1, D2)
+        s_sql = s_sqlt.format(clinic_id, D1, D2)
+        sout = "date_range: [{0}] - [{1}]".format(D1, D2)
+        log.info(sout)
+
+
+    sout = "ADATE_ATT: {0}".format(ADATE_ATT)
+    log.info(sout)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
@@ -385,24 +412,24 @@ def get_1clinic_lock(id_unlock = None):
     curm = dbmy.con.cursor()
 
     if id_unlock is not None:
-	ssql = "UPDATE insr_list SET done = %s, c_lock = Null WHERE id = %s;"
-	curm.execute(ssql, (dnow, id_unlock, ))
-	dbmy.con.commit()
+        ssql = "UPDATE insr_list SET done = %s, c_lock = Null WHERE id = %s;"
+        curm.execute(ssql, (dnow, id_unlock, ))
+        dbmy.con.commit()
 
     ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE (done is Null) AND (c_lock is Null);"
     curm.execute(ssql)
     rec = curm.fetchone()
 
     if rec is not None:
-	_id  = rec[0]
+        _id  = rec[0]
 	c_id = rec[1]
-	mcod = rec[2]
-	c_rec = [_id, c_id, mcod]
-	ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
-	curm.execute(ssql, (_id, ))
-	dbmy.con.commit()
+        mcod = rec[2]
+        c_rec = [_id, c_id, mcod]
+        ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
+        curm.execute(ssql, (_id, ))
+        dbmy.con.commit()
     else:
-	c_rec = None
+        c_rec = None
 
     dbmy.close()
     return c_rec
@@ -418,52 +445,52 @@ if __name__ == "__main__":
     log.info( sout )
 
     if CID_LIST:
-	for clinic_id in cid_list:
-	    try:
-		mcod = modb.moCodeByMisId(clinic_id)
-		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
-		log.debug(sout)
-	    except:
-		sout = "Have not got clinic for clinic_id {0}".format(clinic_id)
-		log.warn(sout)
-		mcod = 0
-		continue
+        for clinic_id in cid_list:
+            try:
+                mcod = modb.moCodeByMisId(clinic_id)
+                sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
+                log.debug(sout)
+            except:
+                sout = "Have not got clinic for clinic_id {0}".format(clinic_id)
+                log.warn(sout)
+                mcod = 0
+                continue
 
-	    pclinic(clinic_id, mcod)
+            pclinic(clinic_id, mcod)
     elif ILIST:
-	c_rec  = get_1clinic_lock()
-	while c_rec is not None:
-	    _id = c_rec[0]
-	    clinic_id = c_rec[1]
-	    mcod = c_rec[2]
-	    sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
-	    log.debug(sout)
-	    if clinic_id is not None:
-		pclinic(clinic_id, mcod)
-	    c_rec  = get_1clinic_lock(_id)
+        c_rec  = get_1clinic_lock()
+        while c_rec is not None:
+            _id = c_rec[0]
+            clinic_id = c_rec[1]
+            mcod = c_rec[2]
+            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
+            log.debug(sout)
+            if clinic_id is not None:
+                pclinic(clinic_id, mcod)
+            c_rec  = get_1clinic_lock(_id)
     else:
-	if MLIST:
-	    dbmy = DBMY()
-	    clist = get_clist(dbmy)
-	    mcount = len(clist)
-	    sout = "Totally {0} MO to be processed".format(mcount)
-	    log.info( sout )
-	for mcod in clist:
-	    try:
-		mo = modb[mcod]
-		clinic_id = mo.mis_code
-		sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
-		log.debug(sout)
-	    except:
-		sout = "Have not got clinic for MO Code {0}".format(mcod)
-		log.warn(sout)
-		clinic_id = 0
-		continue
+        if MLIST:
+            dbmy = DBMY()
+            clist = get_clist(dbmy)
+            mcount = len(clist)
+            sout = "Totally {0} MO to be processed".format(mcount)
+            log.info( sout )
+        for mcod in clist:
+            try:
+                mo = modb[mcod]
+                clinic_id = mo.mis_code
+                sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
+                log.debug(sout)
+            except:
+                sout = "Have not got clinic for MO Code {0}".format(mcod)
+                log.warn(sout)
+                clinic_id = 0
+                continue
 
-	    pclinic(clinic_id, mcod)
-	    if MLIST:
-		register_cdone(dbmy, clinic_id)
+            pclinic(clinic_id, mcod)
+            if MLIST:
+                register_cdone(dbmy, clinic_id)
 
     if MLIST:
-	dbmy.close()
+        dbmy.close()
     sys.exit(0)
