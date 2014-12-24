@@ -28,8 +28,12 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 Config = ConfigParser.ConfigParser()
-PATH = os.path.dirname(sys.argv[0])
+#PATH = os.path.dirname(sys.argv[0])
+#PATH = os.path.realpath(__file__)
+PATH = os.getcwd()
 FINI = PATH + "/" + "insr.ini"
+
+log.info("INI File: {0}".format(FINI))
 
 from ConfigSection import ConfigSectionMap
 # read INI data
