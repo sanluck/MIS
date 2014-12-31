@@ -32,7 +32,7 @@ MODONE_PATH       = "./MODONE"
 
 UPDATE            = True
 
-CHECK_REGISTERED  = True
+CHECK_REGISTERED  = False
 REGISTER_FILE     = True
 MOVE_FILE         = True
 
