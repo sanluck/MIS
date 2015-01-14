@@ -103,7 +103,7 @@ prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
 AND request_portal = 1
-AND date_portal is not Null
+AND date_portal is Null
 AND date_end >= ?
 AND date_end <= ?
 ORDER by date_begin;"""
