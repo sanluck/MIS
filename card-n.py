@@ -58,15 +58,16 @@ DB = Config1['db']
 Config2 = ConfigSectionMap(Config, "Cardn")
 D_START = Config2['d_start']
 D_FINISH = Config2['d_finish']
-INVALIDS = int(Config2['invalids'])
+SELECT_MODE = int(Config2['select_mode'])
 
 # Выбирать:
 # 0 - всех
 # 1 - только инвалидов (inv = 1)
 # 2 - всех не инвалидов (inv <> 1)
-# INVALIDS = 2
+# 3 - отмеченных на выгрузку
+# SELECT_MODE = 2
 
-if INVALIDS == 2:
+if SELECT_MODE == 2:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
@@ -81,7 +82,7 @@ AND date_end <= ?
 AND date_begin is not Null
 AND inv <> 1
 ORDER by date_begin;"""
-elif INVALIDS == 1:
+elif SELECT_MODE == 1:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
@@ -95,6 +96,16 @@ AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
 AND inv = 1
+ORDER by date_begin;"""
+elif SELECT_MODE == 3:
+    SQLT_CL = """SELECT
+prof_exam_id, people_id_fk, date_begin
+FROM prof_exam_minor
+WHERE clinic_id_fk = ?
+AND request_portal = 1
+AND date_portal is Null
+AND date_end >= ?
+AND date_end <= ?
 ORDER by date_begin;"""
 else:
     SQLT_CL = """SELECT
