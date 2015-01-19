@@ -33,9 +33,10 @@ FROM tickets t
 WHERE t.clinic_id_fk = ?;"""
 
 MY_DB = "web2py_mis"
+MY_DBHOST = "127.0.0.1"
 
 SQLT_ILIST = """INSERT INTO cncl_clinics
-(clinic_id, mcod, name, cncl_count)
+(clinic_id, mcod, name, t_count)
 VALUES
 (%s, %s, %s, %s);"""
 
@@ -48,7 +49,7 @@ SET
 clinic_id = %s,
 mcod = %s,
 name = %s,
-cncl_count = %s
+t_count = %s
 WHERE id = %s;"""
 
 UPDATE = False
@@ -121,7 +122,7 @@ if __name__ == "__main__":
 
     cncl_list = get_cncl_list()
 
-    dbmy = DBMY(db = MY_DB)
+    dbmy = DBMY(host = MY_DBHOST, db = MY_DB)
     curr = dbmy.con.cursor()
     curm = dbmy.con.cursor()
 
