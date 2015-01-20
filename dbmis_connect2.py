@@ -13,7 +13,8 @@ from get_lan_ip import get_lan_ip
 
 
 HOST = 'fb2.ctmed.ru'
-DB = 'DBMIS'
+#DB = 'DBMIS'
+DB = 'DVN5'
 DB_USER = 'sysdba'
 DB_PWD = 'Fbdbmis1'
 

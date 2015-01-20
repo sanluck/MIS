@@ -36,7 +36,8 @@ MY_DBHOST = "127.0.0.1"
 
 SQLT_GLIST = """SELECT
 id, clinic_id, name, t_count
-FROM cncl_clinics;"""
+FROM cncl_clinics
+WHERE cncl_count is Null;"""
 
 SQLT_ILIST = """INSERT INTO cncl_clinics
 (clinic_id, mcod, name, t_count)
