@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# cnc_list2.py - для заполненного списка ЛПУ (cncl_clinics) в базе web2py_mis
+# cncl_list2.py - для заполненного списка ЛПУ (cncl_clinics) в базе web2py_mis
 #                выполняется расчет количества талонов,
 #                имеющих заполненные заключения
 #
@@ -24,15 +24,26 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
+D_START = "2014-11-01"
+D_END = "2014-11-30"
+
+CNCL_MAX = 10
+
+SQLT_TCOUNT = """SELECT count(t.ticket_id)
+FROM tickets t
+WHERE t.clinic_id_fk = ?
+AND t.visit_date BETWEEN ? AND ?;"""
+
 SQLT_CLIST = """SELECT t.ticket_id,
 c.ms_uid
 FROM tickets t
 LEFT JOIN conclusions c ON t.ticket_id = c.ticket_id_fk
 WHERE t.clinic_id_fk = ?
+AND t.visit_date BETWEEN ? AND ?
 AND c.ms_uid is not Null;"""
 
 MY_DB = "web2py_mis"
-MY_DBHOST = "127.0.0.1"
+MY_DBHOST = "ct216.ctmed.ru"
 
 SQLT_GLIST = """SELECT
 id, clinic_id, name, t_count
@@ -46,25 +57,37 @@ VALUES
 
 SQLT_ULIST = """UPDATE cncl_clinics
 SET
-cncl_count = %s
+cncl_count = %s,
+t_count  = %s,
+uid_count = %s
 WHERE id = %s;"""
 
 STEP = 1000
 
-def get_uid_list(clinic_id):
+def get_uid_list(clinic_id, d_start = D_START, d_end = D_END):
     import fdb
+    from datetime import datetime
     from dbmis_connect2 import DBMIS
+
+    d1 = datetime.strptime(d_start, '%Y-%m-%d')
+    d2 = datetime.strptime(d_end, '%Y-%m-%d')
+
+    c_arr = []
 
     dbc = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     cur = dbc.con.cursor()
 
     dbc.con.begin(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
 
-    cur.execute(SQLT_CLIST, (clinic_id, ))
+    cur.execute(SQLT_TCOUNT, (clinic_id, d1, d2, ))
+    rec = cur.fetchone()
+    dbc.con.commit()
+    if rec is None: return c_arr, 0
+    t_count = rec[0]
+
+    cur.execute(SQLT_CLIST, (clinic_id, d1, d2, ))
     results = cur.fetchall()
     dbc.con.commit()
-
-    c_arr = []
 
     for rec in results:
         ticket_id = rec[0]
@@ -73,7 +96,7 @@ def get_uid_list(clinic_id):
 
     dbc.close()
 
-    return c_arr
+    return c_arr, t_count
 
 
 if __name__ == "__main__":
@@ -108,12 +131,12 @@ if __name__ == "__main__":
         name = clinic[2].encode("utf-8")
         tcnt = clinic[3]
 
-        uid_list = get_uid_list(c_id)
+        uid_list, t_count = get_uid_list(c_id)
         l_uid = len(uid_list)
 
         localtime = time.asctime( time.localtime(time.time()) )
 
-        sout = "Start  cncl_count {0} : {1} {2} {3}".format(localtime, c_id, name, l_uid)
+        sout = "Start  cncl_count {0} : {1} {2} {3}/{4}".format(localtime, c_id, name, l_uid, t_count)
         log.info(sout)
 
         cncl_count = 0
@@ -126,7 +149,9 @@ if __name__ == "__main__":
             s2 = cncl[1]
             s3 = cncl[2]
 
-            if len(s3) > 0: cncl_count += 1
+            if (len(s3) > 2) or (len(s1) > 2) :
+                cncl_count += 1
+                if (CNCL_MAX > 0) and (cncl_count > CNCL_MAX): break
 
             i += 1
             if i % STEP == 0: print i, cncl_count, l_uid
@@ -134,7 +159,7 @@ if __name__ == "__main__":
         localtime = time.asctime( time.localtime(time.time()) )
         sout = "Finish cncl_count {0} : {1}".format(localtime, cncl_count)
         log.info(sout)
-        curm.execute(SQLT_ULIST,(cncl_count, _id, ))
+        curm.execute(SQLT_ULIST,(cncl_count, t_count, l_uid, _id, ))
         dbmy.con.commit()
 
     dbmy.close()
