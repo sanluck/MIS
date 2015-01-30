@@ -144,7 +144,8 @@ def getC_list(dbc, clinic_id = CLINIC_ID, d_start = D_START, d_finish = D_FINISH
         cur2.execute(SQLT_SNILS, (people_id, ))
         rec2 = cur2.fetchone()
         if rec2 is None: continue
-        if rec2[0] is None: continue
+        # if rec2[0] is None: continue
+        # skip cards without SNILS
         doc_type = rec2[1]
         if doc_type not in (3, 14): continue
         date_begin   = rec[2]
@@ -213,25 +214,25 @@ def do_card_n(clinic_id = CLINIC_ID):
             d_bg = ccc[2]
 
             docTXT = getCard(dbc, e_id, p_id)
-	    if len(docTXT) > 0:
-		fo.write(docTXT)
-		fo.flush()
-		os.fsync(fo.fileno())
-		nout += 1
-		if REGISTER_CARDS:
-		    dnow = datetime.datetime.now()
-		    sdnow = str(dnow)
-		    try:
-			curm_card.execute(SQLT_REGISTER_CARD, (e_id, sdnow, ))
-		    except:
-			pass
+            if len(docTXT) > 0:
+                fo.write(docTXT)
+                fo.flush()
+                os.fsync(fo.fileno())
+                nout += 1
+                if REGISTER_CARDS:
+                    dnow = datetime.datetime.now()
+                    sdnow = str(dnow)
+                    try:
+                        curm_card.execute(SQLT_REGISTER_CARD, (e_id, sdnow, ))
+                    except:
+                        pass
 
         sout = '</children>'
         fo.write(sout)
         fo.close()
         sout = "Output to file: {0} {1} cards".format(f_fname, nout)
         log.info(sout)
-	nout_all += nout
+        nout_all += nout
 
     dbc.close()
     dbmy.close()
@@ -247,24 +248,24 @@ def get_1clinic_lock(id_unlock = None):
     curm = dbmy.con.cursor()
 
     if id_unlock is not None:
-	ssql = "UPDATE pn_list SET c_lock = Null WHERE id = %s;"
-	curm.execute(ssql, (id_unlock, ))
-	dbmy.con.commit()
+        ssql = "UPDATE pn_list SET c_lock = Null WHERE id = %s;"
+        curm.execute(ssql, (id_unlock, ))
+        dbmy.con.commit()
 
     ssql = "SELECT id, clinic_id, mcod FROM pn_list WHERE (done is Null) AND (c_lock is Null);"
     curm.execute(ssql)
     rec = curm.fetchone()
 
     if rec is not None:
-	_id  = rec[0]
-	c_id = rec[1]
-	mcod = rec[2]
-	c_rec = [_id, c_id, mcod]
-	ssql = "UPDATE pn_list SET c_lock = 1 WHERE id = %s;"
-	curm.execute(ssql, (_id, ))
-	dbmy.con.commit()
+        _id  = rec[0]
+        c_id = rec[1]
+        mcod = rec[2]
+        c_rec = [_id, c_id, mcod]
+        ssql = "UPDATE pn_list SET c_lock = 1 WHERE id = %s;"
+        curm.execute(ssql, (_id, ))
+        dbmy.con.commit()
     else:
-	c_rec = None
+        c_rec = None
 
     dbmy.close()
     return c_rec
@@ -290,14 +291,14 @@ if __name__ == "__main__":
 
     c_rec  = get_1clinic_lock()
     while c_rec is not None:
-	_id = c_rec[0]
-	clinic_id = c_rec[1]
-	mcod = c_rec[2]
+        _id = c_rec[0]
+        clinic_id = c_rec[1]
+        mcod = c_rec[2]
 
-	nout_all = do_card_n(clinic_id)
+        nout_all = do_card_n(clinic_id)
 
-	if REGISTER_DONE: register_done(_id, nout_all)
+        if REGISTER_DONE: register_done(_id, nout_all)
 
-	c_rec  = get_1clinic_lock(_id)
+        c_rec  = get_1clinic_lock(_id)
 
     sys.exit(0)

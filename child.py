@@ -45,7 +45,7 @@ class ADDRESS:
     def __init__(self):
         self.kladrNP = None
 
-class CHILD:    
+class CHILD:
     def __init__(self):
         self.people_id = None
         self.lname = None
@@ -53,7 +53,7 @@ class CHILD:
         self.mname = None
         self.birthday = None
         self.sex = None
-        # XML tags 
+        # XML tags
         self.idCategory = None
         self.idDocument = None
         self.documentSer = None
@@ -66,7 +66,7 @@ class CHILD:
         self.medSanAddress = None
         self.address = None
         self.cards = None
-        
+
     def initFromDB(self, dbc, people_id):
         cur = dbc.con.cursor()
         cur.execute(SQLT_P1, (people_id, ))
@@ -99,7 +99,7 @@ class CHILD:
 
             self.polisSer = rec[9]
             self.polisNum = rec[10]
-            
+
             insorg_id = rec[11]
             if insorg_id is None:
                 self.idInsuranceCompany = SMO_ID0
@@ -108,10 +108,10 @@ class CHILD:
                     self.idInsuranceCompany = SMO_ID[insorg_id]
                 except:
                     self.idInsuranceCompany = SMO_ID0
-            
+
             addr_jure_town_code = rec[12]
             addr_jure_country_code = rec[13]
-            
+
             address = ADDRESS()
             if addr_jure_town_code is not None:
                 address.kladrNP = str(addr_jure_town_code)
@@ -120,13 +120,13 @@ class CHILD:
             else:
                 address.kladrNP = KLADR0
             self.address = address
-            
+
     def asXML(self):
-        doc = SimpleXmlConstructor()    
+        doc = SimpleXmlConstructor()
         idInternal = "{0}".format(self.people_id)
         addNode(doc, "idInternal", idInternal)
         addNode(doc, "idType", IDTYPE)
-        
+
         doc.startNode("name")
         lname = self.lname
         if lname is not None:
@@ -143,9 +143,9 @@ class CHILD:
         else:
             idSex = "2"
         addNode(doc, "idSex", idSex)
-        
+
         bd = self.birthday
-        dateOfBirth = "%04d-%02d-%02d" % (bd.year, bd.month, bd.day) 
+        dateOfBirth = "%04d-%02d-%02d" % (bd.year, bd.month, bd.day)
         addNode(doc, "dateOfBirth", dateOfBirth)
 
         addNode(doc, "idCategory", IDCATEGORY)
@@ -153,13 +153,12 @@ class CHILD:
         addNode(doc, "documentSer", self.documentSer)
         addNode(doc, "documentNum", self.documentNum)
         snils = self.snils
-        if snils is None:
-            snils = "000-000-000-00"
-        else:
+        if snils is not None:
+            # output sinls section only if we have got snils number
             sinls = snils.strip()
             snils = snils.replace(" ","-")
-        addNode(doc, "snils", snils)
-        
+            addNode(doc, "snils", snils)
+
         polisSer = self.polisSer
         if polisSer is not None:
             polisSer = polisSer.strip()
@@ -169,13 +168,13 @@ class CHILD:
         else:
             addNode(doc, "polisNum", self.polisNum.encode('utf-8'))
         addNode(doc, "idInsuranceCompany", self.idInsuranceCompany)
-        
+
         if self.medSanName is not None:
             addNode(doc, "medSanName", self.medSanName)
-        
+
         if self.medSanAddress is not None:
             addNode(doc, "medSanAddress", self.medSanAddress)
-        
+
         doc.startNode("address")
         if self.address is not None:
             address = self.address
@@ -194,7 +193,7 @@ class CHILD:
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
@@ -203,22 +202,21 @@ if __name__ == "__main__":
 
     cname = dbc.name.encode('utf-8')
     caddr = dbc.addr_jure.encode('utf-8')
-    
+
     sout = "clinic_id: {0} clinic_name: {1}".format(clinic_id, cname)
     log.info(sout)
     sout = "address: {0}".format(caddr)
     log.info(sout)
 
     child = CHILD()
-    
+
     people_id = PEOPLE_ID
-    
+
     child.initFromDB(dbc, people_id)
     child.medSanName = cname
     child.medSanAddress = caddr
-    
+
     sout = "people_id: {0}".format(people_id)
     log.info(sout)
     childXML = child.asXML()
     log.info(childXML.asText())
-    
