@@ -153,7 +153,7 @@ class CHILD:
         addNode(doc, "documentSer", self.documentSer)
         addNode(doc, "documentNum", self.documentNum)
         snils = self.snils
-        if snils is not None:
+        if (snils is not None) and (len(snils) >= 11) :
             # output sinls section only if we have got snils number
             sinls = snils.strip()
             snils = snils.replace(" ","-")

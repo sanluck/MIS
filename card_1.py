@@ -24,9 +24,12 @@ from card import getDoctor
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
 
-CLINIC_ID = 176
-PROF_EXAM_ID = 656976
-PEOPLE_ID = 3041529
+CLINIC_ID = 299
+#PROF_EXAM_ID = 680140
+#PEOPLE_ID = 1284875
+PROF_EXAM_ID = 421963
+PEOPLE_ID = 1392721
+
 
 FNAME = "PN{0}.xml"
 FPATH = "./PN"
@@ -157,7 +160,7 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card_priv = CARD_PRIV()
     card_priv.initFromDB(dbc, card_id)
     asXML = card_priv.asXML()
-    docTXT += asXML.asText()    
+    docTXT += asXML.asText()
 
     omsXML = getOplata(dbc, card_id)
     docTXT += omsXML.asText()
