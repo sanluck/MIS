@@ -65,6 +65,7 @@ SELECT_MODE = int(Config2['select_mode'])
 # 1 - только инвалидов (inv = 1)
 # 2 - всех не инвалидов (inv <> 1)
 # 3 - отмеченных на выгрузку
+# 4 - не проверять полноту заполнения карт
 # SELECT_MODE = 2
 
 if SELECT_MODE == 2:
@@ -72,6 +73,7 @@ if SELECT_MODE == 2:
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
+AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
@@ -87,6 +89,7 @@ elif SELECT_MODE == 1:
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
+AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
@@ -107,11 +110,26 @@ AND date_portal is Null
 AND date_end >= ?
 AND date_end <= ?
 ORDER by date_begin;"""
+elif SELECT_MODE == 4:
+    SQLT_CL = """SELECT
+prof_exam_id, people_id_fk, date_begin
+FROM prof_exam_minor
+WHERE clinic_id_fk = ?
+AND date_portal is Null
+AND date_end is not Null
+AND type_exam_code = 1
+AND status_code = 2
+AND category = 4
+AND date_end >= ?
+AND date_end <= ?
+AND date_begin is not Null
+ORDER by date_begin;"""
 else:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
 FROM prof_exam_minor
 WHERE clinic_id_fk = ?
+AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
