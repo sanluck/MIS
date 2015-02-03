@@ -65,7 +65,7 @@ SELECT_MODE = int(Config2['select_mode'])
 # 1 - только инвалидов (inv = 1)
 # 2 - всех не инвалидов (inv <> 1)
 # 3 - отмеченных на выгрузку
-# 4 - не проверять полноту заполнения карт
+# 4 - не проверять полноту заполнения карт, статус пациента
 # SELECT_MODE = 2
 
 if SELECT_MODE == 2:
@@ -118,7 +118,6 @@ WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
-AND status_code = 2
 AND category = 4
 AND date_end >= ?
 AND date_end <= ?
