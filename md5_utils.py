@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
 log = logging.getLogger(__name__)
 
-FNAME = "150420003.xml"
+FNAME = "15042001.xml"
 FPATH = "/home/gnv/MIS/LIS/exchange.1/"
 
 def md5_file(file_path):
