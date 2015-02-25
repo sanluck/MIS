@@ -101,19 +101,19 @@ def write_to_dbmy(curm, p_id, clinic_id, s_now):
     curm.execute(SQLT_FTP, (p_id, clinic_id, ))
     rec = curm.fetchone()
     if rec is None:
-	try:
-	    curm.execute(SQLT_INSTP, (p_id, clinic_id, s_now, ))
-	    return True
-	except:
-	    return False
+        try:
+            curm.execute(SQLT_INSTP, (p_id, clinic_id, s_now, ))
+            return True
+        except:
+            return False
     else:
-	enp = rec[1]
-	if (not NO_ENP) or (enp is None):
-	    _id = rec[0]
-	    curm.execute(SQLT_UPDTP, ( s_now, _id, ))
-	    return True
-	else:
-	    return False
+        enp = rec[1]
+        if (not NO_ENP) or (enp is None):
+            _id = rec[0]
+            curm.execute(SQLT_UPDTP, ( s_now, _id, ))
+            return True
+        else:
+            return False
 
 def p1(patient, insorg):
     import datetime
@@ -308,10 +308,10 @@ def plist(dbc, fname, rows, clinic_id):
                 noicc += 1
             sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
-	    if write_to_dbmy(curm, p_id, clinic_id, s_now):
-		fo.write(ps)
-	    else:
-		n_pid_w_err += 1
+            if write_to_dbmy(curm, p_id, clinic_id, s_now):
+                fo.write(ps)
+            else:
+                n_pid_w_err += 1
 
 
     fo.flush()
@@ -352,26 +352,26 @@ def pclinic(clinic_id, mcod):
     log.info(sout)
 
     if DATE_RANGE is None:
-	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+        s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
-	s_sql = s_sqlt.format(clinic_id)
+        s_sql = s_sqlt.format(clinic_id)
     else:
-	d_start  = DATE_RANGE[0]
-	d_finish = DATE_RANGE[1]
-	s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
+        d_start  = DATE_RANGE[0]
+        d_finish = DATE_RANGE[1]
+        s_sqlt = """SELECT DISTINCT * FROM vw_peoples p
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_beg >= '{1}' AND ap.date_beg <= '{2}'
 AND ap.date_end is Null;"""
-	s_sql = s_sqlt.format(clinic_id, d_start, d_finish)
-	sout = "date_range: [{0}] - [{1}]".format(d_start, d_finish)
-	log.info(sout)
+        s_sql = s_sqlt.format(clinic_id, d_start, d_finish)
+        sout = "date_range: [{0}] - [{1}]".format(d_start, d_finish)
+        log.info(sout)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
@@ -399,11 +399,11 @@ def get_clist():
 
     clist = []
     for rec in results:
-	_id = rec[0]
-	clinic_id = rec[1]
-	mcod = rec[2]
-	if (mcod is None) or (clinic_id is None): continue
-	clist.append([_id, clinic_id, mcod])
+        _id = rec[0]
+        clinic_id = rec[1]
+        mcod = rec[2]
+        if (mcod is None) or (clinic_id is None): continue
+        clist.append([_id, clinic_id, mcod])
 
     dbmy.close()
     return clist
@@ -414,24 +414,24 @@ def get_1clinic_lock(id_unlock = None):
     curm = dbmy.con.cursor()
 
     if id_unlock is not None:
-	ssql = "UPDATE insr_list SET c_lock = Null WHERE id = %s;"
-	curm.execute(ssql, (id_unlock, ))
-	dbmy.con.commit()
+        ssql = "UPDATE insr_list SET c_lock = Null WHERE id = %s;"
+        curm.execute(ssql, (id_unlock, ))
+        dbmy.con.commit()
 
     ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE (done is Null) AND (c_lock is Null);"
     curm.execute(ssql)
     rec = curm.fetchone()
 
     if rec is not None:
-	_id  = rec[0]
-	c_id = rec[1]
-	mcod = rec[2]
-	c_rec = [_id, c_id, mcod]
-	ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
-	curm.execute(ssql, (_id, ))
-	dbmy.con.commit()
+        _id  = rec[0]
+        c_id = rec[1]
+        mcod = rec[2]
+        c_rec = [_id, c_id, mcod]
+        ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
+        curm.execute(ssql, (_id, ))
+        dbmy.con.commit()
     else:
-	c_rec = None
+        c_rec = None
 
     dbmy.close()
     return c_rec
@@ -475,15 +475,15 @@ if __name__ == "__main__":
 
     c_rec  = get_1clinic_lock()
     while c_rec is not None:
-	_id = c_rec[0]
-	clinic_id = c_rec[1]
-	mcod = c_rec[2]
-	if CLEAR_BEFORE_SELECT: clear_tfoms_peoples(clinic_id)
+        _id = c_rec[0]
+        clinic_id = c_rec[1]
+        mcod = c_rec[2]
+        if CLEAR_BEFORE_SELECT: clear_tfoms_peoples(clinic_id)
 
-	pclinic(clinic_id, mcod)
+        pclinic(clinic_id, mcod)
 
-	if REGISTER_DONE: register_done(_id)
+        if REGISTER_DONE: register_done(_id)
 
-	c_rec  = get_1clinic_lock(_id)
+        c_rec  = get_1clinic_lock(_id)
 
     sys.exit(0)
