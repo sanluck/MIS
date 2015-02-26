@@ -67,17 +67,17 @@ def get_cards(fname):
     arr = []
 
     if root.tag != "children":
-	return arr
+        return arr
     
     for child in root:
-	if child.tag != "child": continue
-	idInternal = child.find("idInternal")
-	people_id = int(idInternal.text)
-	for card in child.iterfind("cards/card"):
-	    idInternal = card.find("idInternal")
-	    prof_exam_id = int(idInternal.text)
-	    arr.append([people_id, prof_exam_id])
-	    
+        if child.tag != "child": continue
+        idInternal = child.find("idInternal")
+        people_id = int(idInternal.text)
+        for card in child.iterfind("cards/card"):
+            idInternal = card.find("idInternal")
+            prof_exam_id = int(idInternal.text)
+            arr.append([people_id, prof_exam_id])
+            
     
     return arr
 
@@ -85,19 +85,19 @@ def mark_cards(c_arr, date_portal):
     from dbmis_connect2 import DBMIS
     
     try:
-	dbc = DBMIS(CLINIC_ID, mis_host = HOST, mis_db = DB)
-	cur = dbc.con.cursor()
+        dbc = DBMIS(CLINIC_ID, mis_host = HOST, mis_db = DB)
+        cur = dbc.con.cursor()
     except Exception, e:
-	sout = "Error connecting to {0}:{1} : {2}".format(HOST, DB, e)
-	log.error( sout )
-	return
+        sout = "Error connecting to {0}:{1} : {2}".format(HOST, DB, e)
+        log.error( sout )
+        return
     
     for card in c_arr:
-	people_id = card[0]
-	prof_exam_id = card[1]
-	cur.execute(SQLT_CARD_U, (date_portal, prof_exam_id, ))
-	dbc.con.commit()
-	
+        people_id = card[0]
+        prof_exam_id = card[1]
+        cur.execute(SQLT_CARD_U, (date_portal, prof_exam_id, ))
+        dbc.con.commit()
+        
     
     dbc.close()
 
@@ -122,21 +122,21 @@ if __name__ == "__main__":
     
     for fname in fnames:
 
-	f_fname = PATH_IN + "/" + fname
-	sout = "Input file: {0}".format(f_fname)
-	log.info(sout)
+        f_fname = PATH_IN + "/" + fname
+        sout = "Input file: {0}".format(f_fname)
+        log.info(sout)
     
-	ar = get_cards(f_fname)
-	l_ar = len(ar)
-	sout = "File has got {0} cards".format(l_ar)
-	log.info( sout )
+        ar = get_cards(f_fname)
+        l_ar = len(ar)
+        sout = "File has got {0} cards".format(l_ar)
+        log.info( sout )
 
-	destination = PATH_OUT + "/" + fname
-	
-	mark_cards(ar, date_portal)
+        destination = PATH_OUT + "/" + fname
+        
+        mark_cards(ar, date_portal)
 
-	shutil.move(f_fname, destination)
-	
+        shutil.move(f_fname, destination)
+        
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Registering PN Cards. Finish  '+localtime)  

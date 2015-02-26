@@ -79,12 +79,12 @@ def get_ds_main_list():
     
     curr_row = 0
     while curr_row <= num_rows:
-	# Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
-	c1_type = worksheet.cell_type(curr_row, 0)
-	if c1_type != 1: continue
-	ds = worksheet.cell_value(curr_row, 0)
-	arr.append(ds)
-	curr_row += 1
+        # Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
+        c1_type = worksheet.cell_type(curr_row, 0)
+        if c1_type != 1: continue
+        ds = worksheet.cell_value(curr_row, 0)
+        arr.append(ds)
+        curr_row += 1
     
     l_arr = len(arr)
     sout = "Totally {0} main diagnosis have been imported".format(l_arr)
@@ -109,13 +109,13 @@ def get_ds_plus_list():
     
     curr_row = 0
     while curr_row <= num_rows:
-	# Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
-	c1_type = worksheet.cell_type(curr_row, 0)
-	if c1_type != 1: continue
-	ds1 = worksheet.cell_value(curr_row, 0)
-	ds2 = worksheet.cell_value(curr_row, 1)
-	arr.append([ds1, ds2])
-	curr_row += 1
+        # Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
+        c1_type = worksheet.cell_type(curr_row, 0)
+        if c1_type != 1: continue
+        ds1 = worksheet.cell_value(curr_row, 0)
+        ds2 = worksheet.cell_value(curr_row, 1)
+        arr.append([ds1, ds2])
+        curr_row += 1
     
     l_arr = len(arr)
     sout = "Totally {0} associated diagnosis intervals have been imported".format(l_arr)
@@ -133,12 +133,12 @@ def get_clist(mgz = MGZ):
     n_mgz = 0
     clist = {}
     for cmgz in db2.idxByNumber:
-	clinic_id = cmgz.clinic_id
-	mgz_code  = cmgz.mgz_code
-	if mgz_code == mgz: 
-	    n_mgz += 1
-	    clist[clinic_id] = [0,0,0,0]
-	    
+        clinic_id = cmgz.clinic_id
+        mgz_code  = cmgz.mgz_code
+        if mgz_code == mgz: 
+            n_mgz += 1
+            clist[clinic_id] = [0,0,0,0]
+            
     sout = "MGZ {0} has got {1} clinics from {2}".format(mgz, n_mgz, n_lpu)
     log.info( sout )
 
@@ -197,18 +197,18 @@ if __name__ == "__main__":
     
     col = 6
     for ds_main in ds_main_list:
-	ws.write(row,col,ds_main)
-	col += 1
-	for n_month in range(1,13):
-	    ws.write(row,col,n_month)
-	    col += 1
-	    
+        ws.write(row,col,ds_main)
+        col += 1
+        for n_month in range(1,13):
+            ws.write(row,col,n_month)
+            col += 1
+            
     for ds_plus in ds_plus_list:
-	ds1 = ds_plus[0]
-	ds2 = ds_plus[1]
-	s_ds = u"(" + ds1 + "-" + ds2 + u")"
-	ws.write(row,col,s_ds)
-	col += 1
+        ds1 = ds_plus[0]
+        ds2 = ds_plus[1]
+        s_ds = u"(" + ds1 + "-" + ds2 + u")"
+        ws.write(row,col,s_ds)
+        col += 1
 
     row += 1
 
@@ -228,101 +228,101 @@ if __name__ == "__main__":
     people = PEOPLE()
     
     for recm in recsm:
-	t_count += 1
-	
-	_id     = recm[0]
-	t_id    = recm[1]
-	p_id    = recm[2]
-	c_id    = recm[3]
-	v_date  = recm[4]
-	v_month = v_date.month
-	d_id    = recm[5]
-	v_type  = recm[6]
-	
-	if t_count % STEP == 0: 
-	    sout = "{0} {1} {2} {3}".format(t_count, t_id, p_id, c_id)
-	    log.info( sout )	
+        t_count += 1
+        
+        _id     = recm[0]
+        t_id    = recm[1]
+        p_id    = recm[2]
+        c_id    = recm[3]
+        v_date  = recm[4]
+        v_month = v_date.month
+        d_id    = recm[5]
+        v_type  = recm[6]
+        
+        if t_count % STEP == 0: 
+            sout = "{0} {1} {2} {3}".format(t_count, t_id, p_id, c_id)
+            log.info( sout )	
 
-	if c_id not in clist: continue
-	
-	if p_id <> p_id0:
-	    if (p_id0 <> 0):
-		p_count += 1
-		row += 1
-		ws.write(row,0,p_id0)
-		ws.write(row,1,people.f1io)
-		bd = people.birthday
-		if bd is None:
-		    s_db = u""
-		else:
-		    s_bd = "%04d-%02d-%02d" % (bd.year, bd.month, bd.day)
-		ws.write(row,2,s_bd)
-		ws.write(row,3,people.sex)
-		ws.write(row,4,people.work_place)
-		ws.write(row,5,people.addr_fact)
+        if c_id not in clist: continue
+        
+        if p_id <> p_id0:
+            if (p_id0 <> 0):
+                p_count += 1
+                row += 1
+                ws.write(row,0,p_id0)
+                ws.write(row,1,people.f1io)
+                bd = people.birthday
+                if bd is None:
+                    s_db = u""
+                else:
+                    s_bd = "%04d-%02d-%02d" % (bd.year, bd.month, bd.day)
+                ws.write(row,2,s_bd)
+                ws.write(row,3,people.sex)
+                ws.write(row,4,people.work_place)
+                ws.write(row,5,people.addr_fact)
 
-		col = 6
-		for ds_main in ds_main_list:
-		    
-		    i_out = 0
-		    for dsm in dsm_list:
-			if dsm == ds_main:
-			    i_out = 1
-			    break
-		    ws.write(row,col,i_out)
-		    col += 1
-		    
-		    for n_month in range(1,13):
-			i_out = 0
-			iii = 0
-			for dsm in dsm_list:
-			    dsmm = dsmm_list[iii]
-			    iii += 1
-			    if dsm != ds_main: continue
-			    if dsmm == n_month: i_out = 1
+                col = 6
+                for ds_main in ds_main_list:
+                    
+                    i_out = 0
+                    for dsm in dsm_list:
+                        if dsm == ds_main:
+                            i_out = 1
+                            break
+                    ws.write(row,col,i_out)
+                    col += 1
+                    
+                    for n_month in range(1,13):
+                        i_out = 0
+                        iii = 0
+                        for dsm in dsm_list:
+                            dsmm = dsmm_list[iii]
+                            iii += 1
+                            if dsm != ds_main: continue
+                            if dsmm == n_month: i_out = 1
 
-			ws.write(row,col,i_out)
-			col += 1
+                        ws.write(row,col,i_out)
+                        col += 1
     
-		curc.execute(s_sqld_all,(p_id0,))
-		reccs = curc.fetchall()
-		dsp_list = []
-		for recc in reccs:
-		    ds  = recc[2]
-		    if ds is None: continue
-		    dsp_list.append(ds)
-		
+                curc.execute(s_sqld_all,(p_id0,))
+                reccs = curc.fetchall()
+                dsp_list = []
+                for recc in reccs:
+                    ds  = recc[2]
+                    if ds is None: continue
+                    dsp_list.append(ds)
+                
 
-		for ds_plus in ds_plus_list:
-		    ds1 = ds_plus[0]
-		    ds2 = ds_plus[1]
-		    i_out = 0
-		    
-		    for dsp in dsp_list:
-			dsp2 = dsp[:3]
-			if (dsp2 >= ds1) and (dsp2 <= ds2): i_out = 1
-		    
-		    ws.write(row,col,i_out)
-		    col += 1
-		
+                for ds_plus in ds_plus_list:
+                    ds1 = ds_plus[0]
+                    ds2 = ds_plus[1]
+                    i_out = 0
+                    
+                    for dsp in dsp_list:
+                        dsp2 = dsp[:3]
+                        if (dsp2 >= ds1) and (dsp2 <= ds2): i_out = 1
+                    
+                    ws.write(row,col,i_out)
+                    col += 1
+                
 
-	    p_id0 = p_id
-	    curc.execute(s_sqlp1,(p_id,))
-	    recc = curc.fetchone()
-	    if recc is None:
-		sout = "not found people_id: {0}".format(p_id)
-		log.warn( sout )
-		continue
-		
-	    people.initFromRec(recc)
-	    dsm_list  = []
-	    dsmd_list = []
-	    dsmm_list = []
-	
-	dsm_list.append(d_id.strip())
-	dsmd_list.append(v_date)
-	dsmm_list.append(v_month)
-	
+            p_id0 = p_id
+            curc.execute(s_sqlp1,(p_id,))
+            recc = curc.fetchone()
+            if recc is None:
+                sout = "not found people_id: {0}".format(p_id)
+                log.warn( sout )
+                continue
+                
+            people.initFromRec(recc)
+            dsm_list  = []
+            dsmd_list = []
+            dsmm_list = []
+        
+        dsm_list.append(d_id.strip())
+        dsmd_list.append(v_date)
+        dsmm_list.append(v_month)
+        
 
     wb.save(f_fname)
     
