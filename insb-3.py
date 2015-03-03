@@ -8,6 +8,7 @@
 
 import logging
 import sys, codecs
+import ConfigParser
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
@@ -25,11 +26,28 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
+Config = ConfigParser.ConfigParser()
+#PATH = os.path.dirname(sys.argv[0])
+#PATH = os.path.realpath(__file__)
+PATH = os.getcwd()
+FINI = PATH + "/" + "insr.ini"
+
+log.info("INI File: {0}".format(FINI))
+
+from ConfigSection import ConfigSectionMap
+# read INI data
+Config.read(FINI)
+# [DBMIS]
+Config1 = ConfigSectionMap(Config, "DBMIS")
+HOST = Config1['host']
+DB = Config1['db']
+
+# [Insb]
+Config2 = ConfigSectionMap(Config, "Insb")
+ADATE_ATT = Config2['adate_att']
+
 STEP = 100
 PRINT_FOUND = False
-
-HOST = "fb2.ctmed.ru"
-DB   = "DBMIS"
 
 SD2DO_PATH        = "./SD2DO"
 SDDONE_PATH       = "./SDDONE"
@@ -70,27 +88,27 @@ def get_sd(fname):
     num_cells = worksheet.ncols - 1
     curr_row = -1
     while curr_row < num_rows:
-	    curr_row += 1
+            curr_row += 1
 
-	    # Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
-	    c0_type = worksheet.cell_type(curr_row, 0)
-	    if c0_type <> 2: continue
+            # Cell Types: 0=Empty, 1=Text, 2=Number, 3=Date, 4=Boolean, 5=Error, 6=Blank
+            c0_type = worksheet.cell_type(curr_row, 0)
+            if c0_type <> 2: continue
 
-	    people_id = int(worksheet.cell_value(curr_row, 0))
-	    date_beg  = worksheet.cell_value(curr_row, 1)
-	    if worksheet.cell_type(curr_row, 2) == 2:
-		motive    = int(worksheet.cell_value(curr_row, 2))
-	    else:
-		motive = None
-	    clinic_id = int(worksheet.cell_value(curr_row, 3))
+            people_id = int(worksheet.cell_value(curr_row, 0))
+            date_beg  = worksheet.cell_value(curr_row, 1)
+            if worksheet.cell_type(curr_row, 2) == 2:
+                motive    = int(worksheet.cell_value(curr_row, 2))
+            else:
+                motive = None
+            clinic_id = int(worksheet.cell_value(curr_row, 3))
 
-	    if people_id <> p_id:
-		if p_id <>0:
-		    array.append([p_id, p_arr])
-		p_arr = []
-		p_id  = people_id
+            if people_id <> p_id:
+                if p_id <>0:
+                    array.append([p_id, p_arr])
+                p_arr = []
+                p_id  = people_id
 
-	    p_arr.append([date_beg, motive, clinic_id])
+            p_arr.append([date_beg, motive, clinic_id])
 
     return array
 
@@ -152,113 +170,112 @@ order by t.ticket_id desc;"""
     noioc    = 0
 
     for rec in ar:
-	count_a += 1
+        count_a += 1
 
-	people_id  = rec[0]
-	p_arr      = rec[1]
-	c_count = len(p_arr)
+        people_id  = rec[0]
+        p_arr      = rec[1]
+        c_count = len(p_arr)
 
-	if count_a % STEP == 0:
-	    sout = " {0} people_id: {1} c_count: {2}".format(count_a, people_id, c_count)
-	    log.info(sout)
+        if count_a % STEP == 0:
+            sout = " {0} people_id: {1} c_count: {2}".format(count_a, people_id, c_count)
+            log.info(sout)
 
 
-	if c_count == 1: continue
+        if c_count == 1: continue
 
-	dates   = []
-	motives = []
-	clinics = []
+        dates   = []
+        motives = []
+        clinics = []
 
-	count_1  = 0
-	count_99 = 0
-	count_   = 0
-	lclinic = False
+        count_1  = 0
+        count_99 = 0
+        count_   = 0
+        lclinic = False
 
-	date_m   = p_arr[0][0]
-	motive_m = p_arr[0][1]
-	c_id_m   = p_arr[0][2]
-	for pp in p_arr:
-	    date_b = pp[0]
-	    motive = pp[1]
-	    c_id   = pp[2]
+        date_m   = p_arr[0][0]
+        motive_m = p_arr[0][1]
+        c_id_m   = p_arr[0][2]
+        for pp in p_arr:
+            date_b = pp[0]
+            motive = pp[1]
+            c_id   = pp[2]
 
-	    if date_b > date_m:
-		date_m   = date_b
-		c_id_m   = c_id
-		motive_m = motive
+            if date_b > date_m:
+                date_m   = date_b
+                c_id_m   = c_id
+                motive_m = motive
 
-	    dates.append(date_b)
-	    motives.append(motive)
-	    clinics.append(c_id)
+            dates.append(date_b)
+            motives.append(motive)
+            clinics.append(c_id)
 
-	    if c_id == clinic_id:
-		lclinic = True
-		date_beg = date_b
-		cmotive = motive
+            if c_id == clinic_id:
+                lclinic = True
+                date_beg = date_b
+                cmotive = motive
 
-	    if motive == 1:
-		count_1 += 1
-	    elif motive == 99:
-		count_99 += 1
-	    elif motive not in (1, 2, 3, 99):
-		count_ += 1
+            if motive == 1:
+                count_1 += 1
+            elif motive == 99:
+                count_99 += 1
+            elif motive not in (1, 2, 3, 99):
+                count_ += 1
 
-	if (2 in motives) or (3 in motives): continue # was taken into account by insb-2
+        if (2 in motives) or (3 in motives): continue # was taken into account by insb-2
 
-	if not lclinic: continue
+        if not lclinic: continue
 
-	cur.execute(s_sqlt, (people_id, ))
-	rec_t = cur.fetchone()
+        cur.execute(s_sqlt, (people_id, ))
+        rec_t = cur.fetchone()
 
-	p_obj = PatientInfo()
-	p_obj.initFromDb(dbc, people_id)
+        p_obj = PatientInfo()
+        p_obj.initFromDb(dbc, people_id)
 
-	if p_obj.people_id is None:
-	    sout = "Can not find people_id = {0}".format(people_id)
-	    log.warn( sout )
-	    continue
+        if p_obj.people_id is None:
+            sout = "Can not find people_id = {0}".format(people_id)
+            log.warn( sout )
+            continue
 
-	curm.execute(s_sqlsm, (people_id,))
-	rec_m = curm.fetchone()
-	ocato = None
-	if rec_m is not None:
-	    p_obj.enp = rec_m[2]
-	    ocato     = rec_m[0]
-	    if ocato <> OCATO: continue
+        curm.execute(s_sqlsm, (people_id,))
+        rec_m = curm.fetchone()
+        ocato = None
+        if rec_m is not None:
+            p_obj.enp = rec_m[2]
+            ocato     = rec_m[0]
+            if ocato <> OCATO: continue
 
-	insorg_id   = p_obj.insorg_id
-	try:
-	    insorg = insorgs[insorg_id]
-	except:
-	    sout = "People_id: {0}. Have not got insorg_id: {1}".format(people_id, insorg_id)
-	    log.debug(sout)
-	    insorg = insorgs[0]
-	    noioc += 1
+        insorg_id   = p_obj.insorg_id
+        try:
+            insorg = insorgs[insorg_id]
+        except:
+            sout = "People_id: {0}. Have not got insorg_id: {1}".format(people_id, insorg_id)
+            log.debug(sout)
+            insorg = insorgs[0]
+            noioc += 1
 
-	l_print = False
-	if (rec_t is None):
-	    if (c_id_m == clinic_id):
-		l_print = True
-	else:
-	    c_id_t = rec_t[1]
-	    if c_id_t == clinic_id: l_print = True
+        l_print = False
+        if (rec_t is None):
+            if (c_id_m == clinic_id):
+                l_print = True
+        else:
+            c_id_t = rec_t[1]
+            if c_id_t == clinic_id: l_print = True
 
-	if l_print:
+        if l_print:
 
-	    try:
-		dd_beg = datetime.strptime(date_beg, '%Y-%m-%d')
-	    except:
-		dd_beg = None
+            try:
+                dd_beg = datetime.strptime(date_beg, '%Y-%m-%d')
+            except:
+                dd_beg = None
+            sss = p2(p_obj, mcod, cmotive, dd_beg, ADATE_ATT) + "\r\n"
+            ps = sss.encode('windows-1251')
+            if l_print:
+                fob.write(ps)
 
-	    sss = p2(p_obj, mcod, cmotive, dd_beg) + "\r\n"
-	    ps = sss.encode('windows-1251')
-	    if l_print:
-		fob.write(ps)
+                fob.flush()
+                os.fsync(fob.fileno())
 
-		fob.flush()
-		os.fsync(fob.fileno())
-
-		count_p += 1
+                count_p += 1
 
     dbc.close()
     dbmy.close()
@@ -300,11 +317,11 @@ def sd_done(db, mcod, w_month = '1402'):
     cursor.execute(s_sql)
     rec = cursor.fetchone()
     if rec == None:
-	return False, "", ""
+        return False, "", ""
     else:
-	fname = rec[0]
-	done  = rec[1]
-	return True, fname, done
+        fname = rec[0]
+        done  = rec[1]
+        return True, fname, done
 
 if __name__ == "__main__":
 
@@ -325,51 +342,51 @@ if __name__ == "__main__":
     dbmy2 = DBMY()
 
     for fname in fnames:
-	s_mcod  = fname[2:8]
-	w_month = fname[12:16]
-	mcod = int(s_mcod)
+        s_mcod  = fname[2:8]
+        w_month = fname[12:16]
+        mcod = int(s_mcod)
 
-	try:
-	    mo = modb[mcod]
-	    clinic_id = mo.mis_code
-	    sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
-	    log.info(sout)
-	except:
-	    sout = "Clinic not found for mcod = {0}".format(s_mcod)
-	    log.warn(sout)
-	    continue
+        try:
+            mo = modb[mcod]
+            clinic_id = mo.mis_code
+            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
+            log.info(sout)
+        except:
+            sout = "Clinic not found for mcod = {0}".format(s_mcod)
+            log.warn(sout)
+            continue
 
-	f_fname = SD2DO_PATH + "/" + fname
-	sout = "Input file: {0}".format(f_fname)
-	log.info(sout)
+        f_fname = SD2DO_PATH + "/" + fname
+        sout = "Input file: {0}".format(f_fname)
+        log.info(sout)
 
-	if CHECK_REGISTERED:
-	    ldone, dfname, ddone = sd_done(dbmy2, mcod, w_month)
-	else:
-	    ldone = False
+        if CHECK_REGISTERED:
+            ldone, dfname, ddone = sd_done(dbmy2, mcod, w_month)
+        else:
+            ldone = False
 
-	if ldone:
-	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
-	    log.warn( sout )
-	else:
-	    #pfile(f_fname)
-	    ar = get_sd(f_fname)
-	    l_ar = len(ar)
-	    sout = "File has got {0} patients".format(l_ar)
-	    log.info( sout )
+        if ldone:
+            sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
+            log.warn( sout )
+        else:
+            #pfile(f_fname)
+            ar = get_sd(f_fname)
+            l_ar = len(ar)
+            sout = "File has got {0} patients".format(l_ar)
+            log.info( sout )
 
 
 
-	    count_a, count_p = write_mo(clinic_id, mcod, ar)
-	    #sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
-	    #log.info( sout )
-	    if REGISTER_FILE: register_sd_done(dbmy2, mcod, clinic_id, fname)
+            count_a, count_p = write_mo(clinic_id, mcod, ar)
+            #sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
+            #log.info( sout )
+            if REGISTER_FILE: register_sd_done(dbmy2, mcod, clinic_id, fname)
 
-	if MOVE_FILE:
-	# move file
-	    source = SD2DO_PATH + "/" + fname
-	    destination = SDDONE_PATH + "/" + fname
-	    shutil.move(source, destination)
+        if MOVE_FILE:
+        # move file
+            source = SD2DO_PATH + "/" + fname
+            destination = SDDONE_PATH + "/" + fname
+            shutil.move(source, destination)
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('SD Files Processing. Finish  '+localtime)
