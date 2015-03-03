@@ -43,6 +43,7 @@ DB = Config1['db']
 Config2 = ConfigSectionMap(Config, "Insr")
 D_START = Config2['d_start']
 D_FINISH = Config2['d_finish']
+USE_DATERANGE = Config2['use_daterange']
 #FNAME = "SM{0}T22_14112.csv"
 FNAME = Config2['fname']
 
@@ -78,7 +79,10 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 NO_ENP     = False # Do IBR only for patients without ENP
 #DATE_RANGE = None
 #DATE_RANGE = ["2014-11-01","2014-11-30"]
-DATE_RANGE = [D_START,D_FINISH]
+if USE_DATERANGE == 1:
+    DATE_RANGE = [D_START,D_FINISH]
+else:
+    DATE_RANGE = None
 
 REGISTER_DONE = True
 
@@ -359,6 +363,8 @@ JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ca.clinic_id_fk = {0} AND ca.basic_speciality = 1
 AND ap.date_end is Null;"""
         s_sql = s_sqlt.format(clinic_id)
+        sout = "Do not use DATE_RANGE"
+        log.info(sout)
     else:
         d_start  = DATE_RANGE[0]
         d_finish = DATE_RANGE[1]
