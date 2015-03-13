@@ -44,13 +44,15 @@ Config2 = ConfigSectionMap(Config, "CLINIC")
 CLINIC_ID = int(Config2['clinic_id'])
 
 Config3 = ConfigSectionMap(Config, "LIS")
-SDATE = Config3['date']
-DATE = datetime.strptime(SDATE,"%Y-%m-%d")
+SDATE = Config3['beg_date']
+BEG_DATE = datetime.strptime(SDATE,"%Y-%m-%d")
+SDATE = Config3['end_date']
+END_DATE = datetime.strptime(SDATE,"%Y-%m-%d")
 
 STEP = 100
 
-SQLT_T = """SELECT ticket_id FROM tickets WHERE visit_date = ?;"""
-SQLT_T1 = """SELECT ticket_id FROM tickets WHERE clinic_id_fk = ? AND visit_date = ?;"""
+SQLT_T = """SELECT ticket_id FROM tickets WHERE visit_date between ? AND ?;"""
+SQLT_T1 = """SELECT ticket_id FROM tickets WHERE clinic_id_fk = ? AND visit_date between ? AND ?;"""
 
 SQLT_MTO = """SELECT med_tests_order_id, med_test_name
 FROM med_tests_order;"""
@@ -60,7 +62,7 @@ mto.med_test_code, mto.med_tests_lab_id_fk
 FROM med_tests mt
 LEFT JOIN med_tests_order mto ON mt.med_tests_order_id_fk = mto.med_tests_order_id
 WHERE mt.ticket_id_fk IN (SELECT t.ticket_id
-FROM tickets t WHERE t.visit_date = ?);"""
+FROM tickets t WHERE t.clinic_id_fk = ? AND t.visit_date between ? AND ?);"""
 
 if __name__ == "__main__":
 
@@ -77,7 +79,7 @@ if __name__ == "__main__":
     sout = "clinic_id: {0} clinic_name: {1}".format(CLINIC_ID, cname)
     log.info(sout)
 
-    sout = "Request date: {0}".format(DATE.strftime("%Y-%m-%d"))
+    sout = "Request dates: {0} - {1}".format(BEG_DATE.strftime("%Y-%m-%d"), END_DATE.strftime("%Y-%m-%d"))
     log.info(sout)
 
     cur = dbc.con.cursor()
@@ -101,7 +103,7 @@ if __name__ == "__main__":
     sout = "Totally we have got {0} orders".format(lmto)
     log.info(sout)
 
-    ro_cur.execute(SQLT_T, (DATE,))
+    ro_cur.execute(SQLT_T, (BEG_DATE, END_DATE, ))
 
     recs = ro_cur.fetchall()
 
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     sout = "Totally we have got {0} tickets".format(ltlist)
     log.info(sout)
 
-    ro_cur.execute(SQLT_T1, (CLINIC_ID, DATE,))
+    ro_cur.execute(SQLT_T1, (CLINIC_ID, BEG_DATE, END_DATE, ))
     recs = ro_cur.fetchall()
 
     tlist1 = []
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     sout = "Clinic {0} has got {1} tickets".format(CLINIC_ID, ltlist1)
     log.info(sout)
 
-    ro_cur.execute(SQLT_MT, (DATE,))
+    ro_cur.execute(SQLT_MT, (CLINIC_ID, BEG_DATE, END_DATE,))
     recs = ro_cur.fetchall()
 
     # mtldict - список заказов по лабораториям
