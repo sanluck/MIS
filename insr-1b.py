@@ -79,7 +79,7 @@ ALL_PEOPLE = True # Do IBR for all patients or for DVN candidates only
 NO_ENP     = False # Do IBR only for patients without ENP
 #DATE_RANGE = None
 #DATE_RANGE = ["2014-11-01","2014-11-30"]
-if USE_DATERANGE == 1:
+if USE_DATERANGE == "1":
     DATE_RANGE = [D_START,D_FINISH]
 else:
     DATE_RANGE = None
