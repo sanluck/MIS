@@ -6,7 +6,7 @@
 # INPUT DIRECTORY SD2DO
 #
 
-import logging
+import os
 import sys, codecs
 import ConfigParser
 
@@ -16,6 +16,8 @@ from insorglist import InsorgInfoList
 insorgs = InsorgInfoList()
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+import logging
 
 LOG_FILENAME = '_insb3.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
