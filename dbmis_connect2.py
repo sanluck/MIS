@@ -16,7 +16,7 @@ HOST = 'fb2.ctmed.ru'
 #DB = 'DBMIS'
 DB = 'DVN5'
 DB_USER = 'sysdba'
-DB_PWD = 'Fbdbmis1'
+DB_PWD = 'Vfcnth1'
 
 #DB_USER = 'clinic'
 #DB_PWD = 'Polyclinic'
