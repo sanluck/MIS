@@ -78,7 +78,7 @@ AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND category = 4
+AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -94,7 +94,7 @@ AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND category = 4
+AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -118,6 +118,7 @@ WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
+AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -132,7 +133,7 @@ AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND category = 4
+AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
