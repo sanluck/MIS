@@ -71,14 +71,13 @@ SELECT_MODE = int(Config2['select_mode'])
 if SELECT_MODE == 2:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
-FROM prof_exam_minor
+FROM vw_prof_exam_minor
 WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -87,14 +86,13 @@ ORDER by date_begin;"""
 elif SELECT_MODE == 1:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
-FROM prof_exam_minor
+FROM vw_prof_exam_minor
 WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -103,7 +101,7 @@ ORDER by date_begin;"""
 elif SELECT_MODE == 3:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
-FROM prof_exam_minor
+FROM vw_prof_exam_minor
 WHERE clinic_id_fk = ?
 AND request_portal = 1
 AND date_portal is Null
@@ -113,12 +111,11 @@ ORDER by date_begin;"""
 elif SELECT_MODE == 4:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
-FROM prof_exam_minor
+FROM vw_prof_exam_minor
 WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
-AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
@@ -126,14 +123,13 @@ ORDER by date_begin;"""
 else:
     SQLT_CL = """SELECT
 prof_exam_id, people_id_fk, date_begin
-FROM prof_exam_minor
+FROM vw_prof_exam_minor
 WHERE clinic_id_fk = ?
 AND date_portal is Null
 AND date_end is not Null
 AND type_exam_code = 1
 AND card_status = 1
 AND status_code = 2
-AND (category = 4 OR category is Null)
 AND date_end >= ?
 AND date_end <= ?
 AND date_begin is not Null
