@@ -49,13 +49,18 @@ STEP = 100
 
 s_sqlt1 = """SELECT t.ticket_id, t.people_id_fk, clinic_id_fk, t.visit_date,
 td.diagnosis_id_fk,
-c.clinic_name
+c.clinic_name,
+p.birthday
 FROM tickets t
 JOIN ticket_diagnosis td ON t.ticket_id = td.ticket_id_fk
 LEFT JOIN clinics c ON t.clinic_id_fk = c.clinic_id
+LEFT JOIN peoples p ON t.people_id_fk = p.people_id
 WHERE t.visit_date BETWEEN ? AND ?
 AND td.visit_type_id_fk = 1
 ORDER BY t.clinic_id_fk, t.people_id_fk;"""
+
+def age(bd, dt):
+    return dt.year - bd.year - ((dt.month, dt.day) < (bd.month, bd.day))
 
 if __name__ == "__main__":
     import sys
@@ -127,6 +132,7 @@ if __name__ == "__main__":
         visit_date = rec[3]
         ds_id     = rec[4]
         c_name    = rec[5]
+        birthday  = rec[6]
         
         if clinic_id != c_id:
             if c_id != 0:
@@ -167,6 +173,8 @@ if __name__ == "__main__":
                 c_count_arr[i] += p_count_arr[i]
                 p_count_arr[i] = 0
                 
+        _age = age(birthday, visit_date)
+        if _age < 18: continue
         # проверяем значение МКБ на попадание в каждый столбец
         
         # 0: I00-I99
