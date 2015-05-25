@@ -51,6 +51,11 @@ D_FINISH = Config2['d_finish']
 # [Insb]
 Config2 = ConfigSectionMap(Config, "Insb")
 ADATE_ATT = Config2['adate_att']
+SET_ADATE = Config2['set_adate']
+if SET_ADATE == "1":
+    ASSIGN_ATT = True
+else:
+    ASSIGN_ATT = False
 
 #clist = [220021, 220022, 220034, 220036, 220037, 220040, 220042, 220043, 220045, 220048, 220051, 220059, 220060, 220062, 220063, 220064, 220068, 220073, 220074, 220078, 220079, 220080, 220081, 220083, 220085, 220091, 220093, 220094, 220097, 220138, 220140, 220152, 220041]
 clist = [220011, 220001, 220014]
@@ -86,9 +91,9 @@ PRINT_ALL  = True # include all patients into MO files
 def get_clist(db):
 
     if MLIST:
-	s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
+        s_sql = "SELECT DISTINCT mcod FROM mlist WHERE done is Null;"
     else:
-	s_sql = "SELECT DISTINCT mcod FROM insr_list WHERE done is Null;"
+        s_sql = "SELECT DISTINCT mcod FROM insr_list WHERE done is Null;"
 
     cur = db.con.cursor()
     cur.execute(s_sql)
@@ -212,7 +217,7 @@ ORDER BY ap.date_beg DESC;"""
             if (p_obj.medical_insurance_series is None) and \
                (p_obj.medical_insurance_number is not None) and \
                (len(p_obj.medical_insurance_number) == 16):
-		p_obj.enp = p_obj.medical_insurance_number
+                p_obj.enp = p_obj.medical_insurance_number
 
             sss = p1(p_obj, insorg) + "|\n"
             ps = sss.encode('windows-1251')
@@ -252,7 +257,12 @@ ORDER BY ap.date_beg DESC;"""
         if (len(recs_ap) == 1):
             if (f_ocato == OCATO):
                 date_beg = recs_ap[0][2]
-                sss = p2(p_obj, mcod, 2, date_beg, ADATE_ATT) + "\r\n"
+                motive_attach = recs_ap[0][3]
+                if motive_attach == 1:
+                    matt = 1
+                else:
+                    matt = 2
+                sss = p2(p_obj, mcod, matt, date_beg, ADATE_ATT, ASSIGN_ATT) + "\r\n"
                 ps = sss.encode('windows-1251')
                 l_print = True
 
@@ -282,7 +292,7 @@ ORDER BY ap.date_beg DESC;"""
                     motive_attach = 2
 
                 if (motive_attach in (2,3)) and (clinic_id == clinic_id_fk) and (not l_print) and (f_ocato == OCATO):
-                    sss = p2(p_obj, mcod, 2, date_beg, ADATE_ATT) + "\r\n"
+                    sss = p2(p_obj, mcod, 2, date_beg, ADATE_ATT, ASSIGN_ATT) + "\r\n"
                     ps = sss.encode('windows-1251')
                     l_print = True
 
@@ -426,7 +436,7 @@ def get_1clinic_lock(id_unlock = None):
 
     if rec is not None:
         _id  = rec[0]
-	c_id = rec[1]
+        c_id = rec[1]
         mcod = rec[2]
         c_rec = [_id, c_id, mcod]
         ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"

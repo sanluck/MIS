@@ -47,6 +47,11 @@ DB = Config1['db']
 # [Insb]
 Config2 = ConfigSectionMap(Config, "Insb")
 ADATE_ATT = Config2['adate_att']
+SET_ADATE = Config2['set_adate']
+if SET_ADATE == "1":
+    ASSIGN_ATT = True
+else:
+    ASSIGN_ATT = False
 
 STEP = 100
 PRINT_FOUND = False
@@ -269,7 +274,7 @@ order by t.ticket_id desc;"""
                 dd_beg = datetime.strptime(date_beg, '%Y-%m-%d')
             except:
                 dd_beg = None
-            sss = p2(p_obj, mcod, cmotive, dd_beg, ADATE_ATT) + "\r\n"
+            sss = p2(p_obj, mcod, cmotive, dd_beg, ADATE_ATT, ASSIGN_ATT) + "\r\n"
             ps = sss.encode('windows-1251')
             if l_print:
                 fob.write(ps)

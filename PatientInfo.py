@@ -702,7 +702,7 @@ def p2join(ar_in):
                 str_r += u'"' + sss + u'"'
     return str_r
 
-def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_ATT):
+def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_ATT, assign_att = ASSIGN_ATT):
 # new format
     import datetime
     import re
@@ -837,7 +837,7 @@ def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_
     res.append(None)
 
     # 17
-    if ASSIGN_ATT:
+    if assign_att:
         res.append(adate_att)
     elif DATE_ATT is None:
         res.append(None)
