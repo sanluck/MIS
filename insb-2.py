@@ -396,8 +396,12 @@ AND ap.date_end is Null;"""
         log.info(sout)
 
 
-    sout = "ADATE_ATT: {0}".format(ADATE_ATT)
-    log.info(sout)
+    if ASSIGN_ATT:
+        sout = "ADATE_ATT: {0}".format(ADATE_ATT)
+        log.info(sout)
+    else:
+        sout = "Set actual ATTACH DATE"
+        log.info(sout)
 
     cursor = dbc.con.cursor()
     cursor.execute(s_sql)
