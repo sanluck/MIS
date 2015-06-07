@@ -114,10 +114,11 @@ def get_d(dbc, clinic_id):
         speciality_id = rec[2]
         people_id = rec[3]
         insurance_certificate = rec[4]
-        snils = insurance_certificate.replace(" ","").replace("-","")
 
         if speciality_id not in (1,7, 51): continue
         if insurance_certificate is None: continue
+
+        snils = insurance_certificate.replace(" ","").replace("-","")
         if speciality_id == 1:
             d1.append(snils)
         elif speciality_id == 7:
