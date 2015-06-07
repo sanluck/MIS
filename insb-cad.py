@@ -228,7 +228,6 @@ ORDER BY ap.date_beg DESC;"""
                     d_snils = random.choice(d7)
                 elif speciality_id == 51:
                     d_snils = random.choice(d51)
-                d_snils = cad[a_id][2]
             else:
                 continue
             
