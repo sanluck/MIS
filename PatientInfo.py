@@ -851,6 +851,171 @@ def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_
 
     return p2join(res)
 
+def p3(patient, MCOD = None, 
+       MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_ATT, assign_att = ASSIGN_ATT,
+       AREA_NUMBER = 0, DOCTOR_SNILS = '00000000000'):
+# patient-doctor
+    import datetime
+    import re
+
+    now = datetime.datetime.now()
+    s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)
+
+    # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
+    sss = patient.medical_insurance_series
+    if sss == None:
+        s_mis = u""
+    else:
+        s_mis = u"{0}".format(sss)
+
+    sss = patient.medical_insurance_number
+    if sss == None:
+        s_min = None
+    else:
+        s_min = u"{0}".format(sss)
+
+    enp = None
+    if len(s_mis) == 0:
+        tdpfs = u"П" # Полис ОМС бумажный единого образца
+        enp = s_min
+        misn = None
+    elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
+        tdpfs = u"В" # Временное свидетельство, ....
+        misn = s_min
+    else:
+        tdpfs = u"С" # Полис ОМС старого образца
+        if s_min is None:
+            misn  = s_mis
+        else:
+            misn  = s_mis + u" № " + s_min
+
+    if patient.enp is not None:
+        enp = patient.enp
+
+    res = []
+    # 1 - действие ('Р')
+    action = u"Р"
+    res.append(action)
+    
+    # 2
+    res.append(tdpfs)
+    # 3
+    res.append(misn)
+    # 4
+    res.append(enp)
+    # 5
+    res.append( u"{0}".format(patient.lname.strip().upper()) )
+    # 6
+    res.append( u"{0}".format(patient.fname.strip().upper()) )
+    # 7
+    if patient.mname == None:
+        res.append(None)
+    else:
+        res.append( u"{0}".format(patient.mname.strip().upper()) )
+
+    # 8
+    dr = patient.birthday
+    sdr = u"%04d%02d%02d" % (dr.year, dr.month, dr.day)
+    res.append(sdr)
+
+    # 9
+    if patient.birthplace is None:
+        res.append(None)
+    else:
+        res.append( u"{0}".format(patient.birthplace.strip().upper()) )
+
+    # 10
+    doc_type_id = patient.document_type_id_fk
+    if doc_type_id is None:
+        sdt = u"14"
+    elif DOC_TYPES.has_key(doc_type_id):
+        sdt = DOC_TYPES[doc_type_id]
+    else:
+        sdt = None
+    res.append(sdt)
+
+    # 11
+    if patient.document_series is None:
+        dsn = None
+    else:
+        dsn = patient.document_series
+
+    if patient.document_number is not None:
+        if dsn is None:
+            dsn = patient.document_number
+        else:
+            dsn += u" № " + patient.document_number
+    res.append(dsn)
+
+    # 12
+    if patient.document_when is None:
+        res.append(None)
+    else:
+        dw = patient.document_when
+        sdr = u"%04d%02d%02d" % (dw.year, dw.month, dw.day)
+        res.append(sdr)
+
+    # 13
+    if patient.document_who is None:
+        res.append(None)
+    else:
+        res.append(patient.document_who.strip().upper())
+
+    # 14
+    if patient.insurance_certificate is None:
+        SNILS = None
+    else:
+        s_pattern = re.compile(u"[0-9][0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9] [0-9][0-9]")
+        s_snils = patient.insurance_certificate
+        if s_pattern.match(s_snils):
+            SNILS = s_snils
+        else:
+            SNILS = None
+
+    res.append(SNILS)
+
+    # 15
+    if MCOD is None:
+        s_mcod = None
+    else:
+        s_mcod = str(MCOD)
+    res.append(s_mcod)
+
+    # 16
+    if MOTIVE_ATT not in (1,2):
+        res.append("0")
+    else:
+        res.append(str(MOTIVE_ATT))
+
+    # 17
+    res.append(None)
+
+    # 18
+    if assign_att:
+        res.append(adate_att)
+    elif DATE_ATT is None:
+        res.append(None)
+    else:
+        dw = DATE_ATT
+        sdr = u"%04d%02d%02d" % (dw.year, dw.month, dw.day)
+        res.append(sdr)
+
+    # 19
+    res.append(None)
+
+    # 20
+    res.append(None)
+
+    # 21
+    res.append("0")
+    
+    # 22
+    res.append(str(AREA_NUMBER))
+
+    # 23
+    res.append(DOCTOR_SNILS)
+
+    return p2join(res)
 
 def get_patient_list(recs):
 

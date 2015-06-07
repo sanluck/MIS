@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID = 129
+CLINIC_ID = 119
 
 SQLT1 = """SELECT a.area_id, a.area_number,
 ca.clinic_area_id, ca.speciality_id_fk,
@@ -71,10 +71,10 @@ def get_cad(dbc, clinic_id):
         doctor_id = rec[5]
         people_id = rec[6]
         insurance_certificate = rec[7]
-        if speciality_id != 1: continue
+        if speciality_id not in (1,7, 51): continue
         if insurance_certificate is None: continue
-        if cad.has_key(area_number): continue
-        cad[area_number] = insurance_certificate.replace(" ","").replace("-","")
+        if cad.has_key(area_id): continue
+        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-","")]
         
     dbc.con.commit
         
@@ -91,10 +91,10 @@ def get_cad(dbc, clinic_id):
         doctor_id = rec[5]
         people_id = rec[6]
         insurance_certificate = rec[7]
-        if speciality_id != 1: continue
+        if speciality_id not in (1,7, 51): continue
         if insurance_certificate is None: continue
-        if cad.has_key(area_number): continue
-        cad[area_number] = insurance_certificate.replace(" ","").replace("-","")
+        if cad.has_key(area_id): continue
+        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-","")]
 
     dbc.con.commit
     
@@ -128,9 +128,12 @@ if __name__ == "__main__":
     sout = "Totally we have got {0} areas having doctors".format(dnumber)
     log.info(sout)
     
-    for a_number in cad.keys():
-        snils = cad[a_number]
-        sout = "{0}: {1}".format(a_number, snils)
+    for a_id in cad.keys():
+        cad_item = cad[a_id]
+        speciality_id = cad_item[0]
+        area_number = cad_item[1]
+        snils = cad_item[2]
+        sout = "{0}: {1} {2} {3}".format(a_id, speciality_id, area_number, snils)
         log.info(sout)
     
     localtime = time.asctime( time.localtime(time.time()) )
