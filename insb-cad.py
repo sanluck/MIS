@@ -124,6 +124,7 @@ def plist(dbc, clinic_id, mcod, patient_list):
     d51number = len(d51)
     
     sout = "Active doctors: {0} + {1} + {2}".format(d1number, d7number, d51number)
+    log.info(sout)
 
     cur = dbc.con.cursor()
 
