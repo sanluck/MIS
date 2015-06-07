@@ -2,23 +2,6 @@
 # coding: utf-8
 # clinic_areas_doctors.py - найти СНИЛС докторов для участков клиники
 #
-import logging
-import sys, codecs
-import fdb
-
-from medlib.moinfolist import MoInfoList
-modb = MoInfoList()
-
-sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
-
-LOG_FILENAME = '_clinic_areas_doctors.out'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
-
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-logging.getLogger('').addHandler(console)
-
-log = logging.getLogger(__name__)
 
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
@@ -54,6 +37,7 @@ WHERE ca.clinic_id_fk = ?
 AND ca.basic_speciality = 1;"""
 
 def get_cad(dbc, clinic_id):
+    import fdb
     
     cur = dbc.con.cursor()
 
@@ -101,8 +85,25 @@ def get_cad(dbc, clinic_id):
     return cad
 
 if __name__ == "__main__":
+    import sys, codecs
     import time
+    import logging
     from dbmis_connect2 import DBMIS
+    
+    from medlib.moinfolist import MoInfoList
+    modb = MoInfoList()
+    
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+    LOG_FILENAME = '_clinic_areas_doctors.out'
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
+    
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console)
+    
+    log = logging.getLogger(__name__)
+
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('-----------------------------------------------------------------------------------')
