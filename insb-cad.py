@@ -89,11 +89,12 @@ PRINT2     = False
 PRINT_ALL  = True # include all patients into MO files
 
 def plist(dbc, clinic_id, mcod, patient_list):
-    from clinic_areas_doctors import get_cad
+    from clinic_areas_doctors import get_cad, get_d
     from PatientInfo import p1, p2, p3
     from insorglist import InsorgInfoList
 
     cad = get_cad(dbc, clinic_id)
+    d1, d7, d51 = get_d(dbc, clinic_id)
     cad1 = {}
     cad7 = {}
     cad51 = {}
@@ -117,6 +118,12 @@ def plist(dbc, clinic_id, mcod, patient_list):
 
     sout = "Totally we have got {0} ({1} + {2} + {3}) areas having doctors".format(dnumber, d1number, d7number, d51number)
     log.info(sout)
+
+    d1number = len(d1)
+    d7number = len(d7)
+    d51number = len(d51)
+    
+    sout = "Active doctors: {0} + {1} + {2}".format(d1number, d7number, d51number)
 
     cur = dbc.con.cursor()
 
@@ -214,12 +221,13 @@ ORDER BY ap.date_beg DESC;"""
                 d_snils = cad[area_id][2]
             elif FIND_DOCTOR:
                 # http://stackoverflow.com/questions/4859292/how-to-get-a-random-value-in-python-dictionary
+                # http://stackoverflow.com/questions/1058712/how-do-i-select-a-random-element-from-an-array-in-python
                 if speciality_id == 1:
-                    a_id = random.choice(cad1.keys())
+                    d_snils = random.choice(d1)
                 elif speciality_id == 7:
-                    a_id = random.choice(cad7.keys())
+                    d_snils = random.choice(d7)
                 elif speciality_id == 51:
-                    a_id = random.choice(cad51.keys())
+                    d_snils = random.choice(d51)
                 d_snils = cad[a_id][2]
             else:
                 continue

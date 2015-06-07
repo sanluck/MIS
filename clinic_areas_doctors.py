@@ -36,6 +36,16 @@ LEFT JOIN peoples p ON d.people_id_fk = p.people_id
 WHERE ca.clinic_id_fk = ? 
 AND ca.basic_speciality = 1;"""
 
+SQLT3 = """SELECT w.worker_id, w.doctor_id_fk, w.speciality_id_fk,
+d.people_id_fk,
+p.insurance_certificate
+FROM workers w
+LEFT JOIN doctors d ON w.doctor_id_fk = d.doctor_id
+LEFT JOIN peoples p ON d.people_id_fk = p.people_id
+WHERE d.clinic_id_fk = ?
+AND w.status = 0
+AND w.speciality_id_fk IN (1,7,51);"""
+
 def get_cad(dbc, clinic_id):
     import fdb
     
@@ -84,6 +94,41 @@ def get_cad(dbc, clinic_id):
     
     return cad
 
+def get_d(dbc, clinic_id):
+    # получить списки работающих докторов
+    import fdb
+    
+    cur = dbc.con.cursor()
+
+    dbc.con.begin(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+    cur.execute(SQLT3, (clinic_id, ))
+    
+    result = cur.fetchall()
+    d1 = []
+    d7 = []
+    d51 = []
+    for rec in result:
+        
+        worker_id = rec[0]
+        doctor_id = rec[1]
+        speciality_id = rec[2]
+        people_id = rec[3]
+        insurance_certificate = rec[4]
+        snils = insurance_certificate.replace(" ","").replace("-","")
+
+        if speciality_id not in (1,7, 51): continue
+        if insurance_certificate is None: continue
+        if speciality_id == 1:
+            d1.append(snils)
+        elif speciality_id == 7:
+            d7.append(snils)
+        elif speciality_id == 51:
+            d51.append(snils)
+        
+    dbc.con.commit
+        
+    return d1, d7, d51
+
 if __name__ == "__main__":
     import sys, codecs
     import time
@@ -122,6 +167,7 @@ if __name__ == "__main__":
     log.info(sout)
     
     cad = get_cad(dbc, clinic_id)
+    d1, d7, d51 = get_d(dbc, clinic_id)
     
     dbc.close()
     
@@ -137,6 +183,18 @@ if __name__ == "__main__":
         sout = "{0}: {1} {2} {3}".format(a_id, speciality_id, area_number, snils)
         log.info(sout)
     
+    log.info('Active doctors for speciality_id = 1')
+    for snils in d1:
+        log.info(snils)
+    
+    log.info('Active doctors for speciality_id = 7')
+    for snils in d7:
+        log.info(snils)
+
+    log.info('Active doctors for speciality_id = 51')
+    for snils in d51:
+        log.info(snils)
+        
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Clinic Areas Doctors Finish  '+localtime)
     
