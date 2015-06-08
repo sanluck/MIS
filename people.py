@@ -105,24 +105,24 @@ class PEOPLE:
         self.document_number = None
         self.citizenship = None
 
-	self.sex = None
-	self.work_place = None
-	
-	self.fio  = None
-	self.f1io = None
+        self.sex = None
+        self.work_place = None
+        
+        self.fio  = None
+        self.f1io = None
 
-	self.addr_fact_region_code = None
-	self.addr_fact_area_code = None
-	self.addr_fact_area_name = None
-	self.addr_fact_area_socr = None
-	self.addr_fact_town_code = None
-	self.addr_fact_town_name = None
-	self.addr_fact_town_socr = None
-	self.addr_fact_country_code = None
-	self.addr_fact_country_name = None
-	self.addr_fact_country_socr = None
-	
-	self.addr_fact = None
+        self.addr_fact_region_code = None
+        self.addr_fact_area_code = None
+        self.addr_fact_area_name = None
+        self.addr_fact_area_socr = None
+        self.addr_fact_town_code = None
+        self.addr_fact_town_name = None
+        self.addr_fact_town_socr = None
+        self.addr_fact_country_code = None
+        self.addr_fact_country_name = None
+        self.addr_fact_country_socr = None
+        
+        self.addr_fact = None
 
         
     
@@ -130,10 +130,10 @@ class PEOPLE:
         self.people_id = rec[0]
         self.lname = rec[1].strip()
         _f  = self.lname
-	_f1 = _f[:1]
+        _f1 = _f[:1]
         self.fname = rec[2].strip()
-	_fio  = _f  + u" " + self.fname
-	_f1io = _f1 + u" " + self.fname
+        _fio  = _f  + u" " + self.fname
+        _f1io = _f1 + u" " + self.fname
         if rec[3] is None:
             self.mname = None
         else:
@@ -175,59 +175,59 @@ class PEOPLE:
         self.document_number = rec[18]
 
         self.citizenship = rec[19]
-	
-	self.sex = rec[20]
-	self.work_place = rec[21]
+        
+        self.sex = rec[20]
+        self.work_place = rec[21]
 
-	self.addr_fact_region_code = rec[22]
-	
-	addr_fact = u""
-	self.addr_fact_area_code = rec[23]
-	if rec[24] is None:
-	    self.addr_fact_area_name = None
-	else:
-	    addr_fact_area_name = rec[24].strip()
-	    self.addr_fact_area_name = addr_fact_area_name
-	    addr_fact = addr_fact_area_name
-	
-	if rec[25] is None:
-	    self.addr_fact_area_socr = None
-	else:
-	    addr_fact_area_socr = rec[25].strip()
-	    self.addr_fact_area_socr = addr_fact_area_socr
-	    addr_fact += " " + addr_fact_area_socr
-	
-	self.addr_fact_town_code = rec[26]
-	if rec[27] is None:
-	    self.addr_fact_town_name = None
-	else:
-	    addr_fact_town_name = rec[27].strip()
-	    self.addr_fact_town_name = addr_fact_town_name
-	    addr_fact = addr_fact_town_name
-	
-	if rec[28] is None:
-	    self.addr_fact_town_socr = None
-	else:
-	    addr_fact_town_socr = rec[28].strip()
-	    self.addr_fact_town_socr = addr_fact_town_socr
-	    addr_fact += " " + addr_fact_town_socr
+        self.addr_fact_region_code = rec[22]
+        
+        addr_fact = u""
+        self.addr_fact_area_code = rec[23]
+        if rec[24] is None:
+            self.addr_fact_area_name = None
+        else:
+            addr_fact_area_name = rec[24].strip()
+            self.addr_fact_area_name = addr_fact_area_name
+            addr_fact = addr_fact_area_name
+        
+        if rec[25] is None:
+            self.addr_fact_area_socr = None
+        else:
+            addr_fact_area_socr = rec[25].strip()
+            self.addr_fact_area_socr = addr_fact_area_socr
+            addr_fact += " " + addr_fact_area_socr
+        
+        self.addr_fact_town_code = rec[26]
+        if rec[27] is None:
+            self.addr_fact_town_name = None
+        else:
+            addr_fact_town_name = rec[27].strip()
+            self.addr_fact_town_name = addr_fact_town_name
+            addr_fact = addr_fact_town_name
+        
+        if rec[28] is None:
+            self.addr_fact_town_socr = None
+        else:
+            addr_fact_town_socr = rec[28].strip()
+            self.addr_fact_town_socr = addr_fact_town_socr
+            addr_fact += " " + addr_fact_town_socr
 
-	self.addr_fact_country_code = rec[29]
-	if rec[30] is None:
-	    self.addr_fact_country_name = None
-	else:
-	    addr_fact_country_name = rec[30].strip()
-	    self.addr_fact_country_name = addr_fact_country_name
-	    addr_fact += ", " + addr_fact_country_name
-	
-	if rec[31] is None:
-	    self.addr_fact_country_socr = None
-	else:
-	    addr_fact_country_socr = rec[31].strip()
-	    self.addr_fact_country_socr = addr_fact_country_socr
-	    addr_fact += " " + addr_fact_country_socr
-	
-	self.addr_fact = addr_fact
+        self.addr_fact_country_code = rec[29]
+        if rec[30] is None:
+            self.addr_fact_country_name = None
+        else:
+            addr_fact_country_name = rec[30].strip()
+            self.addr_fact_country_name = addr_fact_country_name
+            addr_fact += ", " + addr_fact_country_name
+        
+        if rec[31] is None:
+            self.addr_fact_country_socr = None
+        else:
+            addr_fact_country_socr = rec[31].strip()
+            self.addr_fact_country_socr = addr_fact_country_socr
+            addr_fact += " " + addr_fact_country_socr
+        
+        self.addr_fact = addr_fact
     
     def initFromDBF(self, rec):
         self.people_id = rec.number
@@ -262,66 +262,66 @@ class SM_PEOPLE:
         self.fname = None
         self.mname = None
         self.birthday         = None
-	self.sex              = None
+        self.sex              = None
         self.document_type_id = None
         self.document_series  = None
         self.document_number  = None
-	self.snils            = None
-	self.smo_ogrn         = None
-	self.ocato            = None
-	self.enp              = None
-	
-	self.dpfs             = None
-	self.s_oms            = None
-	self.n_oms            = None
-	
-	self.mcod             = None
+        self.snils            = None
+        self.smo_ogrn         = None
+        self.ocato            = None
+        self.enp              = None
+        
+        self.dpfs             = None
+        self.s_oms            = None
+        self.n_oms            = None
+        
+        self.mcod             = None
 
 class ST_PEOPLE:
     def __init__(self):
         self.people_id  = None
 
-	self.ocato      = None
-	self.smo_code   = None
-	self.dpfs       = None
-	self.oms_series = None
-	self.oms_number = None
-	self.enp        = None
-	self.mcod       = None
+        self.ocato      = None
+        self.smo_code   = None
+        self.dpfs       = None
+        self.oms_series = None
+        self.oms_number = None
+        self.enp        = None
+        self.mcod       = None
 
 class MO_PEOPLE:
     def __init__(self):
         self.people_id   = None
 
-	self.dpfs        = None
-	self.oms_sn      = None
-	self.enp         = None
-	self.lname       = None
-	self.fname       = None
-	self.mname       = None
-	self.birthday    = None
-	self.birthplace  = None
-	self.doc_type_id = None
-	self.doc_sn      = None
-	self.doc_when    = None
-	self.doc_who     = None
-	self.snils       = None
-	self.mcod        = None
-	self.motive_att  = None
-	self.type_att    = None
-	self.date_att    = None
-	self.date_det    = None
+        self.dpfs        = None
+        self.oms_sn      = None
+        self.enp         = None
+        self.lname       = None
+        self.fname       = None
+        self.mname       = None
+        self.birthday    = None
+        self.birthplace  = None
+        self.doc_type_id = None
+        self.doc_sn      = None
+        self.doc_when    = None
+        self.doc_who     = None
+        self.snils       = None
+        self.mcod        = None
+        self.motive_att  = None
+        self.type_att    = None
+        self.date_att    = None
+        self.date_det    = None
 
 class P_CLINIC:
     def __init__(self):
-	self.area_people_id       = None
-	self.area_id              = None
-	self.motive_attach_beg_id = None
-	self.clinic_area_id       = None
-	self.clinic_id            = None
-	self.speciality_id        = None
-	self.basic_speciality     = None
-	
+        self.area_people_id       = None
+        self.area_id              = None
+        self.motive_attach_beg_id = None
+        self.clinic_area_id       = None
+        self.clinic_id            = None
+        self.speciality_id        = None
+        self.basic_speciality     = None
+        
 
 def get_registry(table_name):
     import dbf
@@ -410,35 +410,35 @@ def get_fnames(path = SM2DO_PATH, file_ext = '.csv'):
 def d_series(document_series):
     
     if (document_series is not None) and (document_series.find('I') >= 0):
-	a_ar = document_series.split('I')
-	sss  = ''.join(a_ar)
-	if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
-	
-	return sss
+        a_ar = document_series.split('I')
+        sss  = ''.join(a_ar)
+        if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
+        
+        return sss
     else:
-	return document_series
+        return document_series
 
 def d_number(document_number):
     
     if (document_number is not None) and (document_number.find('I') >= 0):
-	a_ar = document_number.split('I')
-	n = len(a_ar)
-	b_ar = []
-	i = 0
-	while i < n:
-	    a = a_ar[i]
-	    i += 1
-	    if a == '':
-		if (i < n) and (a_ar[i] == ''):
-		    i += 2
-		    b_ar.append('I')
-	    else:
-		b_ar.append(a)
-		
-	sss  = ''.join(b_ar)
-	return sss
+        a_ar = document_number.split('I')
+        n = len(a_ar)
+        b_ar = []
+        i = 0
+        while i < n:
+            a = a_ar[i]
+            i += 1
+            if a == '':
+                if (i < n) and (a_ar[i] == ''):
+                    i += 2
+                    b_ar.append('I')
+            else:
+                b_ar.append(a)
+                
+        sss  = ''.join(b_ar)
+        return sss
     else:
-	return document_number
+        return document_number
 
 def get_sm(fname, mcod = None):
     from datetime import datetime
@@ -447,68 +447,68 @@ def get_sm(fname, mcod = None):
 
     array = []
     for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	if len(a_line) < 15:
-	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
-	    log.warn( sout )
-	    continue
-	people_id  = int(a_line[0])
-	lname = a_line[1]
-	fname = a_line[2]
-	mname = a_line[3]
-	s_bd  = a_line[4]
-	
-	try:
-	    bd = datetime.strptime(s_bd, '%Y-%m-%d')
-	except:
-	    bd = None
-	
-	sex   = int(a_line[5])
-	
-	doc_type_id     = a_line[6]
-	document_series = a_line[7]
-	document_number = a_line[8]
-	snils           = a_line[9]
-	
-	smo_ogrn        = a_line[10]
-	ocato           = a_line[11]
-	enp             = a_line[12]
-	
-	dpfs            = a_line[13]
-	s_oms           = a_line[14]
-	n_oms           = a_line[15]
-	
-	sm_p = SM_PEOPLE()
-	
-	sm_p.people_id = people_id
-	sm_p.lname = lname
-	sm_p.fname = fname
-	sm_p.mname = mname
-	sm_p.birthday         = bd
-	sm_p.sex              = sex
-	sm_p.document_type_id = doc_type_id
+        u_line = line.decode('cp1251')
+        a_line = u_line.split("|")
+        if len(a_line) < 15:
+            sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+            log.warn( sout )
+            continue
+        people_id  = int(a_line[0])
+        lname = a_line[1]
+        fname = a_line[2]
+        mname = a_line[3]
+        s_bd  = a_line[4]
+        
+        try:
+            bd = datetime.strptime(s_bd, '%Y-%m-%d')
+        except:
+            bd = None
+        
+        sex   = int(a_line[5])
+        
+        doc_type_id     = a_line[6]
+        document_series = a_line[7]
+        document_number = a_line[8]
+        snils           = a_line[9]
+        
+        smo_ogrn        = a_line[10]
+        ocato           = a_line[11]
+        enp             = a_line[12]
+        
+        dpfs            = a_line[13]
+        s_oms           = a_line[14]
+        n_oms           = a_line[15]
+        
+        sm_p = SM_PEOPLE()
+        
+        sm_p.people_id = people_id
+        sm_p.lname = lname
+        sm_p.fname = fname
+        sm_p.mname = mname
+        sm_p.birthday         = bd
+        sm_p.sex              = sex
+        sm_p.document_type_id = doc_type_id
 
-	if doc_type_id == '14':
-	    sm_p.document_series  = d_series(document_series)
-	else:
-	    sm_p.document_series  = d_number(document_series)
-	sm_p.document_number  = d_number(document_number)
-	sm_p.snils            = snils
-	sm_p.smo_ogrn         = smo_ogrn
-	sm_p.ocato            = ocato
-	sm_p.enp              = enp
-	
-	if len(dpfs) == 0:
-	    sm_p.dpfs = None
-	else:
-	    sm_p.dpfs         = dpfs
-	sm_p.s_oms            = s_oms
-	sm_p.n_oms            = n_oms
-	
-	sm_p.mcod             = mcod
-	
-	array.append( sm_p )
+        if doc_type_id == '14':
+            sm_p.document_series  = d_series(document_series)
+        else:
+            sm_p.document_series  = d_number(document_series)
+        sm_p.document_number  = d_number(document_number)
+        sm_p.snils            = snils
+        sm_p.smo_ogrn         = smo_ogrn
+        sm_p.ocato            = ocato
+        sm_p.enp              = enp
+        
+        if len(dpfs) == 0:
+            sm_p.dpfs = None
+        else:
+            sm_p.dpfs         = dpfs
+        sm_p.s_oms            = s_oms
+        sm_p.n_oms            = n_oms
+        
+        sm_p.mcod             = mcod
+        
+        array.append( sm_p )
     
     ins.close()    
     
@@ -560,27 +560,27 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
         WHERE 
         people_id = %s;"""
     else:
-	s_sqlu = """UPDATE
-	mira$peoples
-	SET
-	lname = %s,
-	fname = %s,
-	mname = %s,
-	birthday = %s,
-	sex = %s,
-	document_type_id_fk = %s,
-	document_series = %s,
-	document_number = %s,
-	snils = %s,
-	dpfs = %s, 
-	oms_series = %s, 
-	oms_number = %s,
-	enp = %s,
-	ocato = %s,
-	mcod = %s,
-	smo_ogrn = %s
-	WHERE 
-	people_id = %s;"""
+        s_sqlu = """UPDATE
+        mira$peoples
+        SET
+        lname = %s,
+        fname = %s,
+        mname = %s,
+        birthday = %s,
+        sex = %s,
+        document_type_id_fk = %s,
+        document_series = %s,
+        document_number = %s,
+        snils = %s,
+        dpfs = %s, 
+        oms_series = %s, 
+        oms_number = %s,
+        enp = %s,
+        ocato = %s,
+        mcod = %s,
+        smo_ogrn = %s
+        WHERE 
+        people_id = %s;"""
 
     
     curr = db.con.cursor()
@@ -590,66 +590,66 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
     count_u = 0
     
     for sm in ar_sm:
-	count_a += 1
+        count_a += 1
 
-	people_id        = sm.people_id
-	lname            = sm.lname
-	fname            = sm.fname
-	mname            = sm.mname
-	birthday         = sm.birthday
-	sex              = sm.sex
-	document_type_id = sm.document_type_id
-	document_series  = sm.document_series
-	document_number  = sm.document_number
-	snils            = sm.snils
-	smo_ogrn         = sm.smo_ogrn
-	ocato            = sm.ocato
-	enp              = sm.enp
-	
-	dpfs             = sm.dpfs
-	oms_series       = sm.s_oms
-	oms_number       = sm.n_oms
-	
-	mcod             = sm.mcod
+        people_id        = sm.people_id
+        lname            = sm.lname
+        fname            = sm.fname
+        mname            = sm.mname
+        birthday         = sm.birthday
+        sex              = sm.sex
+        document_type_id = sm.document_type_id
+        document_series  = sm.document_series
+        document_number  = sm.document_number
+        snils            = sm.snils
+        smo_ogrn         = sm.smo_ogrn
+        ocato            = sm.ocato
+        enp              = sm.enp
+        
+        dpfs             = sm.dpfs
+        oms_series       = sm.s_oms
+        oms_number       = sm.n_oms
+        
+        mcod             = sm.mcod
 
-	if count_a % STEP == 0:
-	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
-	    log.info(sout)
-	
-	curr.execute(s_sqlf,(people_id,))
-	rec = curr.fetchone()
+        if count_a % STEP == 0:
+            sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
+            log.info(sout)
+        
+        curr.execute(s_sqlf,(people_id,))
+        rec = curr.fetchone()
 
-	if rec is None:
-	    try:
-		curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn))
-		db.con.commit()	
-		count_i += 1
-	    except Exception, e:
-		sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	else:
-	    if upd:
-		try:
-		    curw.execute(s_sqlu,(lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn, people_id,))
-		    db.con.commit()	
-		    count_u += 1
-		except Exception, e:
-		    sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
-		    log.error(sout)
-		    sout = "{0}".format(e)
-		    log.error(sout)
-	    if PRINT_FOUND:
-		f_oms_series = rec[0]
-		f_oms_number = rec[1]
-		f_enp        = rec[2]
-		f_mcod       = rec[3]
-		
-		sout = "Found in mira$peoples: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
-		log.info(sout)
-		
-	    
+        if rec is None:
+            try:
+                curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn))
+                db.con.commit()	
+                count_i += 1
+            except Exception, e:
+                sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+        else:
+            if upd:
+                try:
+                    curw.execute(s_sqlu,(lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn, people_id,))
+                    db.con.commit()
+                    count_u += 1
+                except Exception, e:
+                    sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
+                    log.error(sout)
+                    sout = "{0}".format(e)
+                    log.error(sout)
+            if PRINT_FOUND:
+                f_oms_series = rec[0]
+                f_oms_number = rec[1]
+                f_enp        = rec[2]
+                f_mcod       = rec[3]
+                
+                sout = "Found in mira$peoples: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
+                log.info(sout)
+                
+            
     return count_a, count_i, count_u
 
 def get_mira_peoples(db, mcod):
@@ -672,48 +672,48 @@ def get_mira_peoples(db, mcod):
     
     ar_sm = []
     for rec in results:
-	people_id = rec[0]
-	lname = rec[1]
-	fname = rec[2]
-	mname = rec[3]
-	birthday = rec[4]
-	sex = rec[5]
-	document_type_id = rec[6]
-	document_series = rec[7]
-	document_number = rec[8]
-	snils = rec[9]
-	dpfs = rec[10]
-	oms_series = rec[11]
-	oms_number = rec[12]
-	enp = rec[13]
-	ocato = rec[14]
-	mcod = rec[15]
-	smo_ogrn	 = rec[16]
-	
-	sm_p = SM_PEOPLE()
+        people_id = rec[0]
+        lname = rec[1]
+        fname = rec[2]
+        mname = rec[3]
+        birthday = rec[4]
+        sex = rec[5]
+        document_type_id = rec[6]
+        document_series = rec[7]
+        document_number = rec[8]
+        snils = rec[9]
+        dpfs = rec[10]
+        oms_series = rec[11]
+        oms_number = rec[12]
+        enp = rec[13]
+        ocato = rec[14]
+        mcod = rec[15]
+        smo_ogrn = rec[16]
+        
+        sm_p = SM_PEOPLE()
 
-	sm_p.people_id        = people_id
-	sm_p.lname            = lname
-	sm_p.fname            = fname
-	sm_p.mname            = mname
-	sm_p.birthday         = birthday
-	sm_p.sex              = sex
-	sm_p.document_type_id = document_type_id
-	sm_p.document_series  = document_series
-	sm_p.document_number  = document_number
-	sm_p.snils            = snils
-	sm_p.smo_ogrn         = smo_ogrn
-	sm_p.ocato            = ocato
-	sm_p.enp              = enp
-	
-	sm_p.dpfs             = dpfs
-	sm_p.s_oms            = oms_series
-	sm_p.n_oms            = oms_number
-	
-	sm_p.mcod             = mcod
-	
-	ar_sm.append(sm_p)
-	
+        sm_p.people_id        = people_id
+        sm_p.lname            = lname
+        sm_p.fname            = fname
+        sm_p.mname            = mname
+        sm_p.birthday         = birthday
+        sm_p.sex              = sex
+        sm_p.document_type_id = document_type_id
+        sm_p.document_series  = document_series
+        sm_p.document_number  = document_number
+        sm_p.snils            = snils
+        sm_p.smo_ogrn         = smo_ogrn
+        sm_p.ocato            = ocato
+        sm_p.enp              = enp
+        
+        sm_p.dpfs             = dpfs
+        sm_p.s_oms            = oms_series
+        sm_p.n_oms            = oms_number
+        
+        sm_p.mcod             = mcod
+        
+        ar_sm.append(sm_p)
+        
     return ar_sm
 
 def get_st(fname, mcod = None):
@@ -723,51 +723,51 @@ def get_st(fname, mcod = None):
 
     array = []
     for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	if len(a_line) < 8:
-	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
-	    log.warn( sout )
-	    continue
+        u_line = line.decode('cp1251')
+        a_line = u_line.split("|")
+        if len(a_line) < 8:
+            sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+            log.warn( sout )
+            continue
 
-	people_id  = int(a_line[0])
-	ocato      = a_line[1]
-	s_code     = a_line[2]
-	if len(s_code) == 0:
-	    smo_code = None
-	else:
-	    smo_code = int(s_code)
-	    
-	dpfs       = a_line[3]
-	oms_series = a_line[4]
-	oms_number = a_line[5]
-	enp        = a_line[6]
-	mcod       = a_line[7]
+        people_id  = int(a_line[0])
+        ocato      = a_line[1]
+        s_code     = a_line[2]
+        if len(s_code) == 0:
+            smo_code = None
+        else:
+            smo_code = int(s_code)
+            
+        dpfs       = a_line[3]
+        oms_series = a_line[4]
+        oms_number = a_line[5]
+        enp        = a_line[6]
+        mcod       = a_line[7]
 
-	st_p = ST_PEOPLE()
-	
-	st_p.people_id = people_id
-	
-	st_p.ocato     = ocato
-	st_p.smo_code  = smo_code
+        st_p = ST_PEOPLE()
+        
+        st_p.people_id = people_id
+        
+        st_p.ocato     = ocato
+        st_p.smo_code  = smo_code
 
-	if len(dpfs) == 0:
-	    st_p.dpfs = None
-	else:
-	    st_p.dpfs = int(dpfs)
-	    
-	st_p.oms_series = oms_series
-	st_p.oms_number = oms_number
-	st_p.enp        = enp 
+        if len(dpfs) == 0:
+            st_p.dpfs = None
+        else:
+            st_p.dpfs = int(dpfs)
+            
+        st_p.oms_series = oms_series
+        st_p.oms_number = oms_number
+        st_p.enp        = enp 
 
-	if (len(mcod) == 0) or (mcod[0] not in (u'0', u'1', u'2', u'3', u'4', u'5', u'6', u'7', u'8', u'9')):
-	    st_p.mcod = None
-	else:
-	    st_p.mcod = int(mcod)
-	
-	array.append( st_p )
+        if (len(mcod) == 0) or (mcod[0] not in (u'0', u'1', u'2', u'3', u'4', u'5', u'6', u'7', u'8', u'9')):
+            st_p.mcod = None
+        else:
+            st_p.mcod = int(mcod)
+        
+        array.append( st_p )
     
-    ins.close()    
+    ins.close()
     
     return array
 
@@ -812,46 +812,46 @@ def put_st2mira(db, ar_st, append = False):
     count_u = 0
     
     for st in ar_st:
-	count_a += 1
+        count_a += 1
 
-	people_id  = st.people_id
+        people_id  = st.people_id
 
-	ocato      = st.ocato
-	smo_code   = st.smo_code
-	dpfs       = st.dpfs
-	oms_series = st.oms_series
-	oms_number = st.oms_number
-	enp        = st.enp
-	mcod       = st.mcod
+        ocato      = st.ocato
+        smo_code   = st.smo_code
+        dpfs       = st.dpfs
+        oms_series = st.oms_series
+        oms_number = st.oms_number
+        enp        = st.enp
+        mcod       = st.mcod
 
-	if count_a % STEP == 0:
-	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
-	    log.info(sout)
-	
-	curr.execute(s_sqlf,(people_id,))
-	rec = curr.fetchone()
+        if count_a % STEP == 0:
+            sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
+            log.info(sout)
+        
+        curr.execute(s_sqlf,(people_id,))
+        rec = curr.fetchone()
 
-	if (rec is None) and append:
-	    try:
-		curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod))
-		db.con.commit()	
-		count_i += 1
-	    except Exception, e:
-		sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	else:
-	    try:
-		curw.execute(s_sqlu,(ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod, people_id,))
-		db.con.commit()	
-		count_u += 1
-	    except Exception, e:
-		sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	    
+        if (rec is None) and append:
+            try:
+                curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod))
+                db.con.commit()	
+                count_i += 1
+            except Exception, e:
+                sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+        else:
+            try:
+                curw.execute(s_sqlu,(ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod, people_id,))
+                db.con.commit()	
+                count_u += 1
+            except Exception, e:
+                sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+            
     return count_a, count_i, count_u
 
 def mo_item(s_mo_item, itype = 'S' ):
@@ -866,22 +866,22 @@ def mo_item(s_mo_item, itype = 'S' ):
     
     ls = len(s_mo_item)
     if (ls == 0) or (s_mo_item == u'\r\n') or (s_mo_item == u'"NONE"'):
-	return None
+        return None
     else:
-	sss = s_mo_item[1:ls-1]
-	if itype == 'S':
-	    return sss
-	elif itype == 'D':
-	    year  = int(sss[:4])
-	    month = int(sss[4:6])
-	    day   = int(sss[6:])
-	    ddd = date(year, month, day)
-	    return ddd
-	elif itype == 'I':
-	    iii = int(sss)
-	    return iii
-	else:
-	    return sss
+        sss = s_mo_item[1:ls-1]
+        if itype == 'S':
+            return sss
+        elif itype == 'D':
+            year  = int(sss[:4])
+            month = int(sss[4:6])
+            day   = int(sss[6:])
+            ddd = date(year, month, day)
+            return ddd
+        elif itype == 'I':
+            iii = int(sss)
+            return iii
+        else:
+            return sss
 
 def get_mo(fname, mcod = None):
     from datetime import datetime
@@ -890,35 +890,35 @@ def get_mo(fname, mcod = None):
 
     array = []
     for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split(";")
-	if len(a_line) < 18:
-	    sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
-	    log.warn( sout )
-	    continue
-	
-	p_mo = MO_PEOPLE()
-	
-	p_mo.dpfs        = mo_item(a_line[0])
-	p_mo.oms_sn      = mo_item(a_line[1])
-	p_mo.enp         = mo_item(a_line[2])
-	p_mo.lname       = mo_item(a_line[3])
-	p_mo.fname       = mo_item(a_line[4])
-	p_mo.mname       = mo_item(a_line[5])
-	p_mo.birthday    = mo_item(a_line[6],'D')
-	p_mo.birthplace  = mo_item(a_line[7])
-	p_mo.doc_type_id = mo_item(a_line[8],'I')
-	p_mo.doc_sn      = mo_item(a_line[9])
-	p_mo.doc_when    = mo_item(a_line[10],'D')
-	p_mo.doc_who     = mo_item(a_line[11])
-	p_mo.snils       = mo_item(a_line[12])
-	p_mo.mcod        = mo_item(a_line[13],'I')
-	p_mo.motive_att  = mo_item(a_line[14],'I')
-	p_mo.type_att    = mo_item(a_line[15])
-	p_mo.date_att    = mo_item(a_line[16],'D')
-	p_mo.date_det    = mo_item(a_line[17],'D')
-	
-	array.append( p_mo )
+        u_line = line.decode('cp1251')
+        a_line = u_line.split(";")
+        if len(a_line) < 18:
+            sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+            log.warn( sout )
+            continue
+        
+        p_mo = MO_PEOPLE()
+        
+        p_mo.dpfs        = mo_item(a_line[0])
+        p_mo.oms_sn      = mo_item(a_line[1])
+        p_mo.enp         = mo_item(a_line[2])
+        p_mo.lname       = mo_item(a_line[3])
+        p_mo.fname       = mo_item(a_line[4])
+        p_mo.mname       = mo_item(a_line[5])
+        p_mo.birthday    = mo_item(a_line[6],'D')
+        p_mo.birthplace  = mo_item(a_line[7])
+        p_mo.doc_type_id = mo_item(a_line[8],'I')
+        p_mo.doc_sn      = mo_item(a_line[9])
+        p_mo.doc_when    = mo_item(a_line[10],'D')
+        p_mo.doc_who     = mo_item(a_line[11])
+        p_mo.snils       = mo_item(a_line[12])
+        p_mo.mcod        = mo_item(a_line[13],'I')
+        p_mo.motive_att  = mo_item(a_line[14],'I')
+        p_mo.type_att    = mo_item(a_line[15])
+        p_mo.date_att    = mo_item(a_line[16],'D')
+        p_mo.date_det    = mo_item(a_line[17],'D')
+        
+        array.append( p_mo )
     
     ins.close()    
     
@@ -1000,75 +1000,75 @@ def put_mo(db, ar, upd = False):
     count_u = 0
     
     for p_mo in ar:
-	count_a += 1
+        count_a += 1
 
-	dpfs        = p_mo.dpfs
-	oms_sn      = p_mo.oms_sn
-	enp         = p_mo.enp
-	lname       = p_mo.lname
-	fname       = p_mo.fname
-	mname       = p_mo.mname
-	birthday    = p_mo.birthday
-	birthplace  = p_mo.birthplace
-	doc_type_id = p_mo.doc_type_id
-	doc_sn      = p_mo.doc_sn
-	doc_when    = p_mo.doc_when
-	doc_who     = p_mo.doc_who
-	snils       = p_mo.snils
-	mcod        = p_mo.mcod
-	motive_att  = p_mo.motive_att
-	type_att    = p_mo.type_att
-	date_att    = p_mo.date_att
-	date_det    = p_mo.date_det
+        dpfs        = p_mo.dpfs
+        oms_sn      = p_mo.oms_sn
+        enp         = p_mo.enp
+        lname       = p_mo.lname
+        fname       = p_mo.fname
+        mname       = p_mo.mname
+        birthday    = p_mo.birthday
+        birthplace  = p_mo.birthplace
+        doc_type_id = p_mo.doc_type_id
+        doc_sn      = p_mo.doc_sn
+        doc_when    = p_mo.doc_when
+        doc_who     = p_mo.doc_who
+        snils       = p_mo.snils
+        mcod        = p_mo.mcod
+        motive_att  = p_mo.motive_att
+        type_att    = p_mo.type_att
+        date_att    = p_mo.date_att
+        date_det    = p_mo.date_det
 
-	if oms_sn is None:
-	    s_oms_sn = ''
-	else:
-	    s_oms_sn = oms_sn.encode('utf-8')
-	if enp is None:
-	    s_enp = ''
-	else:
-	    s_enp = enp.encode('utf-8')
+        if oms_sn is None:
+            s_oms_sn = ''
+        else:
+            s_oms_sn = oms_sn.encode('utf-8')
+        if enp is None:
+            s_enp = ''
+        else:
+            s_enp = enp.encode('utf-8')
 
-	
-	if count_a % STEP == 0:
-	    sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
-	    log.info(sout)
-	
-	if enp is not None:
-	    curr.execute(s_sqlf_enp,(enp,))
-	elif oms_sn is not None:
-	    curr.execute(s_sqlf_oms_sn,(oms_sn,))
-	else:
-	    curr.execute(s_sqlf_fio_dr,(lname, fname, mname, birthday,))
-	rec = curr.fetchone()
-	if rec is None:
-	    try:
-		curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
-		db.con.commit()	
-		count_i += 1
-	    except Exception, e:
-		sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	else:
-	    if upd:
-		_id = rec[0]
-		try:
-		    curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
-		    db.con.commit()	
-		    count_u += 1
-		except Exception, e:
-		    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
-		    log.error(sout)
-		    sout = "{0}".format(e)
-		    log.error(sout)
-		    
-	    if PRINT_FOUND:
-		sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
-		log.info(sout)
-		    
+        
+        if count_a % STEP == 0:
+            sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
+            log.info(sout)
+        
+        if enp is not None:
+            curr.execute(s_sqlf_enp,(enp,))
+        elif oms_sn is not None:
+            curr.execute(s_sqlf_oms_sn,(oms_sn,))
+        else:
+            curr.execute(s_sqlf_fio_dr,(lname, fname, mname, birthday,))
+        rec = curr.fetchone()
+        if rec is None:
+            try:
+                curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
+                db.con.commit()	
+                count_i += 1
+            except Exception, e:
+                sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+        else:
+            if upd:
+                _id = rec[0]
+                try:
+                    curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
+                    db.con.commit()
+                    count_u += 1
+                except Exception, e:
+                    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
+                    log.error(sout)
+                    sout = "{0}".format(e)
+                    log.error(sout)
+                    
+            if PRINT_FOUND:
+                sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
+                log.info(sout)
+                    
     return count_a, count_i, count_u
 
 def get_mo_fromdb(db, mcod):
@@ -1090,29 +1090,29 @@ def get_mo_fromdb(db, mcod):
 
     array = []
     for rec in recs:
-	
-	p_mo = MO_PEOPLE()
-	
-	p_mo.dpfs        = rec[0]
-	p_mo.oms_sn      = rec[1]
-	p_mo.enp         = rec[2]
-	p_mo.lname       = rec[3]
-	p_mo.fname       = rec[4]
-	p_mo.mname       = rec[5]
-	p_mo.birthday    = rec[6]
-	p_mo.birthplace  = rec[7]
-	p_mo.doc_type_id = rec[8]
-	p_mo.doc_sn      = rec[9]
-	p_mo.doc_when    = rec[10]
-	p_mo.doc_who     = rec[11]
-	p_mo.snils       = rec[12]
-	p_mo.mcod        = rec[13]
-	p_mo.motive_att  = rec[14]
-	p_mo.type_att    = rec[15]
-	p_mo.date_att    = rec[16]
-	p_mo.date_det    = rec[17]
-	
-	array.append( p_mo )
+        
+        p_mo = MO_PEOPLE()
+        
+        p_mo.dpfs        = rec[0]
+        p_mo.oms_sn      = rec[1]
+        p_mo.enp         = rec[2]
+        p_mo.lname       = rec[3]
+        p_mo.fname       = rec[4]
+        p_mo.mname       = rec[5]
+        p_mo.birthday    = rec[6]
+        p_mo.birthplace  = rec[7]
+        p_mo.doc_type_id = rec[8]
+        p_mo.doc_sn      = rec[9]
+        p_mo.doc_when    = rec[10]
+        p_mo.doc_who     = rec[11]
+        p_mo.snils       = rec[12]
+        p_mo.mcod        = rec[13]
+        p_mo.motive_att  = rec[14]
+        p_mo.type_att    = rec[15]
+        p_mo.date_att    = rec[16]
+        p_mo.date_det    = rec[17]
+        
+        array.append( p_mo )
     
     return array
 
@@ -1121,96 +1121,96 @@ def mo_string(p_mo):
     sss = u''
     
     if p_mo.dpfs is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.dpfs + u'";'
-	
+        sss += u'"' + p_mo.dpfs + u'";'
+        
     if p_mo.oms_sn is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.oms_sn + u'";'
+        sss += u'"' + p_mo.oms_sn + u'";'
 
     if p_mo.enp is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.enp + u'";'
-	
+        sss += u'"' + p_mo.enp + u'";'
+        
     if p_mo.lname is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.lname + u'";'
+        sss += u'"' + p_mo.lname + u'";'
 
     if p_mo.fname is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.fname + u'";'
+        sss += u'"' + p_mo.fname + u'";'
 
     if p_mo.mname is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.mname + u'";'
-	
+        sss += u'"' + p_mo.mname + u'";'
+        
     if p_mo.birthday is None:
-	sss += u';'
+        sss += u';'
     else:
-	sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
-	sss += u'"' + sdd + u'";'
+        sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
+        sss += u'"' + sdd + u'";'
     
     if p_mo.birthplace is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.birthplace + u'";'
+        sss += u'"' + p_mo.birthplace + u'";'
     
     if p_mo.doc_type_id is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + str(p_mo.doc_type_id) + u'";'
-	
+        sss += u'"' + str(p_mo.doc_type_id) + u'";'
+        
     if p_mo.doc_sn is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.doc_sn + u'";'
+        sss += u'"' + p_mo.doc_sn + u'";'
     
     if p_mo.doc_when is None:
-	sss += u';'
+        sss += u';'
     else:
-	sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
-	sss += u'"' + sdd + u'";'
+        sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
+        sss += u'"' + sdd + u'";'
     
     if p_mo.doc_who is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.doc_who + u'";'
+        sss += u'"' + p_mo.doc_who + u'";'
     
     if p_mo.snils is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.snils + u'";'
+        sss += u'"' + p_mo.snils + u'";'
     
     if p_mo.mcod is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + str(p_mo.mcod) + u'";'
+        sss += u'"' + str(p_mo.mcod) + u'";'
 
     if p_mo.motive_att is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + str(p_mo.motive_att) + u'";'
+        sss += u'"' + str(p_mo.motive_att) + u'";'
 
     if p_mo.type_att is None:
-	sss += u';'
+        sss += u';'
     else:
-	sss += u'"' + p_mo.type_att + u'";'
-	
+        sss += u'"' + p_mo.type_att + u'";'
+        
     if p_mo.date_att is None:
-	sss += u';'
+        sss += u';'
     else:
-	sdd = "%04d%02d%02d" % (p_mo.date_att.year, p_mo.date_att.month, p_mo.date_att.day)
-	sss += u'"' + sdd + u'";'
+        sdd = "%04d%02d%02d" % (p_mo.date_att.year, p_mo.date_att.month, p_mo.date_att.day)
+        sss += u'"' + sdd + u'";'
 
     if p_mo.date_det is not None:
-	sdd = "%04d%02d%02d" % (p_mo.date_det.year, p_mo.date_det.month, p_mo.date_det.day)
-	sss += u'"' + sdd + u'"'
+        sdd = "%04d%02d%02d" % (p_mo.date_det.year, p_mo.date_det.month, p_mo.date_det.day)
+        sss += u'"' + sdd + u'"'
 
     return sss
     
@@ -1222,15 +1222,15 @@ def write_mo(ar, fname):
     l_ar = len(ar)
     i = 0
     for p_mo in ar:
-	
-	i += 1
-	if i == l_ar:
-	    sss = mo_string(p_mo)
-	else:
-	    sss = mo_string(p_mo) + u"\r\n"
-	ps = sss.encode('windows-1251')
-	fo.write(ps)
-	
+        
+        i += 1
+        if i == l_ar:
+            sss = mo_string(p_mo)
+        else:
+            sss = mo_string(p_mo) + u"\r\n"
+        ps = sss.encode('windows-1251')
+        fo.write(ps)
+        
     fo.close()
     
     return l_ar
@@ -1243,16 +1243,16 @@ def get_pclinics(cur, p_id):
     
     pc_arr = []
     for rec in result:
-	p_clinic = P_CLINIC()
-	p_clinic.area_people_id       = rec[0]
-	p_clinic.area_id              = rec[1]
-	p_clinic.motive_attach_beg_id = rec[2]
-	p_clinic.clinic_area_id       = rec[3]
-	p_clinic.clinic_id            = rec[4]
-	p_clinic.speciality_id        = rec[5]
-	p_clinic.basic_speciality     = rec[6]
-	
-	pc_arr.append(p_clinic)
-	
+        p_clinic = P_CLINIC()
+        p_clinic.area_people_id       = rec[0]
+        p_clinic.area_id              = rec[1]
+        p_clinic.motive_attach_beg_id = rec[2]
+        p_clinic.clinic_area_id       = rec[3]
+        p_clinic.clinic_id            = rec[4]
+        p_clinic.speciality_id        = rec[5]
+        p_clinic.basic_speciality     = rec[6]
+        
+        pc_arr.append(p_clinic)
+        
     
     return pc_arr
