@@ -78,7 +78,7 @@ if __name__ == "__main__":
     import os, shutil
     import time
     from dbmysql_connect import DBMY
-    from people import get_fnames, get_mo, put_mo
+    from people import get_fnames, get_mo_cad, put_mo_cad
 
     log.info("======================= INSB-CAD-5 ===========================================")
     localtime = time.asctime( time.localtime(time.time()) )
@@ -121,11 +121,11 @@ if __name__ == "__main__":
             log.warn( sout )
         else:
             #pfile(f_fname)
-            ar = get_mo(f_fname)
+            ar = get_mo_cad(f_fname)
             l_ar = len(ar)
             sout = "File has got {0} lines".format(l_ar)
             log.info( sout )
-            count_a, count_i, count_u = put_mo(dbmy2, ar, UPDATE)
+            count_a, count_i, count_u = put_mo_cad(dbmy2, ar, UPDATE)
             sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
             log.info( sout )
             if REGISTER_FILE: register_mo_done(dbmy2, mcod, clinic_id, fname)

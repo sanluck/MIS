@@ -312,6 +312,34 @@ class MO_PEOPLE:
         self.date_att    = None
         self.date_det    = None
 
+class MO_CAD_PEOPLE:
+    def __init__(self):
+        self.people_id   = None
+
+        self.action      = None
+        self.dpfs        = None
+        self.oms_sn      = None
+        self.enp         = None
+        self.lname       = None
+        self.fname       = None
+        self.mname       = None
+        self.birthday    = None
+        self.birthplace  = None
+        self.doc_type_id = None
+        self.doc_sn      = None
+        self.doc_when    = None
+        self.doc_who     = None
+        self.snils       = None
+        self.mcod        = None
+        self.motive_att  = None
+        self.type_att    = None
+        self.date_att    = None
+        self.date_det    = None
+        self.mo_oid      = None
+        self.dep_code    = None
+        self.area_number = None
+        self.doc_snils   = None
+
 class P_CLINIC:
     def __init__(self):
         self.area_people_id       = None
@@ -924,6 +952,52 @@ def get_mo(fname, mcod = None):
     
     return array
 
+def get_mo_cad(fname, mcod = None):
+    from datetime import datetime
+    
+    ins = open( fname, "r" )
+
+    array = []
+    for line in ins:
+        u_line = line.decode('cp1251')
+        a_line = u_line.split(";")
+        if len(a_line) < 18:
+            sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
+            log.warn( sout )
+            continue
+        
+        p_mo = MO_CAD_PEOPLE()
+
+        p_mo.action      = mo_item(a_line[0])
+        p_mo.dpfs        = mo_item(a_line[1])
+        p_mo.oms_sn      = mo_item(a_line[2])
+        p_mo.enp         = mo_item(a_line[3])
+        p_mo.lname       = mo_item(a_line[4])
+        p_mo.fname       = mo_item(a_line[5])
+        p_mo.mname       = mo_item(a_line[6])
+        p_mo.birthday    = mo_item(a_line[7],'D')
+        p_mo.birthplace  = mo_item(a_line[8])
+        p_mo.doc_type_id = mo_item(a_line[9],'I')
+        p_mo.doc_sn      = mo_item(a_line[10])
+        p_mo.doc_when    = mo_item(a_line[11],'D')
+        p_mo.doc_who     = mo_item(a_line[12])
+        p_mo.snils       = mo_item(a_line[13])
+        p_mo.mcod        = mo_item(a_line[14],'I')
+        p_mo.motive_att  = mo_item(a_line[15],'I')
+        p_mo.type_att    = mo_item(a_line[16])
+        p_mo.date_att    = mo_item(a_line[17],'D')
+        p_mo.date_det    = mo_item(a_line[18],'D')
+        p_mo.mo_oid      = mo_item(a_line[19])
+        p_mo.dep_code    = mo_item(a_line[20])
+        p_mo.area_number = mo_item(a_line[21],'I')
+        p_mo.doc_snils   = mo_item(a_line[22])
+        
+        array.append( p_mo )
+    
+    ins.close()    
+    
+    return array
+
 def put_mo(db, ar, upd = False):
     
     s_sqlf = """SELECT id
@@ -1057,6 +1131,178 @@ def put_mo(db, ar, upd = False):
                 _id = rec[0]
                 try:
                     curw.execute(s_sqlu,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det, _id,))
+                    db.con.commit()
+                    count_u += 1
+                except Exception, e:
+                    sout = "Can't update mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
+                    log.error(sout)
+                    sout = "{0}".format(e)
+                    log.error(sout)
+                    
+            if PRINT_FOUND:
+                sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
+                log.info(sout)
+                    
+    return count_a, count_i, count_u
+
+def put_mo_cad(db, ar, upd = False):
+    
+    s_sqlf = """SELECT id
+    FROM
+    mo_cad
+    WHERE oms_sn = %s
+    AND enp = %s
+    AND mcod = %s"""
+
+    s_sqlf_enp = """SELECT id
+    FROM
+    mo_cad
+    WHERE enp = %s;"""
+
+    s_sqlf_oms_sn = """SELECT id
+    FROM
+    mo_cad
+    WHERE oms_sn = %s;"""
+
+    s_sqlf_fio_dr = """SELECT id
+    FROM
+    mo_cad
+    WHERE lname = %s
+    AND fname = %s
+    AND mname = %s
+    AND birthday = %s;"""
+
+    s_sqli = """INSERT INTO
+    mo_cad
+    (action,
+    dpfs, oms_sn, enp, 
+    lname, fname, mname,
+    birthday, birthplace,
+    doc_type_id, doc_sn, doc_when, doc_who,
+    snils, mcod,
+    motive_att, type_att, date_att, date_det,
+    mo_oid, dep_code, area_number, doc_snils)
+    VALUES 
+    (%s,
+    %s, %s, %s,
+    %s, %s, %s,
+    %s, %s,
+    %s, %s, %s, %s,
+    %s, %s,
+    %s, %s, %s, %s,
+    %s, %s, %s, %s);"""
+
+
+    s_sqlu = """UPDATE
+    mo_cad
+    SET
+    action = %s,
+    dpfs = %s,
+    oms_sn = %s,
+    enp = %s, 
+    lname = %s,
+    fname = %s,
+    mname = %s,
+    birthday = %s,
+    birthplace = %s,
+    doc_type_id = %s,
+    doc_sn = %s,
+    doc_when = %s, 
+    doc_who = %s,
+    snils = %s,
+    mcod = %s,
+    motive_att = %s,
+    type_att = %s,
+    date_att = %s,
+    date_det = %s,
+    mo_oid = %s,
+    dep_code = %s,
+    area_number = %s,
+    doc_snils = %s
+    WHERE 
+    id = %s;"""
+
+    
+    curr = db.con.cursor()
+    curw = db.con.cursor()
+    count_a = 0
+    count_i = 0
+    count_u = 0
+    
+    for p_mo in ar:
+        count_a += 1
+
+        action      = p_mo.action
+        dpfs        = p_mo.dpfs
+        oms_sn      = p_mo.oms_sn
+        enp         = p_mo.enp
+        lname       = p_mo.lname
+        fname       = p_mo.fname
+        mname       = p_mo.mname
+        birthday    = p_mo.birthday
+        birthplace  = p_mo.birthplace
+        doc_type_id = p_mo.doc_type_id
+        doc_sn      = p_mo.doc_sn
+        doc_when    = p_mo.doc_when
+        doc_who     = p_mo.doc_who
+        snils       = p_mo.snils
+        mcod        = p_mo.mcod
+        motive_att  = p_mo.motive_att
+        type_att    = p_mo.type_att
+        date_att    = p_mo.date_att
+        date_det    = p_mo.date_det
+        mo_oid      = p_mo.mo_oid
+        dep_code    = p_mo.dep_code
+        area_number = p_mo.area_number
+        doc_snils   = p_mo.doc_snils
+
+        if oms_sn is None:
+            s_oms_sn = ''
+        else:
+            s_oms_sn = oms_sn.encode('utf-8')
+        if enp is None:
+            s_enp = ''
+        else:
+            s_enp = enp.encode('utf-8')
+
+        
+        if count_a % STEP == 0:
+            sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
+            log.info(sout)
+        
+        if enp is not None:
+            curr.execute(s_sqlf_enp,(enp,))
+        elif oms_sn is not None:
+            curr.execute(s_sqlf_oms_sn,(oms_sn,))
+        else:
+            curr.execute(s_sqlf_fio_dr,(lname, fname, mname, birthday,))
+        rec = curr.fetchone()
+        if rec is None:
+            try:
+                curw.execute(s_sqli,(action, \
+                                     dpfs, oms_sn, enp, lname, fname, mname, \
+                                     birthday, birthplace, doc_type_id, doc_sn, \
+                                     doc_when, doc_who, snils, mcod, motive_att, \
+                                     type_att, date_att, date_det, \
+                                     mo_oid, dep_code, area_number, doc_snils, ))
+                db.con.commit()
+                count_i += 1
+            except Exception, e:
+                sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+        else:
+            if upd:
+                _id = rec[0]
+                try:
+                    curw.execute(s_sqlu,(action, \
+                                         dpfs, oms_sn, enp, lname, fname, mname, \
+                                         birthday, birthplace, doc_type_id, doc_sn, \
+                                         doc_when, doc_who, snils, mcod, motive_att, \
+                                         type_att, date_att, date_det, \
+                                         mo_oid, dep_code, area_number, doc_snils, \
+                                         _id,))
                     db.con.commit()
                     count_u += 1
                 except Exception, e:
