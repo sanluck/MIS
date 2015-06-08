@@ -897,6 +897,9 @@ def mo_item(s_mo_item, itype = 'S' ):
         return None
     else:
         sss = s_mo_item[1:ls-1]
+        lsss = len(sss)
+        if (lsss > 1) and (sss[lsss-2] == '"'):
+            sss = sss[:lsss-2]
         if itype == 'S':
             return sss
         elif itype == 'D':
@@ -961,7 +964,7 @@ def get_mo_cad(fname, mcod = None):
     for line in ins:
         u_line = line.decode('cp1251')
         a_line = u_line.split(";")
-        if len(a_line) < 18:
+        if len(a_line) < 23:
             sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
             log.warn( sout )
             continue
