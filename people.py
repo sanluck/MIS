@@ -36,7 +36,7 @@ document_type_id_fk, document_series, document_number,
 snils, dpfs, oms_series, oms_number, enp,
 ocato, mcod, smo_ogrn
 FROM mira$peoples
-WHERE 
+WHERE
 mcod = {0}
 AND id_done is Null;"""
 
@@ -49,9 +49,9 @@ SQLT_FPEOPLE = """SELECT FIRST 20
     BIRTHDAY,
     SEX
 FROM VW_PEOPLES_SMALL_EXT
-WHERE 
+WHERE
 upper(LNAME) starting '{0}'
-AND upper(FNAME) starting '{1}' 
+AND upper(FNAME) starting '{1}'
 AND upper(MNAME) starting '{2}'
 AND BIRTHDAY='{3}';"""
 
@@ -64,19 +64,19 @@ SQLT_FPEOPLE0 = """SELECT FIRST 20
     BIRTHDAY,
     SEX
     FROM VW_PEOPLES_SMALL_EXT
-    WHERE 
+    WHERE
     upper(LNAME) starting '{0}'
-    AND upper(FNAME) starting '{1}' 
+    AND upper(FNAME) starting '{1}'
     AND BIRTHDAY='{2}';"""
 
-SQLT_PCLINICS = """SELECT 
+SQLT_PCLINICS = """SELECT
 ap.area_people_id, ap.area_id_fk, ap.motive_attach_beg_id_fk,
-ar.clinic_area_id_fk, 
+ar.clinic_area_id_fk,
 ca.clinic_id_fk, ca.speciality_id_fk, ca.basic_speciality
 FROM area_peoples ap
 LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
 LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ap.people_id_fk = ? 
+WHERE ap.people_id_fk = ?
 AND ap.date_end is Null
 AND ca.basic_speciality = 1;"""
 
@@ -107,7 +107,7 @@ class PEOPLE:
 
         self.sex = None
         self.work_place = None
-        
+
         self.fio  = None
         self.f1io = None
 
@@ -121,11 +121,11 @@ class PEOPLE:
         self.addr_fact_country_code = None
         self.addr_fact_country_name = None
         self.addr_fact_country_socr = None
-        
+
         self.addr_fact = None
 
-        
-    
+
+
     def initFromRec(self, rec):
         self.people_id = rec[0]
         self.lname = rec[1].strip()
@@ -150,12 +150,12 @@ class PEOPLE:
         self.territory_id_fk = rec[9]
         self.addr_jure_region_code = rec[10]
         self.addr_jure_area_code = rec[11]
-        
+
         if rec[12] is None:
             self.addr_jure_area_name = None
         else:
             self.addr_jure_area_name = rec[12].strip()
-            
+
         self.addr_jure_town_code = rec[13]
         if rec[14] is None:
             self.addr_jure_town_name = None
@@ -175,12 +175,12 @@ class PEOPLE:
         self.document_number = rec[18]
 
         self.citizenship = rec[19]
-        
+
         self.sex = rec[20]
         self.work_place = rec[21]
 
         self.addr_fact_region_code = rec[22]
-        
+
         addr_fact = u""
         self.addr_fact_area_code = rec[23]
         if rec[24] is None:
@@ -189,14 +189,14 @@ class PEOPLE:
             addr_fact_area_name = rec[24].strip()
             self.addr_fact_area_name = addr_fact_area_name
             addr_fact = addr_fact_area_name
-        
+
         if rec[25] is None:
             self.addr_fact_area_socr = None
         else:
             addr_fact_area_socr = rec[25].strip()
             self.addr_fact_area_socr = addr_fact_area_socr
             addr_fact += " " + addr_fact_area_socr
-        
+
         self.addr_fact_town_code = rec[26]
         if rec[27] is None:
             self.addr_fact_town_name = None
@@ -204,7 +204,7 @@ class PEOPLE:
             addr_fact_town_name = rec[27].strip()
             self.addr_fact_town_name = addr_fact_town_name
             addr_fact = addr_fact_town_name
-        
+
         if rec[28] is None:
             self.addr_fact_town_socr = None
         else:
@@ -219,16 +219,16 @@ class PEOPLE:
             addr_fact_country_name = rec[30].strip()
             self.addr_fact_country_name = addr_fact_country_name
             addr_fact += ", " + addr_fact_country_name
-        
+
         if rec[31] is None:
             self.addr_fact_country_socr = None
         else:
             addr_fact_country_socr = rec[31].strip()
             self.addr_fact_country_socr = addr_fact_country_socr
             addr_fact += " " + addr_fact_country_socr
-        
+
         self.addr_fact = addr_fact
-    
+
     def initFromDBF(self, rec):
         self.people_id = rec.number
         self.lname = rec.surname.strip()
@@ -245,15 +245,15 @@ class PEOPLE:
             self.birthplace = None
         else:
             self.birthplace = rec.mrod.strip()
-        
+
         self.document_type_id_fk = rec.c_doc
         if rec.s_doc is None:
             self.document_series = None
         else:
             self.document_series = rec.s_doc.strip()
-            
+
         self.document_number = rec.n_doc
-        
+
 
 class SM_PEOPLE:
     def __init__(self):
@@ -270,11 +270,11 @@ class SM_PEOPLE:
         self.smo_ogrn         = None
         self.ocato            = None
         self.enp              = None
-        
+
         self.dpfs             = None
         self.s_oms            = None
         self.n_oms            = None
-        
+
         self.mcod             = None
 
 class ST_PEOPLE:
@@ -349,11 +349,11 @@ class P_CLINIC:
         self.clinic_id            = None
         self.speciality_id        = None
         self.basic_speciality     = None
-        
+
 
 def get_registry(table_name):
     import dbf
-    
+
     table = dbf.Table(table_name)
     table.open()
 
@@ -362,12 +362,12 @@ def get_registry(table_name):
         p_dbf = PEOPLE()
         p_dbf.initFromDBF(rec)
         p_arr.append(p_dbf)
-        
+
     table.close()
     return p_arr
 
 def get_people(cursor, lname, fname, mname, birthday):
-    
+
     lname1251 = lname.upper().encode('cp1251')
     fname1251 = fname.upper().encode('cp1251')
     s_birthday = "%04d-%02d-%02d" % (birthday.year, birthday.month, birthday.day)
@@ -397,11 +397,11 @@ def find_registry(people, p_arr):
         u_mname  = mname
     else:
         u_mname  = mname.upper()
-        
+
     for p_dbf in p_arr:
         if (u_lname == p_dbf.lname) and (u_fname == p_dbf.fname) and (u_mname == p_dbf.mname) and (birthday == p_dbf.birthday):
             return p_dbf
-        
+
     return None
 
 def get_patients(db, clinic_id):
@@ -409,8 +409,8 @@ def get_patients(db, clinic_id):
 # get patients (people's list) for the clinic
 #
     s_sql = SQLT_PEOPLE.format(clinic_id)
-    
-    
+
+
     try:
         cursor = db.con.cursor()
         cursor.execute(s_sql)
@@ -419,35 +419,35 @@ def get_patients(db, clinic_id):
         r_msg = 'Ошибка запроса данных из DBMIS: {0} {1}'.format(sys.stderr, e)
         log.error( r_msg )
         results = None
-    
+
     return results
-    
+
 def get_fnames(path = SM2DO_PATH, file_ext = '.csv'):
-    
-    import os    
-    
+
+    import os
+
     fnames = []
     for subdir, dirs, files in os.walk(path):
         for fname in files:
             if fname.find(file_ext) > 1:
                 log.info(fname)
                 fnames.append(fname)
-    
-    return fnames    
+
+    return fnames
 
 def d_series(document_series):
-    
+
     if (document_series is not None) and (document_series.find('I') >= 0):
         a_ar = document_series.split('I')
         sss  = ''.join(a_ar)
         if len(sss) > 2: sss = sss[:2] + " " + sss[2:]
-        
+
         return sss
     else:
         return document_series
 
 def d_number(document_number):
-    
+
     if (document_number is not None) and (document_number.find('I') >= 0):
         a_ar = document_number.split('I')
         n = len(a_ar)
@@ -462,7 +462,7 @@ def d_number(document_number):
                     b_ar.append('I')
             else:
                 b_ar.append(a)
-                
+
         sss  = ''.join(b_ar)
         return sss
     else:
@@ -470,7 +470,7 @@ def d_number(document_number):
 
 def get_sm(fname, mcod = None):
     from datetime import datetime
-    
+
     ins = open( fname, "r" )
 
     array = []
@@ -486,29 +486,29 @@ def get_sm(fname, mcod = None):
         fname = a_line[2]
         mname = a_line[3]
         s_bd  = a_line[4]
-        
+
         try:
             bd = datetime.strptime(s_bd, '%Y-%m-%d')
         except:
             bd = None
-        
+
         sex   = int(a_line[5])
-        
+
         doc_type_id     = a_line[6]
         document_series = a_line[7]
         document_number = a_line[8]
         snils           = a_line[9]
-        
+
         smo_ogrn        = a_line[10]
         ocato           = a_line[11]
         enp             = a_line[12]
-        
+
         dpfs            = a_line[13]
         s_oms           = a_line[14]
         n_oms           = a_line[15]
-        
+
         sm_p = SM_PEOPLE()
-        
+
         sm_p.people_id = people_id
         sm_p.lname = lname
         sm_p.fname = fname
@@ -526,24 +526,24 @@ def get_sm(fname, mcod = None):
         sm_p.smo_ogrn         = smo_ogrn
         sm_p.ocato            = ocato
         sm_p.enp              = enp
-        
+
         if len(dpfs) == 0:
             sm_p.dpfs = None
         else:
             sm_p.dpfs         = dpfs
         sm_p.s_oms            = s_oms
         sm_p.n_oms            = n_oms
-        
+
         sm_p.mcod             = mcod
-        
+
         array.append( sm_p )
-    
-    ins.close()    
-    
+
+    ins.close()
+
     return array
 
 def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
-    
+
     s_sqlf = """SELECT oms_series, oms_number, enp, mcod
     FROM
     mira$peoples
@@ -556,7 +556,7 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
     snils,
     dpfs, oms_series, oms_number, enp,
     ocato, mcod, smo_ogrn)
-    VALUES 
+    VALUES
     (%s, %s, %s, %s, %s, %s,
     %s, %s, %s,
     %s,
@@ -577,15 +577,15 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
         document_series = %s,
         document_number = %s,
         snils = %s,
-        dpfs = %s, 
-        oms_series = %s, 
+        dpfs = %s,
+        oms_series = %s,
         oms_number = %s,
         enp = %s,
         ocato = %s,
         mcod = %s,
         smo_ogrn = %s,
         id_done = Null
-        WHERE 
+        WHERE
         people_id = %s;"""
     else:
         s_sqlu = """UPDATE
@@ -600,23 +600,23 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
         document_series = %s,
         document_number = %s,
         snils = %s,
-        dpfs = %s, 
-        oms_series = %s, 
+        dpfs = %s,
+        oms_series = %s,
         oms_number = %s,
         enp = %s,
         ocato = %s,
         mcod = %s,
         smo_ogrn = %s
-        WHERE 
+        WHERE
         people_id = %s;"""
 
-    
+
     curr = db.con.cursor()
     curw = db.con.cursor()
     count_a = 0
     count_i = 0
     count_u = 0
-    
+
     for sm in ar_sm:
         count_a += 1
 
@@ -633,24 +633,24 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
         smo_ogrn         = sm.smo_ogrn
         ocato            = sm.ocato
         enp              = sm.enp
-        
+
         dpfs             = sm.dpfs
         oms_series       = sm.s_oms
         oms_number       = sm.n_oms
-        
+
         mcod             = sm.mcod
 
         if count_a % STEP == 0:
             sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
             log.info(sout)
-        
+
         curr.execute(s_sqlf,(people_id,))
         rec = curr.fetchone()
 
         if rec is None:
             try:
                 curw.execute(s_sqli,(people_id, lname, fname, mname, birthday, sex, document_type_id, document_series, document_number, snils, dpfs, oms_series, oms_number, enp, ocato, mcod, smo_ogrn))
-                db.con.commit()	
+                db.con.commit()
                 count_i += 1
             except Exception, e:
                 sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
@@ -673,11 +673,11 @@ def put_sm2mira(db, ar_sm, upd = False, upd_id_done = False):
                 f_oms_number = rec[1]
                 f_enp        = rec[2]
                 f_mcod       = rec[3]
-                
+
                 sout = "Found in mira$peoples: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
                 log.info(sout)
-                
-            
+
+
     return count_a, count_i, count_u
 
 def get_mira_peoples(db, mcod):
@@ -685,10 +685,10 @@ def get_mira_peoples(db, mcod):
 # get patients (people's list) for the clinic
 #
 
-    
+
     s_sql = SQLT_PMIRA0.format(mcod)
-    
-    
+
+
     try:
         cursor = db.con.cursor()
         cursor.execute(s_sql)
@@ -697,7 +697,7 @@ def get_mira_peoples(db, mcod):
         r_msg = 'Ошибка запроса данных из DBMYSQL: {0} {1}'.format(sys.stderr, e)
         log.error( r_msg )
         return None
-    
+
     ar_sm = []
     for rec in results:
         people_id = rec[0]
@@ -717,7 +717,7 @@ def get_mira_peoples(db, mcod):
         ocato = rec[14]
         mcod = rec[15]
         smo_ogrn = rec[16]
-        
+
         sm_p = SM_PEOPLE()
 
         sm_p.people_id        = people_id
@@ -733,20 +733,20 @@ def get_mira_peoples(db, mcod):
         sm_p.smo_ogrn         = smo_ogrn
         sm_p.ocato            = ocato
         sm_p.enp              = enp
-        
+
         sm_p.dpfs             = dpfs
         sm_p.s_oms            = oms_series
         sm_p.n_oms            = oms_number
-        
+
         sm_p.mcod             = mcod
-        
+
         ar_sm.append(sm_p)
-        
+
     return ar_sm
 
 def get_st(fname, mcod = None):
     from datetime import datetime
-    
+
     ins = open( fname, "r" )
 
     array = []
@@ -765,7 +765,7 @@ def get_st(fname, mcod = None):
             smo_code = None
         else:
             smo_code = int(s_code)
-            
+
         dpfs       = a_line[3]
         oms_series = a_line[4]
         oms_number = a_line[5]
@@ -773,9 +773,9 @@ def get_st(fname, mcod = None):
         mcod       = a_line[7]
 
         st_p = ST_PEOPLE()
-        
+
         st_p.people_id = people_id
-        
+
         st_p.ocato     = ocato
         st_p.smo_code  = smo_code
 
@@ -783,24 +783,24 @@ def get_st(fname, mcod = None):
             st_p.dpfs = None
         else:
             st_p.dpfs = int(dpfs)
-            
+
         st_p.oms_series = oms_series
         st_p.oms_number = oms_number
-        st_p.enp        = enp 
+        st_p.enp        = enp
 
         if (len(mcod) == 0) or (mcod[0] not in (u'0', u'1', u'2', u'3', u'4', u'5', u'6', u'7', u'8', u'9')):
             st_p.mcod = None
         else:
             st_p.mcod = int(mcod)
-        
+
         array.append( st_p )
-    
+
     ins.close()
-    
+
     return array
 
 def put_st2mira(db, ar_st, append = False):
-    
+
     s_sqlf = """SELECT f$smo_code, f$oms_series, f$oms_number, f$enp, f$mcod
     FROM
     mira$peoples
@@ -808,13 +808,13 @@ def put_st2mira(db, ar_st, append = False):
 
     s_sqli = """INSERT INTO
     mira$peoples
-    (people_id, 
+    (people_id,
     f$ocato, f$smo_code,
     f$dpfs, f$oms_series, f$oms_number, f$enp,
     f$mcod)
-    VALUES 
-    (%s, 
-    %s, %s, 
+    VALUES
+    (%s,
+    %s, %s,
     %s, %s, %s, %s,
     %s);"""
 
@@ -829,16 +829,16 @@ def put_st2mira(db, ar_st, append = False):
     f$oms_number = %s,
     f$enp = %s,
     f$mcod = %s
-    WHERE 
+    WHERE
     people_id = %s;"""
 
-    
+
     curr = db.con.cursor()
     curw = db.con.cursor()
     count_a = 0
     count_i = 0
     count_u = 0
-    
+
     for st in ar_st:
         count_a += 1
 
@@ -855,14 +855,14 @@ def put_st2mira(db, ar_st, append = False):
         if count_a % STEP == 0:
             sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
             log.info(sout)
-        
+
         curr.execute(s_sqlf,(people_id,))
         rec = curr.fetchone()
 
         if (rec is None) and append:
             try:
                 curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod))
-                db.con.commit()	
+                db.con.commit()
                 count_i += 1
             except Exception, e:
                 sout = "Can't insert into mira$peoples table. UID: {0}".format(people_id)
@@ -872,14 +872,14 @@ def put_st2mira(db, ar_st, append = False):
         else:
             try:
                 curw.execute(s_sqlu,(ocato, smo_code, dpfs, oms_series, oms_number, enp, mcod, people_id,))
-                db.con.commit()	
+                db.con.commit()
                 count_u += 1
             except Exception, e:
                 sout = "Can't update mira$peoples table. UID: {0}".format(people_id)
                 log.error(sout)
                 sout = "{0}".format(e)
                 log.error(sout)
-            
+
     return count_a, count_i, count_u
 
 def mo_item(s_mo_item, itype = 'S' ):
@@ -889,15 +889,16 @@ def mo_item(s_mo_item, itype = 'S' ):
     #       D - Date
     #       I - Integer
     #
-    
+
     from datetime import date
-    
+
     ls = len(s_mo_item)
     if (ls == 0) or (s_mo_item == u'\r\n') or (s_mo_item == u'"NONE"'):
         return None
     else:
         sss = s_mo_item[1:ls-1]
         lsss = len(sss)
+        # check for last item
         if (lsss > 1) and (sss[lsss-2] == '"'):
             sss = sss[:lsss-2]
         if itype == 'S':
@@ -916,7 +917,7 @@ def mo_item(s_mo_item, itype = 'S' ):
 
 def get_mo(fname, mcod = None):
     from datetime import datetime
-    
+
     ins = open( fname, "r" )
 
     array = []
@@ -927,9 +928,9 @@ def get_mo(fname, mcod = None):
             sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
             log.warn( sout )
             continue
-        
+
         p_mo = MO_PEOPLE()
-        
+
         p_mo.dpfs        = mo_item(a_line[0])
         p_mo.oms_sn      = mo_item(a_line[1])
         p_mo.enp         = mo_item(a_line[2])
@@ -948,16 +949,16 @@ def get_mo(fname, mcod = None):
         p_mo.type_att    = mo_item(a_line[15])
         p_mo.date_att    = mo_item(a_line[16],'D')
         p_mo.date_det    = mo_item(a_line[17],'D')
-        
+
         array.append( p_mo )
-    
-    ins.close()    
-    
+
+    ins.close()
+
     return array
 
 def get_mo_cad(fname, mcod = None):
     from datetime import datetime
-    
+
     ins = open( fname, "r" )
 
     array = []
@@ -968,7 +969,7 @@ def get_mo_cad(fname, mcod = None):
             sout = "Wrang line: {0}".format(u_line.encode('utf-8'))
             log.warn( sout )
             continue
-        
+
         p_mo = MO_CAD_PEOPLE()
 
         p_mo.action      = mo_item(a_line[0])
@@ -994,15 +995,15 @@ def get_mo_cad(fname, mcod = None):
         p_mo.dep_code    = mo_item(a_line[20])
         p_mo.area_number = mo_item(a_line[21],'I')
         p_mo.doc_snils   = mo_item(a_line[22])
-        
+
         array.append( p_mo )
-    
-    ins.close()    
-    
+
+    ins.close()
+
     return array
 
 def put_mo(db, ar, upd = False):
-    
+
     s_sqlf = """SELECT id
     FROM
     mo
@@ -1030,13 +1031,13 @@ def put_mo(db, ar, upd = False):
 
     s_sqli = """INSERT INTO
     mo
-    (dpfs, oms_sn, enp, 
+    (dpfs, oms_sn, enp,
     lname, fname, mname,
     birthday, birthplace,
     doc_type_id, doc_sn, doc_when, doc_who,
     snils, mcod,
     motive_att, type_att, date_att, date_det)
-    VALUES 
+    VALUES
     (%s, %s, %s,
     %s, %s, %s,
     %s, %s,
@@ -1050,7 +1051,7 @@ def put_mo(db, ar, upd = False):
     SET
     dpfs = %s,
     oms_sn = %s,
-    enp = %s, 
+    enp = %s,
     lname = %s,
     fname = %s,
     mname = %s,
@@ -1058,7 +1059,7 @@ def put_mo(db, ar, upd = False):
     birthplace = %s,
     doc_type_id = %s,
     doc_sn = %s,
-    doc_when = %s, 
+    doc_when = %s,
     doc_who = %s,
     snils = %s,
     mcod = %s,
@@ -1066,16 +1067,16 @@ def put_mo(db, ar, upd = False):
     type_att = %s,
     date_att = %s,
     date_det = %s
-    WHERE 
+    WHERE
     id = %s;"""
 
-    
+
     curr = db.con.cursor()
     curw = db.con.cursor()
     count_a = 0
     count_i = 0
     count_u = 0
-    
+
     for p_mo in ar:
         count_a += 1
 
@@ -1107,11 +1108,11 @@ def put_mo(db, ar, upd = False):
         else:
             s_enp = enp.encode('utf-8')
 
-        
+
         if count_a % STEP == 0:
             sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
             log.info(sout)
-        
+
         if enp is not None:
             curr.execute(s_sqlf_enp,(enp,))
         elif oms_sn is not None:
@@ -1122,7 +1123,7 @@ def put_mo(db, ar, upd = False):
         if rec is None:
             try:
                 curw.execute(s_sqli,(dpfs, oms_sn, enp, lname, fname, mname, birthday, birthplace, doc_type_id, doc_sn, doc_when, doc_who, snils, mcod, motive_att, type_att, date_att, date_det,))
-                db.con.commit()	
+                db.con.commit()
                 count_i += 1
             except Exception, e:
                 sout = "Can't insert into mo table. oms_sn: {0} enp: {1}".format(s_oms_sn, s_enp)
@@ -1141,15 +1142,15 @@ def put_mo(db, ar, upd = False):
                     log.error(sout)
                     sout = "{0}".format(e)
                     log.error(sout)
-                    
+
             if PRINT_FOUND:
                 sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
                 log.info(sout)
-                    
+
     return count_a, count_i, count_u
 
 def put_mo_cad(db, ar, upd = False):
-    
+
     s_sqlf = """SELECT id
     FROM
     mo_cad
@@ -1178,14 +1179,14 @@ def put_mo_cad(db, ar, upd = False):
     s_sqli = """INSERT INTO
     mo_cad
     (action,
-    dpfs, oms_sn, enp, 
+    dpfs, oms_sn, enp,
     lname, fname, mname,
     birthday, birthplace,
     doc_type_id, doc_sn, doc_when, doc_who,
     snils, mcod,
     motive_att, type_att, date_att, date_det,
     mo_oid, dep_code, area_number, doc_snils)
-    VALUES 
+    VALUES
     (%s,
     %s, %s, %s,
     %s, %s, %s,
@@ -1202,7 +1203,7 @@ def put_mo_cad(db, ar, upd = False):
     action = %s,
     dpfs = %s,
     oms_sn = %s,
-    enp = %s, 
+    enp = %s,
     lname = %s,
     fname = %s,
     mname = %s,
@@ -1210,7 +1211,7 @@ def put_mo_cad(db, ar, upd = False):
     birthplace = %s,
     doc_type_id = %s,
     doc_sn = %s,
-    doc_when = %s, 
+    doc_when = %s,
     doc_who = %s,
     snils = %s,
     mcod = %s,
@@ -1222,16 +1223,16 @@ def put_mo_cad(db, ar, upd = False):
     dep_code = %s,
     area_number = %s,
     doc_snils = %s
-    WHERE 
+    WHERE
     id = %s;"""
 
-    
+
     curr = db.con.cursor()
     curw = db.con.cursor()
     count_a = 0
     count_i = 0
     count_u = 0
-    
+
     for p_mo in ar:
         count_a += 1
 
@@ -1268,11 +1269,11 @@ def put_mo_cad(db, ar, upd = False):
         else:
             s_enp = enp.encode('utf-8')
 
-        
+
         if count_a % STEP == 0:
             sout = " {0} oms_sn: {1} enp: {2} mcod: {3}".format(count_a, s_oms_sn, s_enp, mcod)
             log.info(sout)
-        
+
         if enp is not None:
             curr.execute(s_sqlf_enp,(enp,))
         elif oms_sn is not None:
@@ -1313,18 +1314,18 @@ def put_mo_cad(db, ar, upd = False):
                     log.error(sout)
                     sout = "{0}".format(e)
                     log.error(sout)
-                    
+
             if PRINT_FOUND:
                 sout = "Found in mo: oms_sn: {0} enp: {1} mcod: {2}".format(s_oms_sn, s_enp, mcod)
                 log.info(sout)
-                    
+
     return count_a, count_i, count_u
 
 def get_mo_fromdb(db, mcod):
     from datetime import datetime
 
-    s_sqlt = """SELECT 
-    dpfs, oms_sn, enp, 
+    s_sqlt = """SELECT
+    dpfs, oms_sn, enp,
     lname, fname, mname,
     birthday, birthplace,
     doc_type_id, doc_sn, doc_when, doc_who,
@@ -1332,16 +1333,16 @@ def get_mo_fromdb(db, mcod):
     motive_att, type_att, date_att, date_det
     FROM mo
     WHERE mcod = %s;"""
-    
+
     curr = db.con.cursor()
     curr.execute(s_sqlt,(mcod,))
     recs = curr.fetchall()
 
     array = []
     for rec in recs:
-        
+
         p_mo = MO_PEOPLE()
-        
+
         p_mo.dpfs        = rec[0]
         p_mo.oms_sn      = rec[1]
         p_mo.enp         = rec[2]
@@ -1360,20 +1361,72 @@ def get_mo_fromdb(db, mcod):
         p_mo.type_att    = rec[15]
         p_mo.date_att    = rec[16]
         p_mo.date_det    = rec[17]
-        
+
         array.append( p_mo )
-    
+
+    return array
+
+def get_mo_cad_fromdb(db, mcod):
+    from datetime import datetime
+
+    s_sqlt = """SELECT
+    action,
+    dpfs, oms_sn, enp,
+    lname, fname, mname,
+    birthday, birthplace,
+    doc_type_id, doc_sn, doc_when, doc_who,
+    snils, mcod,
+    motive_att, type_att, date_att, date_det,
+    mo_oid, dep_code, area_number, doc_snils
+    FROM mo_cad
+    WHERE mcod = %s;"""
+
+    curr = db.con.cursor()
+    curr.execute(s_sqlt,(mcod,))
+    recs = curr.fetchall()
+
+    array = []
+    for rec in recs:
+
+        p_mo = MO_CAD_PEOPLE()
+
+        p_mo.action      = rec[0]
+        p_mo.dpfs        = rec[1]
+        p_mo.oms_sn      = rec[2]
+        p_mo.enp         = rec[3]
+        p_mo.lname       = rec[4]
+        p_mo.fname       = rec[5]
+        p_mo.mname       = rec[6]
+        p_mo.birthday    = rec[7]
+        p_mo.birthplace  = rec[8]
+        p_mo.doc_type_id = rec[9]
+        p_mo.doc_sn      = rec[10]
+        p_mo.doc_when    = rec[11]
+        p_mo.doc_who     = rec[12]
+        p_mo.snils       = rec[13]
+        p_mo.mcod        = rec[14]
+        p_mo.motive_att  = rec[15]
+        p_mo.type_att    = rec[16]
+        p_mo.date_att    = rec[17]
+        p_mo.date_det    = rec[18]
+        p_mo.mo_oid      = rec[19]
+        p_mo.dep_code    = rec[20]
+        p_mo.area_number = rec[21]
+        p_mo.doc_snils   = rec[22]
+
+        array.append( p_mo )
+
     return array
 
 def mo_string(p_mo):
 
     sss = u''
-    
+
     if p_mo.dpfs is None:
         sss += u';'
     else:
         sss += u'"' + p_mo.dpfs + u'";'
-        
+
     if p_mo.oms_sn is None:
         sss += u';'
     else:
@@ -1383,7 +1436,7 @@ def mo_string(p_mo):
         sss += u';'
     else:
         sss += u'"' + p_mo.enp + u'";'
-        
+
     if p_mo.lname is None:
         sss += u';'
     else:
@@ -1398,44 +1451,44 @@ def mo_string(p_mo):
         sss += u';'
     else:
         sss += u'"' + p_mo.mname + u'";'
-        
+
     if p_mo.birthday is None:
         sss += u';'
     else:
         sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
         sss += u'"' + sdd + u'";'
-    
+
     if p_mo.birthplace is None:
         sss += u';'
     else:
         sss += u'"' + p_mo.birthplace + u'";'
-    
+
     if p_mo.doc_type_id is None:
         sss += u';'
     else:
         sss += u'"' + str(p_mo.doc_type_id) + u'";'
-        
+
     if p_mo.doc_sn is None:
         sss += u';'
     else:
         sss += u'"' + p_mo.doc_sn + u'";'
-    
+
     if p_mo.doc_when is None:
         sss += u';'
     else:
         sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
         sss += u'"' + sdd + u'";'
-    
+
     if p_mo.doc_who is None:
         sss += u';'
     else:
         sss += u'"' + p_mo.doc_who + u'";'
-    
+
     if p_mo.snils is None:
         sss += u';'
     else:
         sss += u'"' + p_mo.snils + u'";'
-    
+
     if p_mo.mcod is None:
         sss += u';'
     else:
@@ -1450,7 +1503,7 @@ def mo_string(p_mo):
         sss += u';'
     else:
         sss += u'"' + p_mo.type_att + u'";'
-        
+
     if p_mo.date_att is None:
         sss += u';'
     else:
@@ -1462,16 +1515,138 @@ def mo_string(p_mo):
         sss += u'"' + sdd + u'"'
 
     return sss
-    
+
+def mo_cad_string(p_mo):
+
+    sss = u''
+
+    if p_mo.action is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.action + u'";'
+
+    if p_mo.dpfs is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.dpfs + u'";'
+
+    if p_mo.oms_sn is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.oms_sn + u'";'
+
+    if p_mo.enp is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.enp + u'";'
+
+    if p_mo.lname is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.lname + u'";'
+
+    if p_mo.fname is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.fname + u'";'
+
+    if p_mo.mname is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.mname + u'";'
+
+    if p_mo.birthday is None:
+        sss += u';'
+    else:
+        sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
+        sss += u'"' + sdd + u'";'
+
+    if p_mo.birthplace is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.birthplace + u'";'
+
+    if p_mo.doc_type_id is None:
+        sss += u';'
+    else:
+        sss += u'"' + str(p_mo.doc_type_id) + u'";'
+
+    if p_mo.doc_sn is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.doc_sn + u'";'
+
+    if p_mo.doc_when is None:
+        sss += u';'
+    else:
+        sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
+        sss += u'"' + sdd + u'";'
+
+    if p_mo.doc_who is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.doc_who + u'";'
+
+    if p_mo.snils is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.snils + u'";'
+
+    if p_mo.mcod is None:
+        sss += u';'
+    else:
+        sss += u'"' + str(p_mo.mcod) + u'";'
+
+    if p_mo.motive_att is None:
+        sss += u';'
+    else:
+        sss += u'"' + str(p_mo.motive_att) + u'";'
+
+    if p_mo.type_att is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.type_att + u'";'
+
+    if p_mo.date_att is None:
+        sss += u';'
+    else:
+        sdd = "%04d%02d%02d" % (p_mo.date_att.year, p_mo.date_att.month, p_mo.date_att.day)
+        sss += u'"' + sdd + u'";'
+
+    if p_mo.date_det is not None:
+        sdd = "%04d%02d%02d" % (p_mo.date_det.year, p_mo.date_det.month, p_mo.date_det.day)
+        sss += u'"' + sdd + u'";'
+    else:
+        sss += u';'
+
+    if p_mo.mo_oid is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.mo_oid + u'";'
+
+    if p_mo.dep_code is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.dep_code + u'";'
+
+    if p_mo.area_number is None:
+        sss += u';'
+    else:
+        sss += u'"' + str(p_mo.area_number) + u'";'
+
+    if p_mo.doc_snils is not None:
+        sss += u'"' + p_mo.doc_snils + u'"'
+
+    return sss
 
 def write_mo(ar, fname):
-    
+
     fo = open(fname, "wb")
-    
+
     l_ar = len(ar)
     i = 0
     for p_mo in ar:
-        
+
         i += 1
         if i == l_ar:
             sss = mo_string(p_mo)
@@ -1479,17 +1654,36 @@ def write_mo(ar, fname):
             sss = mo_string(p_mo) + u"\r\n"
         ps = sss.encode('windows-1251')
         fo.write(ps)
-        
+
     fo.close()
-    
+
     return l_ar
 
+def write_mo_cad(ar, fname):
+
+    fo = open(fname, "wb")
+
+    l_ar = len(ar)
+    i = 0
+    for p_mo in ar:
+
+        i += 1
+        if i == l_ar:
+            sss = mo_cad_string(p_mo)
+        else:
+            sss = mo_cad_string(p_mo) + u"\r\n"
+        ps = sss.encode('windows-1251')
+        fo.write(ps)
+
+    fo.close()
+
+    return l_ar
 
 def get_pclinics(cur, p_id):
-    
+
     cur.execute(SQLT_PCLINICS,(p_id,))
     result = cur.fetchall()
-    
+
     pc_arr = []
     for rec in result:
         p_clinic = P_CLINIC()
@@ -1500,8 +1694,8 @@ def get_pclinics(cur, p_id):
         p_clinic.clinic_id            = rec[4]
         p_clinic.speciality_id        = rec[5]
         p_clinic.basic_speciality     = rec[6]
-        
+
         pc_arr.append(p_clinic)
-        
-    
+
+
     return pc_arr
