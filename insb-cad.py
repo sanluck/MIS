@@ -94,11 +94,13 @@ def plist(dbc, clinic_id, mcod, patient_list):
     from insorglist import InsorgInfoList
 
     cad = get_cad(dbc, clinic_id)
-    d1, d7, d51 = get_d(dbc, clinic_id)
+    d1,d7,d38,d51 = get_d(dbc, clinic_id)
+
     cad1 = {}
     cad7 = {}
+    cad38 = {}
     cad51 = {}
-    
+
     for a_id in cad.keys():
         cad_item = cad[a_id]
         speciality_id = cad_item[0]
@@ -108,22 +110,26 @@ def plist(dbc, clinic_id, mcod, patient_list):
             cad1[a_id] = snils
         elif speciality_id == 7:
             cad7[a_id] = snils
+        elif speciality_id == 38:
+            cad38[a_id] = snils
         elif speciality_id == 51:
             cad51[a_id] = snils
 
     dnumber = len(cad)
     d1number = len(cad1)
     d7number = len(cad7)
+    d38number = len(cad38)
     d51number = len(cad51)
 
-    sout = "Totally we have got {0} ({1} + {2} + {3}) areas having doctors".format(dnumber, d1number, d7number, d51number)
+    sout = "Totally we have got {0} ({1} + {2} + {3} + {4}) areas having doctors".format(dnumber, d1number, d7number, d38number, d51number)
     log.info(sout)
 
     d1number = len(d1)
     d7number = len(d7)
+    d38number = len(d38)
     d51number = len(d51)
-    
-    sout = "Active doctors: {0} + {1} + {2}".format(d1number, d7number, d51number)
+
+    sout = "Active doctors: {0} + {1} + {2} + {3}".format(d1number, d7number, d38number, d51number)
     log.info(sout)
 
     cur = dbc.con.cursor()
@@ -138,10 +144,10 @@ ca.speciality_id_fk
 FROM area_peoples ap
 LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
 LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ap.people_id_fk = ? 
+WHERE ap.people_id_fk = ?
 AND ca.clinic_id_fk = ?
 AND ca.basic_speciality = 1
-AND ca.speciality_id_fk IN (1,7, 51)
+AND ca.speciality_id_fk IN (1,7,38,51)
 AND ap.date_end is Null
 ORDER BY ap.date_beg DESC;"""
 
@@ -179,10 +185,10 @@ ORDER BY ap.date_beg DESC;"""
         if count % STEP == 0:
             sout = " {0} people_id: {1}".format(count, p_id)
             log.info(sout)
-            
+
         cur.execute(s_sql_enp,(p_id, ))
         rec = cur.fetchone()
-        if rec is not None: 
+        if rec is not None:
             enp = rec[0]
         else:
             enp = None
@@ -197,7 +203,7 @@ ORDER BY ap.date_beg DESC;"""
 
         f_oms_series = p_obj.medical_insurance_series
         f_oms_number = p_obj.medical_insurance_number
-        
+
         f_enp        = p_obj.enp
         f_mcod       = mcod
         f_ocato      = OCATO
@@ -214,7 +220,7 @@ ORDER BY ap.date_beg DESC;"""
                 matt = 1
             else:
                 matt = 2
-            
+
             area_number = rec[5]
             area_id = rec[6]
             speciality_id = rec[7]
@@ -227,13 +233,19 @@ ORDER BY ap.date_beg DESC;"""
                     d_snils = random.choice(d1)
                 elif speciality_id == 7:
                     d_snils = random.choice(d7)
+                elif speciality_id == 38:
+                    d_snils = random.choice(d38)
                 elif speciality_id == 51:
                     d_snils = random.choice(d51)
             else:
                 continue
-            
+
+            if speciality_id == 51:
+                doc_category = 2
+            else:
+                doc_category = 1
             sss = p3(p_obj, mcod, matt, date_beg, ADATE_ATT, ASSIGN_ATT, \
-                     area_number, d_snils) + "\r\n"
+                     area_number, d_snils, doc_category) + "\r\n"
             ps = sss.encode('windows-1251')
 
             fob.write(ps)
@@ -272,9 +284,9 @@ def pclinic(clinic_id, mcod):
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ca.clinic_id_fk = {0} 
+WHERE ca.clinic_id_fk = {0}
 AND ca.basic_speciality = 1
-AND ca.speciality_id_fk IN (1,7, 51)
+AND ca.speciality_id_fk IN (1,7,38,51)
 AND ap.date_end is Null;"""
         s_sql = s_sqlt.format(clinic_id)
         sout = "Don't use date_range"
@@ -286,9 +298,9 @@ AND ap.date_end is Null;"""
 JOIN area_peoples ap ON p.people_id = ap.people_id_fk
 JOIN areas ar ON ap.area_id_fk = ar.area_id
 JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
-WHERE ca.clinic_id_fk = {0} 
+WHERE ca.clinic_id_fk = {0}
 AND ca.basic_speciality = 1
-AND ca.speciality_id_fk IN (1,7, 51)
+AND ca.speciality_id_fk IN (1,7,38,51)
 AND ap.date_beg >= '{1}'
 AND ap.date_beg <= '{2}'
 AND ap.date_end is Null;"""
@@ -303,7 +315,7 @@ AND ap.date_end is Null;"""
     else:
         sout = "Set actual ATTACH DATE"
         log.info(sout)
-        
+
     if FIND_DOCTOR:
         sout = "Find random doctor if area has not got assigned doctor"
         log.info(sout)

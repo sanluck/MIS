@@ -851,9 +851,9 @@ def p2(patient, MCOD = None, MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_
 
     return p2join(res)
 
-def p3(patient, MCOD = None, 
+def p3(patient, MCOD = None,
        MOTIVE_ATT = 2, DATE_ATT = None, adate_att = ADATE_ATT, assign_att = ASSIGN_ATT,
-       AREA_NUMBER = 0, DOCTOR_SNILS = '00000000000'):
+       AREA_NUMBER = 0, DOCTOR_SNILS = '00000000000', DOC_CATEGORY=1):
 # patient-doctor
     import datetime
     import re
@@ -896,7 +896,7 @@ def p3(patient, MCOD = None,
     # 1 - действие ('Р')
     action = u"Р"
     res.append(action)
-    
+
     # 2
     res.append(tdpfs)
     # 3
@@ -1008,12 +1008,15 @@ def p3(patient, MCOD = None,
 
     # 21
     res.append("0")
-    
+
     # 22
     res.append(str(AREA_NUMBER))
 
     # 23
     res.append(DOCTOR_SNILS)
+
+    # 24
+    res.append(str(DOC_CATEGORY))
 
     return p2join(res)
 

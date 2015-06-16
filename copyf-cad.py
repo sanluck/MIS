@@ -26,7 +26,7 @@ IN_PATH        = "./FIN"
 OUT_PATH       = "./FOUT"
 
 SM_CH          = u';'
-SM_COUNT       = 22
+SM_COUNT       = 23
 
 CHECK_DATES    = True
 i_dates        = [7,11,17]
@@ -43,20 +43,20 @@ i_enp          = 3
 
 def get_fnames(path = IN_PATH, file_ext = '.csv'):
 # get file names
-    
-    import os    
-    
+
+    import os
+
     fnames = []
     for subdir, dirs, files in os.walk(path):
         for fname in files:
             if fname.find(file_ext) > 1:
                 log.info(fname)
                 fnames.append(fname)
-    
-    return fnames    
+
+    return fnames
 
 def get_st(fname):
-# read file line by line into arry    
+# read file line by line into arry
 
     ins = open( fname, "r" )
 
@@ -66,27 +66,27 @@ def get_st(fname):
         l_line = len(line)
         l1 = l_line - 1
         l2 = l_line - 2
-        
+
         if (l2 >= 0) and (u_line[l2] in ('\r','\n')):
             u_line = u_line[:l2]
         elif (l1>= 0) and (u_line[l1] in ('\r','\n')):
             u_line = u_line[:l1]
-        
+
         array.append( u_line )
-    
-    ins.close()    
-    
+
+    ins.close()
+
     return array
 
 def write_st(ar, fout):
 # write lines to output file line by line
     from datetime import date
-    
+
     d_now = date.today()
     y_now = d_now.year
-    
+
     fo = open(fout, "wb")
-    
+
     nnn = len(ar)
     i   = 0
     for line in ar:
@@ -117,7 +117,7 @@ def write_st(ar, fout):
                     l_wrong = True
                     sd_w = sd
                     break
-            
+
             if l_wrong:
                 sout = "Wrong Date ({0}) in the line:".format(sd)
                 log.warn( sout )
@@ -134,7 +134,7 @@ def write_st(ar, fout):
                 sout = "   {0}".format(line.encode('utf-8'))
                 log.warn( sout )
                 a_l[i_motive_att] = '"2"'
-                
+
         if CHECK_SNILS:
             SNILS = a_l[i_snils]
             if len(SNILS) > 13:
@@ -150,20 +150,20 @@ def write_st(ar, fout):
             if l_enp not in (0, 18):
                 ENP = ''
                 a_l[i_enp] = ENP
-        
-        lll = SM_CH.join(a_l)    
-        if i == nnn: 
+
+        lll = SM_CH.join(a_l)
+        if i == nnn:
             lout = lll.upper().encode('cp1251')
         else:
             lout = lll.upper().encode('cp1251')+"\r\n"
-        
+
         fo.write(lout)
-                 
+
     fo.close()
-    
-    
+
+
 if __name__ == "__main__":
-    
+
     import os, shutil
     import time
 
@@ -175,19 +175,19 @@ if __name__ == "__main__":
     n_fnames = len(fnames)
     sout = "Totally {0} files has been found".format(n_fnames)
     log.info( sout )
-    
+
     for fname in fnames:
 
         mcod = fname[3:9]
         f_fname = IN_PATH + "/" + fname
         sout = "Input file: {0} mcod: {1}".format(f_fname, mcod)
         log.info(sout)
-    
+
         ar = get_st(f_fname)
         l_ar = len(ar)
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
-        
+
         fout_name = fname
         ar2 = ar
         l_ar = len(ar2)
@@ -195,13 +195,13 @@ if __name__ == "__main__":
         log.info( sout )
 
         destination = OUT_PATH + "/" + fout_name
-        
+
         write_st(ar2, destination)
-        
+
         sout = "Output file: {0}".format(destination)
         log.info(sout)
-    
+
     localtime = time.asctime( time.localtime(time.time()) )
-    log.info('Copying and processing of files. Finish  '+localtime)  
-    
+    log.info('Copying and processing of files. Finish  '+localtime)
+
     sys.exit(0)

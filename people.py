@@ -339,6 +339,7 @@ class MO_CAD_PEOPLE:
         self.dep_code    = None
         self.area_number = None
         self.doc_snils   = None
+        self.doc_category= None
 
 class P_CLINIC:
     def __init__(self):
@@ -995,6 +996,7 @@ def get_mo_cad(fname, mcod = None):
         p_mo.dep_code    = mo_item(a_line[20])
         p_mo.area_number = mo_item(a_line[21],'I')
         p_mo.doc_snils   = mo_item(a_line[22])
+        p_mo.doc_category= mo_item(a_line[23])
 
         array.append( p_mo )
 
@@ -1185,7 +1187,7 @@ def put_mo_cad(db, ar, upd = False):
     doc_type_id, doc_sn, doc_when, doc_who,
     snils, mcod,
     motive_att, type_att, date_att, date_det,
-    mo_oid, dep_code, area_number, doc_snils)
+    mo_oid, dep_code, area_number, doc_snils, doc_category)
     VALUES
     (%s,
     %s, %s, %s,
@@ -1194,7 +1196,7 @@ def put_mo_cad(db, ar, upd = False):
     %s, %s, %s, %s,
     %s, %s,
     %s, %s, %s, %s,
-    %s, %s, %s, %s);"""
+    %s, %s, %s, %s, %s);"""
 
 
     s_sqlu = """UPDATE
@@ -1222,7 +1224,8 @@ def put_mo_cad(db, ar, upd = False):
     mo_oid = %s,
     dep_code = %s,
     area_number = %s,
-    doc_snils = %s
+    doc_snils = %s,
+    doc_category = %s
     WHERE
     id = %s;"""
 
@@ -1259,6 +1262,7 @@ def put_mo_cad(db, ar, upd = False):
         dep_code    = p_mo.dep_code
         area_number = p_mo.area_number
         doc_snils   = p_mo.doc_snils
+        doc_category= p_mo.doc_category
 
         if oms_sn is None:
             s_oms_sn = ''
@@ -1288,7 +1292,7 @@ def put_mo_cad(db, ar, upd = False):
                                      birthday, birthplace, doc_type_id, doc_sn, \
                                      doc_when, doc_who, snils, mcod, motive_att, \
                                      type_att, date_att, date_det, \
-                                     mo_oid, dep_code, area_number, doc_snils, ))
+                                     mo_oid, dep_code, area_number, doc_snils, doc_category, ))
                 db.con.commit()
                 count_i += 1
             except Exception, e:
@@ -1305,7 +1309,7 @@ def put_mo_cad(db, ar, upd = False):
                                          birthday, birthplace, doc_type_id, doc_sn, \
                                          doc_when, doc_who, snils, mcod, motive_att, \
                                          type_att, date_att, date_det, \
-                                         mo_oid, dep_code, area_number, doc_snils, \
+                                         mo_oid, dep_code, area_number, doc_snils, doc_category, \
                                          _id,))
                     db.con.commit()
                     count_u += 1
@@ -1377,7 +1381,7 @@ def get_mo_cad_fromdb(db, mcod):
     doc_type_id, doc_sn, doc_when, doc_who,
     snils, mcod,
     motive_att, type_att, date_att, date_det,
-    mo_oid, dep_code, area_number, doc_snils
+    mo_oid, dep_code, area_number, doc_snils, doc_category
     FROM mo_cad
     WHERE mcod = %s;"""
 
@@ -1413,6 +1417,7 @@ def get_mo_cad_fromdb(db, mcod):
         p_mo.dep_code    = rec[20]
         p_mo.area_number = rec[21]
         p_mo.doc_snils   = rec[22]
+        p_mo.doc_category= rec[23]
 
         array.append( p_mo )
 
@@ -1634,8 +1639,13 @@ def mo_cad_string(p_mo):
     else:
         sss += u'"' + str(p_mo.area_number) + u'";'
 
-    if p_mo.doc_snils is not None:
-        sss += u'"' + p_mo.doc_snils + u'"'
+    if p_mo.doc_snils is None:
+        sss += u';'
+    else:
+        sss += u'"' + p_mo.doc_snils + u'";'
+
+    if p_mo.doc_category is not None:
+        sss += u'"' + str(p_mo.doc_category) + u'"'
 
     return sss
 
