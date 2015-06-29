@@ -996,7 +996,8 @@ def get_mo_cad(fname, mcod = None):
         p_mo.dep_code    = mo_item(a_line[20])
         p_mo.area_number = mo_item(a_line[21],'I')
         p_mo.doc_snils   = mo_item(a_line[22])
-        p_mo.doc_category= mo_item(a_line[23])
+        if len(a_line) > 23:
+            p_mo.doc_category= mo_item(a_line[23])
 
         array.append( p_mo )
 
@@ -1639,13 +1640,11 @@ def mo_cad_string(p_mo):
     else:
         sss += u'"' + str(p_mo.area_number) + u'";'
 
-    if p_mo.doc_snils is None:
-        sss += u';'
-    else:
-        sss += u'"' + p_mo.doc_snils + u'";'
+    if p_mo.doc_snils:
+        sss += u'"' + p_mo.doc_snils
 
-    if p_mo.doc_category is not None:
-        sss += u'"' + str(p_mo.doc_category) + u'"'
+    if p_mo.doc_category:
+        sss += u';"' + str(p_mo.doc_category) + u'"'
 
     return sss
 

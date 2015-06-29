@@ -74,6 +74,16 @@ if ANYDOCTOR == "1":
 else:
     FIND_DOCTOR = False
 
+action_u8 = Config2['action']
+ACTION = action_u8.decode('utf-8')
+
+SET_DOC = Config2['set_doc_category']
+if SET_DOC == "1":
+    SET_DOC_CATEGORY = True
+else:
+    SET_DOC_CATEGORY = False
+
+
 CLINIC_OGRN = u""
 
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС
@@ -244,8 +254,13 @@ ORDER BY ap.date_beg DESC;"""
                 doc_category = 2
             else:
                 doc_category = 1
+
+            if not SET_DOC_CATEGORY:
+                doc_category = None
+
             sss = p3(p_obj, mcod, matt, date_beg, ADATE_ATT, ASSIGN_ATT, \
-                     area_number, d_snils, doc_category) + "\r\n"
+                     area_number, d_snils, doc_category, ACTION) + "\r\n"
+
             ps = sss.encode('windows-1251')
 
             fob.write(ps)
@@ -321,6 +336,16 @@ AND ap.date_end is Null;"""
         log.info(sout)
     else:
         sout = "If area has not got assigned doctor then do not print"
+        log.info(sout)
+
+    sout = "Action: '{0}'".format(ACTION.encode('utf-8'))
+    log.info(sout)
+
+    if SET_DOC_CATEGORY:
+        sout = "Print doctor's category"
+        log.info(sout)
+    else:
+        sout = "Do not print doctor's category"
         log.info(sout)
 
     cursor = dbc.con.cursor()

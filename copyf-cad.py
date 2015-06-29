@@ -7,8 +7,8 @@
 #
 #
 
+import os, sys, codecs
 import logging
-import sys, codecs
 from cStringIO import StringIO
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
@@ -22,11 +22,43 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
+Config = ConfigParser.ConfigParser()
+#PATH = os.path.dirname(sys.argv[0])
+#PATH = os.path.realpath(__file__)
+PATH = os.getcwd()
+FINI = PATH + "/" + "insr.ini"
+
+log.info("INI File: {0}".format(FINI))
+
+from ConfigSection import ConfigSectionMap
+# read INI data
+Config.read(FINI)
+# [Cad]
+Config2 = ConfigSectionMap(Config, "Cad")
+ANYDOCTOR = Config2['anydoctor']
+if ANYDOCTOR == "1":
+    FIND_DOCTOR = True
+else:
+    FIND_DOCTOR = False
+
+action_u8 = Config2['action']
+ACTION = action_u8.decode('utf-8')
+
+SET_DOC = Config2['set_doc_category']
+if SET_DOC == "1":
+    SET_DOC_CATEGORY = True
+else:
+    SET_DOC_CATEGORY = False
+
+
 IN_PATH        = "./FIN"
 OUT_PATH       = "./FOUT"
 
 SM_CH          = u';'
-SM_COUNT       = 23
+if SET_DOC_CATEGORY:
+    SM_COUNT   = 23
+else:
+    SM_COUNT   = 22
 
 CHECK_DATES    = True
 i_dates        = [7,11,17]
@@ -164,7 +196,7 @@ def write_st(ar, fout):
 
 if __name__ == "__main__":
 
-    import os, shutil
+    import shutil
     import time
 
     log.info("======================= COPYF-CAD ===========================================")
