@@ -74,6 +74,12 @@ if ANYDOCTOR == "1":
 else:
     FIND_DOCTOR = False
 
+EMPTYDOCTOR = Config2['emptydoctor']
+if EMPTYDOCTOR == "1":
+    EMPTY_DOCTOR = True
+else:
+    EMPTY_DOCTOR = False
+
 action_u8 = Config2['action']
 ACTION = action_u8.decode('utf-8')
 
@@ -248,7 +254,10 @@ ORDER BY ap.date_beg DESC;"""
                 elif speciality_id == 51:
                     d_snils = random.choice(d51)
             else:
-                continue
+                if EMPTY_DOCTOR:
+                    d_snils = None
+                else:
+                    continue
 
             if speciality_id == 51:
                 doc_category = 2
@@ -337,6 +346,14 @@ AND ap.date_end is Null;"""
     else:
         sout = "If area has not got assigned doctor then do not print"
         log.info(sout)
+
+    if EMPTY_DOCTOR:
+        sout = "Print patients not having doctors"
+        log.info(sout)
+    else:
+        sout = "Do not print patients not having doctors"
+        log.info(sout)
+
 
     sout = "Action: '{0}'".format(ACTION.encode('utf-8'))
     log.info(sout)
