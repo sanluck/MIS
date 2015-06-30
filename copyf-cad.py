@@ -9,6 +9,7 @@
 
 import os, sys, codecs
 import logging
+import ConfigParser
 from cStringIO import StringIO
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)

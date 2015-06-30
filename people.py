@@ -1641,7 +1641,7 @@ def mo_cad_string(p_mo):
         sss += u'"' + str(p_mo.area_number) + u'";'
 
     if p_mo.doc_snils:
-        sss += u'"' + p_mo.doc_snils
+        sss += u'"' + p_mo.doc_snils + u'"'
 
     if p_mo.doc_category:
         sss += u';"' + str(p_mo.doc_category) + u'"'
