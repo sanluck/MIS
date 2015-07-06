@@ -45,6 +45,11 @@ Config1 = ConfigSectionMap(Config, "MEDDOC")
 MD_HOST = Config1['md_host']
 MD_DB = Config1['md_db']
 
+# [MIS]
+Config1 = ConfigSectionMap(Config, "MIS")
+MIS_HOST = Config1['mis_host']
+MIS_DB = Config1['mis_db']
+
 # [DBMIS]
 Config1 = ConfigSectionMap(Config, "DBMIS")
 HOST = Config1['host']
@@ -84,8 +89,23 @@ LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
 WHERE ap.people_id_fk = ?
 AND ca.basic_speciality = 1
 AND ca.speciality_id_fk IN (1,7,38,51)
-AND ap.date_end is Null
+AND (ap.date_end is Null OR ap.motive_attach_end_id_fk = 5)
 ORDER BY ap.date_beg DESC;"""
+
+# d_cases
+SQLT3 = """INSERT INTO d_cases 
+(people_id, lname, fname, mname, birthday,
+clinic_id, area_number, speciality_id, 
+id_incident, d_dt, id_document) 
+VALUES (%s, %s, %s, %s, %s,
+%s, %s, %s,
+%s, %s, %s);"""
+
+# d_ds
+SQLT4 = """INSERT INTO d_ds
+(people_id, ds)
+VALUES 
+(%s, %s);"""
 
 class D_CASE:
     def __init__(self):
@@ -185,10 +205,10 @@ def set_people_area(cur, d):
     area_id_fk = rec[1]
     date_beg = rec[2]
     motive_attach_beg_id_fk  =rec[3]
-    clinic_id = rec[3]
-    area_number = rec[4]
-    area_id = rec[5]
-    speciality_id = rec[6]
+    clinic_id = rec[4]
+    area_number = rec[5]
+    area_id = rec[6]
+    speciality_id = rec[7]
     
     d.clinic_id = clinic_id
     d.area_number = area_number
@@ -248,6 +268,47 @@ def find_peoples(ddd):
     sout = "Number of peoples having more than one area number: {0}".format(nda)
     log.info(sout)
         
+def save_d_dict(ddd, clear_before = True):
+    dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
+    cursor = dbmy.con.cursor()
+    
+    if clear_before:
+        ssql = "TRUNCATE TABLE d_cases;"
+        cursor.execute(ssql)
+        ssql = "TRUNCATE TABLE d_ds;"
+        cursor.execute(ssql)
+        dbmy.con.commit()
+
+    for d_key in ddd.keys():
+        d = ddd[d_key]
+        people_id = d.people_id
+        if people_id:
+            lname = d.lname
+            fname = d.fname
+            mname = d.mname
+            birthday = d.birthday
+            clinic_id = d.clinic_id
+            area_number = d.area_number
+            speciality_id = d.speciality_id
+            id_incident = d.id_incident
+            d_dt = d.d_dt
+            id_document = d.id_document
+            
+            try:
+                cursor.execute(SQLT3, (people_id, lname, fname, mname, birthday, \
+                                       clinic_id, area_number, speciality_id, \
+                                       id_incident, d_dt, id_document, )) 
+
+                for ds in d.ds:
+                    cursor.execute(SQLT4, (d.people_id, ds,))
+   
+                dbmy.con.commit()
+            except Exception, e:
+                sout = "Inserting into d_cases table Error:"
+                log.warn(sout)
+                sout = "{0}".format(e)
+                log.warn(sout)
+            
 if __name__ == "__main__":
 
     localtime = time.asctime( time.localtime(time.time()) )
@@ -272,6 +333,11 @@ if __name__ == "__main__":
     log.info(sout)
     
     find_peoples(d_dict)
+
+    sout = "MIS Database: {0}:{1}".format(MIS_HOST, MIS_DB)
+    log.info(sout)
+    
+    save_d_dict(d_dict, clear_before = True)
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Report 2019 Finish {0}'.format(localtime))
