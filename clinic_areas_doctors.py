@@ -80,7 +80,7 @@ def get_cad(dbc, clinic_id):
         if speciality_id not in (1,7,38,51): continue
         if insurance_certificate is None: continue
         if cad.has_key(area_id): continue
-        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-","")]
+        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-",""), people_id]
 
     dbc.con.commit
 
@@ -100,7 +100,7 @@ def get_cad(dbc, clinic_id):
         if speciality_id not in (1,7,38,51): continue
         if insurance_certificate is None: continue
         if cad.has_key(area_id): continue
-        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-","")]
+        cad[area_id] = [speciality_id, area_number, insurance_certificate.replace(" ","").replace("-",""), people_id]
 
     dbc.con.commit
 

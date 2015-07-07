@@ -95,10 +95,10 @@ ORDER BY ap.date_beg DESC;"""
 # d_cases
 SQLT3 = """INSERT INTO d_cases 
 (people_id, lname, fname, mname, birthday,
-clinic_id, area_number, speciality_id, 
+clinic_id, area_id, area_number, speciality_id, 
 id_incident, d_dt, id_document) 
 VALUES (%s, %s, %s, %s, %s,
-%s, %s, %s,
+%s, %s, %s, %s,
 %s, %s, %s);"""
 
 # d_ds
@@ -106,6 +106,13 @@ SQLT4 = """INSERT INTO d_ds
 (people_id, ds)
 VALUES 
 (%s, %s);"""
+
+#
+SQLT5 = """SELECT people_id  
+FROM mis.d_cases
+WHERE clinic_id is not Null
+ORDER BY clinic_id, area_number;
+"""
 
 class D_CASE:
     def __init__(self):
@@ -119,6 +126,7 @@ class D_CASE:
         
         self.clinic_id = None
         self.mcod      = None
+        self.area_id = None
         self.area_number = None
         self.speciality_id = None
         self.worker_id = None
@@ -210,6 +218,7 @@ def set_people_area(cur, d):
     area_id = rec[6]
     speciality_id = rec[7]
     
+    d.area_id = area_id
     d.clinic_id = clinic_id
     d.area_number = area_number
     d.speciality_id = speciality_id
@@ -288,6 +297,7 @@ def save_d_dict(ddd, clear_before = True):
             mname = d.mname
             birthday = d.birthday
             clinic_id = d.clinic_id
+            area_id = d.area_id
             area_number = d.area_number
             speciality_id = d.speciality_id
             id_incident = d.id_incident
@@ -296,11 +306,11 @@ def save_d_dict(ddd, clear_before = True):
             
             try:
                 cursor.execute(SQLT3, (people_id, lname, fname, mname, birthday, \
-                                       clinic_id, area_number, speciality_id, \
+                                       clinic_id, area_id, area_number, speciality_id, \
                                        id_incident, d_dt, id_document, )) 
 
                 for ds in d.ds:
-                    cursor.execute(SQLT4, (d.people_id, ds,))
+                    cursor.execute(SQLT4, (people_id, ds,))
    
                 dbmy.con.commit()
             except Exception, e:
@@ -308,13 +318,10 @@ def save_d_dict(ddd, clear_before = True):
                 log.warn(sout)
                 sout = "{0}".format(e)
                 log.warn(sout)
-            
-if __name__ == "__main__":
 
-    localtime = time.asctime( time.localtime(time.time()) )
-    log.info('-----------------------------------------------------------------------------------')
-    log.info('Report 2019 Start {0}'.format(localtime))
-
+def stage1():
+# stage 1: select data from meddoc and identify people_id
+    
     sout = "MEDDOC Database: {0}:{1}".format(MD_HOST, MD_DB)
     log.info(sout)
 
@@ -338,6 +345,14 @@ if __name__ == "__main__":
     log.info(sout)
     
     save_d_dict(d_dict, clear_before = True)
+            
+if __name__ == "__main__":
+
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('-----------------------------------------------------------------------------------')
+    log.info('Report 2019 Start {0}'.format(localtime))
+
+    stage1()
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Report 2019 Finish {0}'.format(localtime))
