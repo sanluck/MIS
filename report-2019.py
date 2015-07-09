@@ -139,7 +139,7 @@ class D_CASE:
         self.ds = []
 
 class R_ITEM:
-    def __init__(self):
+    def __init__(self, d_ds_group = []):
         self.clinic_id = None
         self.clinic_name = None
         self.area_number = None
@@ -148,6 +148,11 @@ class R_ITEM:
         self.doctor_fio = None
         
         self.d_count = []
+        
+        for ddd in d_ds_group:
+            ddn = ddd[3]
+            self.d_count.append(ddn)
+        
     
     def save2db(self, con):
         
@@ -399,7 +404,18 @@ def stage2():
 
     dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
     cursor = dbmy.con.cursor()
-    cursor.execute(SQLT5, (d_start, d_finish, ))
+
+    d_ds_group = []
+    ssql = """SELECT type, ds1, ds2 FROM d_ds_groups;"""
+    cursor.execute(ssql)
+    results = cursor.fetchall()
+    for rec in results:
+        ds_type = rec[0]
+        ds1 = rec[1]
+        ds2 = rec[2]
+        d_ds_group.append([ds_type, ds1, ds2, 0])
+    
+    cursor.execute(SQLT5)
     
     results = cursor.fetchall()
     
@@ -407,7 +423,7 @@ def stage2():
     a_id = 0
     p_id = 0
     
-    r_item = R_ITEM()
+    r_item = R_ITEM(d_ds_group)
     
     for rec in results:
         people_id = rec[0]
@@ -417,8 +433,14 @@ def stage2():
         if c_id != clinic_id:
             
             if c_id != 0: r_item.save2db(dbmy.con)
-            
-            pass
+            c_id = clinic_id
+            a_id = area_id
+            r_item = R_ITEM(d_ds_group)
+        elif a_id != area_id:
+            if a_id != 0: r_item.save2db(dbmy.con)
+            a_id = area_id
+            r_item = R_ITEM(d_ds_group)
+        
             
 if __name__ == "__main__":
 
