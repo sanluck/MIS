@@ -108,11 +108,11 @@ VALUES
 (%s, %s);"""
 
 #
-SQLT5 = """SELECT people_id  
-FROM mis.d_cases
-WHERE clinic_id is not Null
-ORDER BY clinic_id, area_number;
-"""
+SQLT5 = """SELECT 
+people_id, clinic_id, area_id, area_number 
+FROM mis.d_cases 
+WHERE clinic_id is not Null 
+ORDER BY clinic_id, area_number;"""
 
 class D_CASE:
     def __init__(self):
@@ -137,7 +137,47 @@ class D_CASE:
         self.d_dt = None
         self.id_document = None
         self.ds = []
+
+class R_ITEM:
+    def __init__(self):
+        self.clinic_id = None
+        self.clinic_name = None
+        self.area_number = None
+        self.speciality_id = None
+        self.speciality_name = None
+        self.doctor_fio = None
         
+        self.d_count = []
+    
+    def save2db(self, con):
+        
+        cursor = con.cursor()
+        
+        ssql = """INSERT INTO r2019
+        (clinic_id, clinic_name, area_number, 
+        speciality_id, speciality_name, doctor_fio) 
+        VALUES
+        (%s, %s, %s, 
+        %s, %s, %s);"""
+        
+        cursor.execute(ssql, (self.clinic_id, self.clinic_name, \
+                              self.area_number, \
+                              self.speciality_id, self.speciality_name, \
+                              self.doctor_fio, ))
+        
+        con.commit()
+        _id = con.insert_id()
+        
+        ssql = """INSERT INTO r2019_ds
+        (r2019_id, d_ds_id, d_ds_number) 
+        VALUES
+        (%s, %s, %s);"""
+        i = 0
+        for ddd in self.d_count:
+            i += 1
+            cursor.execute(ssql, (_id, i, ddd, ))
+            
+        con.commit()
 
 def get_d(d_start, d_finish):
     
@@ -345,6 +385,40 @@ def stage1():
     log.info(sout)
     
     save_d_dict(d_dict, clear_before = True)
+    
+
+def stage2():
+# stage 2: use selected data from meddoc (stage1)
+#          write report data
+    from clinic_areas_doctors import get_cad
+    
+    log.info("Stage II")
+    
+    sout = "MIS Database: {0}:{1}".format(MIS_HOST, MIS_DB)
+    log.info(sout)
+
+    dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
+    cursor = dbmy.con.cursor()
+    cursor.execute(SQLT5, (d_start, d_finish, ))
+    
+    results = cursor.fetchall()
+    
+    c_id = 0
+    a_id = 0
+    p_id = 0
+    
+    r_item = R_ITEM()
+    
+    for rec in results:
+        people_id = rec[0]
+        clinic_id = rec[1]
+        area_id = rec[2]
+        area_number = rec[3]
+        if c_id != clinic_id:
+            
+            if c_id != 0: r_item.save2db(dbmy.con)
+            
+            pass
             
 if __name__ == "__main__":
 
