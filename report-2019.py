@@ -462,12 +462,16 @@ def stage2():
     ssql = """SELECT type, ds1, ds2 FROM d_ds_groups;"""
     cursor.execute(ssql)
     results = cursor.fetchall()
+    ii = 0
+    iother = 0
     for rec in results:
         ds_type = rec[0]
         ds1 = rec[1].strip()
         ds2 = rec[2]
         if ds2 is not None: ds2 = ds2.strip()
         d_ds_group.append([ds_type, ds1, ds2, 0])
+        if ds_type == 0: iother = ii
+        ii += 1
 
     cur2 = dbmy.con.cursor()
     ssql_d_ds = "SELECT ds from d_ds WHERE people_id = %s;"
@@ -510,6 +514,7 @@ def stage2():
             ds = rec2[0].strip()
             lds = len(ds)
             ids = 0
+            lother = True
             for ddd in d_ds_group:
                 ds_type = ddd[0]
                 ds1 = ddd[1]
@@ -521,11 +526,17 @@ def stage2():
                     lds2 = 0
 
                 if ds_type in (1,3):
-                    if ds1 == ds[:lds1]: r_item.d_count[ids] += 1
-                else:
-                    if (ds[:lds1] >= ds1) and (ds[:lds2] <= ds2): r_item.d_count[ids] += 1
+                    if ds1 == ds[:lds1]:
+                        r_item.d_count[ids] += 1
+                        lother = False
+                elif ds_type in (2,4):
+                    if (ds[:lds1] >= ds1) and (ds[:lds2] <= ds2):
+                        r_item.d_count[ids] += 1
+                        lother = False
 
                 ids += 1
+
+            if lother: r_item.d_count[iother] += 1
 
     dbmy.close()
     dbc.close()
