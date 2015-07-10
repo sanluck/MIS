@@ -14,6 +14,8 @@ import ConfigParser
 import logging
 
 from dbmysql_connect import DBMY
+import fdb
+from dbmis_connect2 import DBMIS
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
@@ -109,7 +111,7 @@ VALUES
 
 #
 SQLT5 = """SELECT 
-people_id, clinic_id, area_id, area_number 
+people_id, clinic_id, area_id, area_number, speciality_id 
 FROM mis.d_cases 
 WHERE clinic_id is not Null 
 ORDER BY clinic_id, area_number;"""
@@ -139,11 +141,26 @@ class D_CASE:
         self.ds = []
 
 class R_ITEM:
-    def __init__(self, d_ds_group = []):
-        self.clinic_id = None
+    SQLT_GET_CLINIC_NAME = """SELECT clinic_name 
+    FROM clinics 
+    WHERE clinic_id = ?;"""
+    
+    SQLT_GET_FIO = """SELECT fio 
+    FROM vw_peoples_short 
+    WHERE people_id = ?;"""
+    
+    SQLT_GET_SPECIALITY_NAME = """SELECT speciality_name 
+    FROM specialities 
+    WHERE speciality_id = ?;"""
+    
+    def __init__(self, d_ds_group = [], \
+                 clinic_id = None, area_id = None, area_number = None, \
+                 speciality_id = None):
+        self.clinic_id = clinic_id
         self.clinic_name = None
-        self.area_number = None
-        self.speciality_id = None
+        self.area_id = area_id
+        self.area_number = area_number
+        self.speciality_id = speciality_id
         self.speciality_name = None
         self.doctor_fio = None
         
@@ -153,6 +170,33 @@ class R_ITEM:
             ddn = ddd[3]
             self.d_count.append(ddn)
         
+    def setdoctor(self, dbc, cad):
+        
+        cur = dbc.con.cursor()
+        
+        if self.clinic_id:
+            cur.execute(self.SQLT_GET_CLINIC_NAME, (self.clinic_id, ))
+            rec = cur.fetchone()
+            dbc.con.commit()
+            if rec: self.clinic_name = rec[0]
+            
+        if self.area_id:
+            
+            if cad.has_key(self.area_id):
+                self.speciality_id = cad[self.area_id][0]
+                d_people_id = cad[self.area_id][3]
+                if d_people_id:
+                    cur.execute(self.SQLT_GET_FIO, (d_people_id, ))
+                    rec = cur.fetchone()
+                    dbc.con.commit()
+                    if rec: self.doctor_fio = rec[0]
+        
+        if self.speciality_id:
+            cur.execute(self.SQLT_GET_SPECIALITY_NAME, (self.speciality_id, ))
+            rec = cur.fetchone()
+            dbc.con.commit()
+            if rec: self.speciality_name = rec[0]
+            
     
     def save2db(self, con):
         
@@ -271,8 +315,6 @@ def set_people_area(cur, d):
     return len(results)
 
 def find_peoples(ddd):
-    import fdb
-    from dbmis_connect2 import DBMIS
     
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
@@ -396,24 +438,39 @@ def stage2():
 # stage 2: use selected data from meddoc (stage1)
 #          write report data
     from clinic_areas_doctors import get_cad
+
+    log.info("============== Stage II ========================================")
     
-    log.info("Stage II")
+    sout = "DBMIS Database: {0}:{1}".format(HOST, DB)
+    log.info(sout)
+
+    dbc = DBMIS(mis_host = HOST, mis_db = DB)
     
     sout = "MIS Database: {0}:{1}".format(MIS_HOST, MIS_DB)
     log.info(sout)
 
     dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
     cursor = dbmy.con.cursor()
-
+    
+    ssql = "TRUNCATE TABLE r2019;"
+    cursor.execute(ssql)
+    ssql = "TRUNCATE TABLE r2019_ds;"
+    cursor.execute(ssql);
+    dbmy.con.commit()
+    
     d_ds_group = []
     ssql = """SELECT type, ds1, ds2 FROM d_ds_groups;"""
     cursor.execute(ssql)
     results = cursor.fetchall()
     for rec in results:
         ds_type = rec[0]
-        ds1 = rec[1]
+        ds1 = rec[1].strip()
         ds2 = rec[2]
+        if ds2 is not None: ds2 = ds2.strip()
         d_ds_group.append([ds_type, ds1, ds2, 0])
+    
+    cur2 = dbmy.con.cursor()
+    ssql_d_ds = "SELECT ds from d_ds WHERE people_id = %s;"
     
     cursor.execute(SQLT5)
     
@@ -430,25 +487,57 @@ def stage2():
         clinic_id = rec[1]
         area_id = rec[2]
         area_number = rec[3]
+        speciality_id = rec[4]
+        
         if c_id != clinic_id:
             
             if c_id != 0: r_item.save2db(dbmy.con)
             c_id = clinic_id
             a_id = area_id
-            r_item = R_ITEM(d_ds_group)
+            cad = get_cad(dbc, clinic_id)
+            r_item = R_ITEM(d_ds_group, clinic_id, area_id, area_number, speciality_id)
+            r_item.setdoctor(dbc, cad)
+            
         elif a_id != area_id:
             if a_id != 0: r_item.save2db(dbmy.con)
             a_id = area_id
-            r_item = R_ITEM(d_ds_group)
-        
+            r_item = R_ITEM(d_ds_group, clinic_id, area_id, area_number, speciality_id)
+            r_item.setdoctor(dbc, cad)
             
+        cur2.execute(ssql_d_ds, (people_id, ))
+        res2 = cur2.fetchall()
+        for rec2 in res2:
+            ds = rec2[0].strip()
+            lds = len(ds)
+            ids = 0
+            for ddd in d_ds_group:
+                ds_type = ddd[0]
+                ds1 = ddd[1]
+                ds2 = ddd[2]
+                lds1 = len(ds1)
+                if ds2:
+                    lds2 = len(ds2)
+                else:
+                    lds2 = 0
+                    
+                if ds_type in (1,3):
+                    if ds1 == ds[:lds1]: r_item.d_count[ids] += 1
+                else:
+                    if (ds[:lds1] >= ds1) and (ds[:lds2] <= ds2): r_item.d_count[ids] += 1
+                
+                ids += 1
+            
+    dbmy.close()
+    dbc.close()
+    
 if __name__ == "__main__":
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('-----------------------------------------------------------------------------------')
     log.info('Report 2019 Start {0}'.format(localtime))
 
-    stage1()
+    #stage1()
+    stage2()
     
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Report 2019 Finish {0}'.format(localtime))
