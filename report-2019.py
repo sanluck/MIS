@@ -95,10 +95,10 @@ AND (ap.date_end is Null OR ap.motive_attach_end_id_fk = 5)
 ORDER BY ap.date_beg DESC;"""
 
 # d_cases
-SQLT3 = """INSERT INTO d_cases 
+SQLT3 = """INSERT INTO d_cases
 (people_id, lname, fname, mname, birthday,
-clinic_id, area_id, area_number, speciality_id, 
-id_incident, d_dt, id_document) 
+clinic_id, area_id, area_number, speciality_id,
+id_incident, d_dt, id_document)
 VALUES (%s, %s, %s, %s, %s,
 %s, %s, %s, %s,
 %s, %s, %s);"""
@@ -106,14 +106,14 @@ VALUES (%s, %s, %s, %s, %s,
 # d_ds
 SQLT4 = """INSERT INTO d_ds
 (people_id, ds)
-VALUES 
+VALUES
 (%s, %s);"""
 
 #
-SQLT5 = """SELECT 
-people_id, clinic_id, area_id, area_number, speciality_id 
-FROM mis.d_cases 
-WHERE clinic_id is not Null 
+SQLT5 = """SELECT
+people_id, clinic_id, area_id, area_number, speciality_id
+FROM mis.d_cases
+WHERE clinic_id is not Null
 ORDER BY clinic_id, area_number;"""
 
 class D_CASE:
@@ -125,7 +125,7 @@ class D_CASE:
         self.birthday = None
         self.sex      = None
         self.snils    = None
-        
+
         self.clinic_id = None
         self.mcod      = None
         self.area_id = None
@@ -134,25 +134,25 @@ class D_CASE:
         self.worker_id = None
         self.doctor_id = None
         self.doctor_fio = None
-        
+
         self.id_incident = None
         self.d_dt = None
         self.id_document = None
         self.ds = []
 
 class R_ITEM:
-    SQLT_GET_CLINIC_NAME = """SELECT clinic_name 
-    FROM clinics 
+    SQLT_GET_CLINIC_NAME = """SELECT clinic_name
+    FROM clinics
     WHERE clinic_id = ?;"""
-    
-    SQLT_GET_FIO = """SELECT fio 
-    FROM vw_peoples_short 
+
+    SQLT_GET_FIO = """SELECT fio
+    FROM vw_peoples_short
     WHERE people_id = ?;"""
-    
-    SQLT_GET_SPECIALITY_NAME = """SELECT speciality_name 
-    FROM specialities 
+
+    SQLT_GET_SPECIALITY_NAME = """SELECT speciality_name
+    FROM specialities
     WHERE speciality_id = ?;"""
-    
+
     def __init__(self, d_ds_group = [], \
                  clinic_id = None, area_id = None, area_number = None, \
                  speciality_id = None):
@@ -163,25 +163,25 @@ class R_ITEM:
         self.speciality_id = speciality_id
         self.speciality_name = None
         self.doctor_fio = None
-        
+
         self.d_count = []
-        
+
         for ddd in d_ds_group:
             ddn = ddd[3]
             self.d_count.append(ddn)
-        
+
     def setdoctor(self, dbc, cad):
-        
+
         cur = dbc.con.cursor()
-        
+
         if self.clinic_id:
             cur.execute(self.SQLT_GET_CLINIC_NAME, (self.clinic_id, ))
             rec = cur.fetchone()
             dbc.con.commit()
             if rec: self.clinic_name = rec[0]
-            
+
         if self.area_id:
-            
+
             if cad.has_key(self.area_id):
                 self.speciality_id = cad[self.area_id][0]
                 d_people_id = cad[self.area_id][3]
@@ -190,54 +190,54 @@ class R_ITEM:
                     rec = cur.fetchone()
                     dbc.con.commit()
                     if rec: self.doctor_fio = rec[0]
-        
+
         if self.speciality_id:
             cur.execute(self.SQLT_GET_SPECIALITY_NAME, (self.speciality_id, ))
             rec = cur.fetchone()
             dbc.con.commit()
             if rec: self.speciality_name = rec[0]
-            
-    
+
+
     def save2db(self, con):
-        
+
         cursor = con.cursor()
-        
+
         ssql = """INSERT INTO r2019
-        (clinic_id, clinic_name, area_number, 
-        speciality_id, speciality_name, doctor_fio) 
+        (clinic_id, clinic_name, area_number,
+        speciality_id, speciality_name, doctor_fio)
         VALUES
-        (%s, %s, %s, 
+        (%s, %s, %s,
         %s, %s, %s);"""
-        
+
         cursor.execute(ssql, (self.clinic_id, self.clinic_name, \
                               self.area_number, \
                               self.speciality_id, self.speciality_name, \
                               self.doctor_fio, ))
-        
-        con.commit()
+
         _id = con.insert_id()
-        
+        con.commit()
+
         ssql = """INSERT INTO r2019_ds
-        (r2019_id, d_ds_id, d_ds_number) 
+        (r2019_id, d_ds_id, d_ds_number)
         VALUES
         (%s, %s, %s);"""
         i = 0
         for ddd in self.d_count:
             i += 1
             cursor.execute(ssql, (_id, i, ddd, ))
-            
+
         con.commit()
 
 def get_d(d_start, d_finish):
-    
+
     dbmy = DBMY(host = MD_HOST, db = MD_DB)
     cursor = dbmy.con.cursor()
     cursor.execute(SQLT1, (d_start, d_finish, ))
-    
+
     results = cursor.fetchall()
-    
+
     ddd = {}
-    
+
     for rec in results:
         id_incident = rec[0]
         d_dt = rec[1]
@@ -261,24 +261,24 @@ def get_d(d_start, d_finish):
             d.fname = name
             d.mname = patronymic
             d.birthday = birthday
-            
+
             d.d_dt = d_dt
             d.id_document = id_document
             d.ds = [mkb_code]
             ddd[id_incident] = d
-            
+
     dbmy.close()
     return ddd
 
 def set_people_id(cur, d):
     from people import get_people
-    
+
     lname = d.lname
     fname = d.fname
     mname = d.mname
     bd    = d.birthday
     precs = get_people(cur, lname, fname, mname, bd)
-    
+
     if precs:
         people_id = precs[0][0]
         d.people_id = people_id
@@ -287,16 +287,16 @@ def set_people_id(cur, d):
         return None
 
 def set_people_area(cur, d):
-    
+
     people_id = d.people_id
-    
+
     if people_id is None: return None
-    
+
     cur.execute(SQLT2, (people_id, ))
     results = cur.fetchall()
-    
+
     if (results is None) or (len(results)==0): return None
-    
+
     rec = results[0]
     area_people_id = rec[0]
     area_id_fk = rec[1]
@@ -306,16 +306,16 @@ def set_people_area(cur, d):
     area_number = rec[5]
     area_id = rec[6]
     speciality_id = rec[7]
-    
+
     d.area_id = area_id
     d.clinic_id = clinic_id
     d.area_number = area_number
     d.speciality_id = speciality_id
-    
+
     return len(results)
 
 def find_peoples(ddd):
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
@@ -325,24 +325,24 @@ def find_peoples(ddd):
     ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
     # and cursor
     ro_cur = ro_transaction.cursor()
-    
+
     nnf = 0 # number of not found peoples
     nfd = 0 # number of found duplicated peoples
     nna = 0 # number of peoples without area_number
     nda = 0 # number of peoples having more than one area number
-    
+
     for d_key in ddd.keys():
         d = ddd[d_key]
-        
+
         nfound = set_people_id(ro_cur, d)
-        
+
         if nfound:
             ddd[d_key] = d
             if nfound > 1: nfd += 1
         else:
             nnf += 1
             continue
-        
+
         nap = set_people_area(ro_cur, d)
         if nap:
             ddd[d_key] = d
@@ -351,23 +351,23 @@ def find_peoples(ddd):
             nna += 1
 
     dbc.close()
-    
+
     sout = "Not found peoples: {0}".format(nnf)
     log.info(sout)
-    
+
     sout = "Found duplicates: {0}".format(nfd)
     log.info(sout)
-    
+
     sout = "Number of peoples without area_number: {0}".format(nna)
     log.info(sout)
-    
+
     sout = "Number of peoples having more than one area number: {0}".format(nda)
     log.info(sout)
-        
+
 def save_d_dict(ddd, clear_before = True):
     dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
     cursor = dbmy.con.cursor()
-    
+
     if clear_before:
         ssql = "TRUNCATE TABLE d_cases;"
         cursor.execute(ssql)
@@ -390,15 +390,15 @@ def save_d_dict(ddd, clear_before = True):
             id_incident = d.id_incident
             d_dt = d.d_dt
             id_document = d.id_document
-            
+
             try:
                 cursor.execute(SQLT3, (people_id, lname, fname, mname, birthday, \
                                        clinic_id, area_id, area_number, speciality_id, \
-                                       id_incident, d_dt, id_document, )) 
+                                       id_incident, d_dt, id_document, ))
 
                 for ds in d.ds:
                     cursor.execute(SQLT4, (people_id, ds,))
-   
+
                 dbmy.con.commit()
             except Exception, e:
                 sout = "Inserting into d_cases table Error:"
@@ -408,7 +408,7 @@ def save_d_dict(ddd, clear_before = True):
 
 def stage1():
 # stage 1: select data from meddoc and identify people_id
-    
+
     sout = "MEDDOC Database: {0}:{1}".format(MD_HOST, MD_DB)
     log.info(sout)
 
@@ -419,20 +419,20 @@ def stage1():
     d_finish = datetime.strptime(D_FINISH, "%Y-%m-%d")
     sout = "d_finish: {0}".format(d_finish)
     log.info(sout)
-    
+
     d_dict = get_d(d_start, d_finish)
-    
+
     ld = len(d_dict)
     sout = "Totally we have got {0} incidents".format(ld)
     log.info(sout)
-    
+
     find_peoples(d_dict)
 
     sout = "MIS Database: {0}:{1}".format(MIS_HOST, MIS_DB)
     log.info(sout)
-    
+
     save_d_dict(d_dict, clear_before = True)
-    
+
 
 def stage2():
 # stage 2: use selected data from meddoc (stage1)
@@ -440,24 +440,24 @@ def stage2():
     from clinic_areas_doctors import get_cad
 
     log.info("============== Stage II ========================================")
-    
+
     sout = "DBMIS Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
     dbc = DBMIS(mis_host = HOST, mis_db = DB)
-    
+
     sout = "MIS Database: {0}:{1}".format(MIS_HOST, MIS_DB)
     log.info(sout)
 
     dbmy = DBMY(host = MIS_HOST, db = MIS_DB)
     cursor = dbmy.con.cursor()
-    
+
     ssql = "TRUNCATE TABLE r2019;"
     cursor.execute(ssql)
     ssql = "TRUNCATE TABLE r2019_ds;"
     cursor.execute(ssql);
     dbmy.con.commit()
-    
+
     d_ds_group = []
     ssql = """SELECT type, ds1, ds2 FROM d_ds_groups;"""
     cursor.execute(ssql)
@@ -468,42 +468,42 @@ def stage2():
         ds2 = rec[2]
         if ds2 is not None: ds2 = ds2.strip()
         d_ds_group.append([ds_type, ds1, ds2, 0])
-    
+
     cur2 = dbmy.con.cursor()
     ssql_d_ds = "SELECT ds from d_ds WHERE people_id = %s;"
-    
+
     cursor.execute(SQLT5)
-    
+
     results = cursor.fetchall()
-    
+
     c_id = 0
     a_id = 0
     p_id = 0
-    
+
     r_item = R_ITEM(d_ds_group)
-    
+
     for rec in results:
         people_id = rec[0]
         clinic_id = rec[1]
         area_id = rec[2]
         area_number = rec[3]
         speciality_id = rec[4]
-        
+
         if c_id != clinic_id:
-            
+
             if c_id != 0: r_item.save2db(dbmy.con)
             c_id = clinic_id
             a_id = area_id
             cad = get_cad(dbc, clinic_id)
             r_item = R_ITEM(d_ds_group, clinic_id, area_id, area_number, speciality_id)
             r_item.setdoctor(dbc, cad)
-            
+
         elif a_id != area_id:
             if a_id != 0: r_item.save2db(dbmy.con)
             a_id = area_id
             r_item = R_ITEM(d_ds_group, clinic_id, area_id, area_number, speciality_id)
             r_item.setdoctor(dbc, cad)
-            
+
         cur2.execute(ssql_d_ds, (people_id, ))
         res2 = cur2.fetchall()
         for rec2 in res2:
@@ -519,17 +519,17 @@ def stage2():
                     lds2 = len(ds2)
                 else:
                     lds2 = 0
-                    
+
                 if ds_type in (1,3):
                     if ds1 == ds[:lds1]: r_item.d_count[ids] += 1
                 else:
                     if (ds[:lds1] >= ds1) and (ds[:lds2] <= ds2): r_item.d_count[ids] += 1
-                
+
                 ids += 1
-            
+
     dbmy.close()
     dbc.close()
-    
+
 if __name__ == "__main__":
 
     localtime = time.asctime( time.localtime(time.time()) )
@@ -538,7 +538,7 @@ if __name__ == "__main__":
 
     #stage1()
     stage2()
-    
+
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Report 2019 Finish {0}'.format(localtime))
     sys.exit(0)
