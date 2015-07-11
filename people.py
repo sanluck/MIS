@@ -905,14 +905,20 @@ def mo_item(s_mo_item, itype = 'S' ):
         if itype == 'S':
             return sss
         elif itype == 'D':
-            year  = int(sss[:4])
-            month = int(sss[4:6])
-            day   = int(sss[6:])
-            ddd = date(year, month, day)
-            return ddd
+            if len(sss) == 0:
+                return None
+            else:
+                year  = int(sss[:4])
+                month = int(sss[4:6])
+                day   = int(sss[6:])
+                ddd = date(year, month, day)
+                return ddd
         elif itype == 'I':
-            iii = int(sss)
-            return iii
+            if len(sss) == 0:
+                return None
+            else:
+                iii = int(sss)
+                return iii
         else:
             return sss
 
