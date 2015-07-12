@@ -167,7 +167,13 @@ if __name__ == "__main__":
         sout = "Input file: {0}".format(f_fname)
         log.info(sout)
 
-        ar = get_mo_cad(f_fname)
+        try:
+            ar = get_mo_cad(f_fname)
+        except Exception, e:
+            sout = "get_mo_cad error: {0}".format(e)
+            log.warn(e)
+            continue
+        
         l_ar = len(ar)
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
