@@ -11,6 +11,7 @@
 
 import os, sys, codecs
 import random
+from datetime import datetime
 
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
@@ -35,7 +36,7 @@ PRINT_FOUND = False
 
 MO2DO_PATH        = "./FIN"
 MODONE_PATH       = "./FOUT"
-DATE_ATT = "20150601"
+DATE_ATT = datetime(2015,6,1)
 
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
@@ -78,7 +79,6 @@ def t2094(ar):
     for mo in ar:
         i += 1
         
-        mo = ar[i]
         lname = mo.lname
         fname = mo.fname
         mname = mo.mname
@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
         arr = t2094(ar)
         l_arr = len(arr)
-        sout = "Result has got {0} lines".format(l_ar)
+        sout = "Result has got {0} lines".format(l_arr)
         log.info( sout )
         
         f_fname = MODONE_PATH + "/" + fname
