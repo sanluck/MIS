@@ -86,6 +86,11 @@ def t2094(ar):
         enp   = mo.enp
         
         if i % STEP == 0:
+            dbc.close()
+            dbc = DBMIS(mis_host = HOST, mis_db = DB)
+            ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+            ro_cur = ro_transaction.cursor()
+
             sout = "{0}: ENP {1}".format(i, enp)
             log.info(sout)
             
