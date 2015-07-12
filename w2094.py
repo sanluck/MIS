@@ -90,6 +90,7 @@ def t2094(ar):
             log.info(sout)
             
         precs = get_people(ro_cur, lname, fname, mname, bd)
+        dbc.con.commit()
         if precs:
             people_id = precs[0][0]
         elif enp:
@@ -104,6 +105,7 @@ def t2094(ar):
         
         ro_cur.execute(SQLT_AP, (people_id, ))
         aprec = ro_cur.fetchone()
+        dbc.con.commit()
         
         if not aprec: continue
         area_id = aprec[1]
