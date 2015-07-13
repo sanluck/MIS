@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding: utf-8
 # w2094.py - задача 2094
-#            читать МО файлы, 
+#            читать МО файлы,
 #            проставить прикрепление из DBMIS,
 #            записать новые МО файлы
 #
@@ -37,6 +37,8 @@ PRINT_FOUND = False
 MO2DO_PATH        = "./FIN"
 MODONE_PATH       = "./FOUT"
 DATE_ATT = datetime(2015,6,1)
+DOCUM_SKIP = "import"
+CLINIC_SKIP = 329
 
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
@@ -47,7 +49,8 @@ SQLT_AP = """SELECT
 ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
 ca.clinic_id_fk,
 ar.area_number,
-ca.speciality_id_fk
+ca.speciality_id_fk,
+ap.docum_attach_beg_number
 FROM area_peoples ap
 LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
 LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
@@ -62,7 +65,7 @@ def t2094(ar):
     from dbmis_connect2 import DBMIS
     from people import get_people
     from clinic_areas_doctors import get_cad, get_d
-    
+
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
@@ -72,19 +75,19 @@ def t2094(ar):
     ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
     # and cursor
     ro_cur = ro_transaction.cursor()
-    
+
     ar_result = []
     t_clinic_id = 0
     i = 0
     for mo in ar:
         i += 1
-        
+
         lname = mo.lname
         fname = mo.fname
         mname = mo.mname
         bd    = mo.birthday
         enp   = mo.enp
-        
+
         if i % STEP == 0:
             dbc.close()
             dbc = DBMIS(mis_host = HOST, mis_db = DB)
@@ -93,7 +96,7 @@ def t2094(ar):
 
             sout = "{0}: ENP {1}".format(i, enp)
             log.info(sout)
-            
+
         precs = get_people(ro_cur, lname, fname, mname, bd)
         dbc.con.commit()
         if precs:
@@ -107,11 +110,11 @@ def t2094(ar):
                 continue
         else:
             continue
-        
+
         ro_cur.execute(SQLT_AP, (people_id, ))
         aprec = ro_cur.fetchone()
         dbc.con.commit()
-        
+
         if not aprec: continue
         area_id = aprec[1]
         motive_att = aprec[3]
@@ -119,14 +122,20 @@ def t2094(ar):
         clinic_id = aprec[4]
         mcod = modb.moCodeByMisId(clinic_id)
         if not mcod: continue
+        if mcod == mo.mcod: continue
+        if (clinic_id == CLINIC_SKIP) \
+           and (docum_attach_beg_number == DOCUM_SKIP):
+            continue
+
         area_number   = aprec[5]
         speciality_id = aprec[6]
-        
+        docum_attach_beg_number = aprec[7]
+
         if clinic_id != t_clinic_id:
             cad = get_cad(dbc, clinic_id)
             d1,d7,d38,d51 = get_d(dbc, clinic_id)
             t_clinic_id = clinic_id
-            
+
         mo.mcod = mcod
         mo.motive_att = motive_att
         mo.date_att = DATE_ATT
@@ -149,7 +158,7 @@ def t2094(ar):
         if i % STEP == 0:
             sout = "{0}: people_id {1} doctor {2}".format(i, people_id, d_snils)
             log.info(sout)
-        
+
     dbc.close()
     return ar_result
 
@@ -180,7 +189,7 @@ if __name__ == "__main__":
             sout = "get_mo_cad error: {0}".format(e)
             log.warn(e)
             continue
-        
+
         l_ar = len(ar)
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
@@ -189,12 +198,12 @@ if __name__ == "__main__":
         l_arr = len(arr)
         sout = "Result has got {0} lines".format(l_arr)
         log.info( sout )
-        
+
         f_fname = MODONE_PATH + "/" + fname
         sout = "Output file: {0}".format(f_fname)
         log.info(sout)
         write_mo_cad(arr, f_fname)
-    
+
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Updating MO_CAD Files. Finish  '+localtime)
 
