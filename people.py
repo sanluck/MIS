@@ -449,7 +449,6 @@ class IM_PEOPLE:
         if len(s_mis) == 0:
             tdpfs = u"3" # Полис ОМС единого образца
             enp = s_min
-            s_min = None
             s_mis = None
             
         elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
