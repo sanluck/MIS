@@ -3,7 +3,9 @@
 
 import sys
 import logging
+from datetime import datetime
 
+CLINIC_OGRN = None
 STEP = 1000
 PRINT_FOUND = False
 SM2DO_PATH  = "./SM2DO"
@@ -80,6 +82,19 @@ WHERE ap.people_id_fk = ?
 AND ap.date_end is Null
 AND ca.basic_speciality = 1;"""
 
+SQLT_IM_INSERT = """INSERT INTO im
+(people_id, lname, fname, mname, bd, sex,
+doc_type, doc_ser, doc_number, snils,
+insorg_ogrn, insorg_okato,
+enp, tdpfs, oms_ser, oms_number, 
+mc_start, mc_end, mo_ogrn, hc_cost) 
+VALUES 
+(%s, %s, %s, %s, %s, %s,
+%s, %s, %s, %s,
+%s, %s,
+%s, %s, %s, %s, 
+%s, %s, %s, %s);"""
+
 class PEOPLE:
     def __init__(self):
         self.people_id = None
@@ -123,8 +138,6 @@ class PEOPLE:
         self.addr_fact_country_socr = None
 
         self.addr_fact = None
-
-
 
     def initFromRec(self, rec):
         self.people_id = rec[0]
@@ -351,6 +364,221 @@ class P_CLINIC:
         self.speciality_id        = None
         self.basic_speciality     = None
 
+class IM_PEOPLE:
+    def __init__(self):
+        self.people_id    = None
+        self.lname        = None
+        self.fname        = None
+        self.mname        = None
+        self.bd           = None
+        self.sex          = None
+        self.doc_type     = None
+        self.doc_ser      = None
+        self.doc_number   = None
+        self.snils        = None
+        self.insorg_ogrn  = None
+        self.insorg_okato = None
+        self.enp          = None
+        self.tdpfs        = None
+        self.oms_ser      = None
+        self.oms_number   = None
+        self.mc_start     = None
+        self.mc_end       = None
+        self.mo_ogrn      = None
+        self.hc_cost      = None
+        
+    def init1(self, patient, insorg, skip_ogrn = True, clinic_ogrn = CLINIC_OGRN):
+        now = datetime.now()
+        s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)
+        self.people_id    = patient.people_id
+        self.lname        = patient.lname.strip().upper()
+        self.fname        = patient.fname.strip().upper()
+        if patient.mname:
+            self.mname    = patient.mname.strip().upper()
+        else:
+            self.mname    = None
+        
+        dr = patient.birthday
+        sdr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
+        self.bd           = sdr
+
+        sex = patient.sex
+        if sex == u"М":
+            self.sex = u"1"
+        else:
+            self.sex = u"2"
+
+        doc_type_id = patient.document_type_id_fk
+        if doc_type_id == None:
+            self.doc_type = 14
+        elif (doc_type_id >= 1) and (doc_type_id <= 18):
+            self.doc_type = doc_type_id
+        else:
+            self.doc_type = None
+
+        self.doc_ser      = patient.document_series
+        self.doc_number   = patient.document_number
+        self.snils        = patient.insurance_certificate
+
+        ogrn = insorg.ogrn
+        if ogrn == None or ogrn == 0 or skip_ogrn:
+            self.insorg_ogrn = None
+        else:
+            self.insorg_ogrn = u"{0}".format(ogrn)
+    
+        okato = insorg.okato
+        if okato == None or okato == 0 or skip_ogrn:
+            self.insorg_okato = None
+        else:
+            self.insorg_okato = u"{0}".format(ogrn)
+
+        # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
+        sss = patient.medical_insurance_series
+        if sss == None:
+            s_mis = u""
+        else:
+            s_mis = u"{0}".format(sss)
+        
+        sss = patient.medical_insurance_number
+        if sss == None:
+            s_min = u""
+        else:
+            s_min = u"{0}".format(sss)
+        
+        enp = None
+        if len(s_mis) == 0:
+            tdpfs = u"3" # Полис ОМС единого образца
+            enp = s_min
+            s_min = None
+            s_mis = None
+            
+        elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
+            tdpfs = u"2" # Временное свидетельство, ....
+        else:
+            tdpfs = u"1" # Полис ОМС старого образца
+        
+        # ENP
+        if skip_ogrn:
+            if enp:
+                s_min = enp
+                enp = None
+        
+        if enp:
+            if len(enp) < 16:
+                self.enp = None
+            else:
+                self.enp  = enp
+        else:
+            self.enp = None
+        self.tdpfs        = tdpfs
+        self.oms_ser      = s_mis
+        self.oms_number   = s_min
+
+        self.mc_start     = s_now
+        self.mc_end       = s_now
+        if skip_ogrn:
+            self.mo_ogrn  = None
+        else:
+            self.mo_ogrn  = clinic_ogrn
+        
+        self.hc_cost      = None
+
+    def p1(self):
+        res = []
+        res.append( u"{0}".format(self.people_id) )
+        res.append(self.lname)
+        res.append(self.fname)
+        if self.mname:
+            res.append(self.mname)
+        else:
+            res.append(u"")
+
+        res.append(self.bd)
+        res.append(self.sex)
+
+        if self.doc_type:
+            res.append( u"{0}".format(self.doc_type) )
+        else:
+            res.append(u"")
+
+        if self.doc_ser:
+            res.append(self.doc_ser)
+        else:
+            res.append(u"")
+
+        if self.doc_number:
+            res.append(self.doc_number)
+        else:
+            res.append(u"")
+
+        if self.snils:
+            res.append(self.snils)
+        else:
+            res.append(u"")
+
+        if self.insorg_ogrn:
+            res.append(self.insorg_ogrn)
+        else:
+            res.append(u"")
+
+        if self.insorg_okato:
+            res.append(self.insorg_okato)
+        else:
+            res.append(u"")
+    
+        if self.enp:
+            res.append(self.enp)
+        else:
+            res.append(u"")
+    
+        res.append(self.tdpfs)
+
+        if self.oms_ser:
+            res.append(self.oms_ser)
+        else:
+            res.append(u"")
+
+        res.append(self.oms_number)
+    
+        # medical care start
+        res.append(self.mc_start)
+        # medical care end
+        res.append(self.mc_end)
+    
+        # MO  OGRN
+        if self.mo_ogrn:
+            res.append(self.mo_ogrn)
+        else:
+            res.append(u"")
+
+        # HEALTHCARE COST
+        if self.hc_cost:
+            res.append(self.hc_cost)
+        else:
+            res.append(u"")
+    
+        return u"|".join(res)
+        
+    def save2dbmy(self, cur):
+        
+        try:
+            cur.execute(SQLT_IM_INSERT, \
+                        (self.people_id, self.lname, self.fname, self.mname, \
+                         self.bd, self.sex, \
+                         self.doc_type, self.doc_ser, self.doc_number, \
+                         self.snils, \
+                         self.insorg_ogrn, self.insorg_okato, \
+                         self.enp, self.tdpfs, self.oms_ser, self.oms_number, \
+                         self.mc_start, self.mc_end, \
+                         self.mo_ogrn, self.hc_cost,))
+            result = 0
+            err_msg = "OK"
+        except Exception, e:
+            result = 1
+            err_msg = "{0}".format(e)
+            
+        
+        return (result, err_msg)
 
 def get_registry(table_name):
     import dbf

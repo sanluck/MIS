@@ -232,6 +232,7 @@ def p1(patient, insorg):
 def plist(dbc, fname, rows, clinic_id):
     from PatientInfo import PatientInfo
     from insorglist import InsorgInfoList
+    from people import IM_PEOPLE
 
     import os
     import datetime
@@ -310,13 +311,30 @@ def plist(dbc, fname, rows, clinic_id):
                 log.debug(sout)
                 insorg = insorgs[0]
                 noicc += 1
-            sss = p1(p_obj, insorg) + "|\n"
+                
+            im_people =IM_PEOPLE()
+            im_people.init1(p_obj, insorg, skip_ogrn = SKIP_OGRN, clinic_ogrn = CLINIC_OGRN)
+            (result, err_msg) = im_people.save2dbmy(curm)
+            dbmy.con.commit()
+            if result != 0:
+                sout = "Save IM({0}) to DBMY error: {1}".format(im_people.people_id, err_msg)
+                log.warn(sout)
+                if err_msg.find("Duplicate entry"):
+                    iii = err_msg.find("for key '")
+                    skey = err_msg[iii+9:]
+                    if skey[:3] == "DOC":
+                        im_people.doc_type = None
+                        im_people.doc_ser = None
+                        im_people.doc_number = None
+                        (result, err_msg) = im_people.save2dbmy(curm)
+                
+            #sss = p1(p_obj, insorg) + "|\n"
+            sss = im_people.p1() + "|\n"
             ps = sss.encode('windows-1251')
             if write_to_dbmy(curm, p_id, clinic_id, s_now):
                 fo.write(ps)
             else:
                 n_pid_w_err += 1
-
 
     fo.flush()
     os.fsync(fo.fileno())
