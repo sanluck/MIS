@@ -578,6 +578,28 @@ class IM_PEOPLE:
             
         
         return (result, err_msg)
+    
+    def init2(self, rec):
+        self.people_id    = rec[0]
+        self.lname        = rec[1]
+        self.fname        = rec[2]
+        self.mname        = rec[3]
+        self.bd           = rec[4]
+        self.sex          = rec[5]
+        self.doc_type     = rec[6]
+        self.doc_ser      = rec[7]
+        self.doc_number   = rec[8]
+        self.snils        = rec[9]
+        self.insorg_ogrn  = rec[10]
+        self.insorg_okato = rec[11]
+        self.enp          = rec[12]
+        self.tdpfs        = rec[13]
+        self.oms_ser      = rec[14]
+        self.oms_number   = rec[15]
+        self.mc_start     = rec[16]
+        self.mc_end       = rec[17]
+        self.mo_ogrn      = rec[18]
+        self.hc_cost      = rec[19]
 
 def get_registry(table_name):
     import dbf
