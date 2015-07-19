@@ -61,25 +61,25 @@ def get_st(fname):
 
     array = []
     for line in ins:
-	u_line = line.decode('cp1251')
-	a_line = u_line.split("|")
-	people_id  = int(a_line[0])
-	ocato      = a_line[1]
-	s_smo_code = a_line[2]
-	if len(s_smo_code) == 0:
-	    smo_code = None
-	else:
-	    smo_code = int(s_smo_code)
-	dpfs_code  = int(a_line[3])
-	oms_series = a_line[4]
-	oms_number = a_line[5]
-	enp        = a_line[6]
-	if (len(a_line) > 7) and (a_line[7] != u'\r\n'):
-	    mcod = int(a_line[7])
-	else:
-	    mcod    = None
-	a_rec = [people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod]
-	array.append( a_rec )
+        u_line = line.decode('cp1251')
+        a_line = u_line.split("|")
+        people_id  = int(a_line[0])
+        ocato      = a_line[1]
+        s_smo_code = a_line[2]
+        if len(s_smo_code) == 0:
+            smo_code = None
+        else:
+            smo_code = int(s_smo_code)
+        dpfs_code  = int(a_line[3])
+        oms_series = a_line[4]
+        oms_number = a_line[5]
+        enp        = a_line[6]
+        if (len(a_line) > 7) and (a_line[7] != u'\r\n'):
+            mcod = int(a_line[7])
+        else:
+            mcod    = None
+        a_rec = [people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod]
+        array.append( a_rec )
 
     ins.close()
 
@@ -125,52 +125,52 @@ def write_st(db, ar, upd = False):
     count_u = 0
 
     for rec in ar:
-	count_a += 1
+        count_a += 1
 
-	people_id  = rec[0]
-	ocato      = rec[1]
-	smo_code   = rec[2]
-	dpfs_code  = rec[3]
-	oms_series = rec[4]
-	oms_number = rec[5]
-	enp        = rec[6]
-	mcod       = rec[7]
+        people_id  = rec[0]
+        ocato      = rec[1]
+        smo_code   = rec[2]
+        dpfs_code  = rec[3]
+        oms_series = rec[4]
+        oms_number = rec[5]
+        enp        = rec[6]
+        mcod       = rec[7]
 
-	if count_a % STEP == 0:
-	    sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
-	    log.info(sout)
+        if count_a % STEP == 0:
+            sout = " {0} people_id: {1} enp: {2} mcod: {3}".format(count_a, people_id, enp, mcod)
+            log.info(sout)
 
-	curr.execute(s_sqlf,(people_id,))
-	rec = curr.fetchone()
-	if rec is None:
-	    try:
-		curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod,))
-		db.con.commit()
-		count_i += 1
-	    except Exception, e:
-		sout = "Can't insert into sm table. UID: {0}".format(people_id)
-		log.error(sout)
-		sout = "{0}".format(e)
-		log.error(sout)
-	else:
-	    if upd:
-		try:
-		    curw.execute(s_sqlu,(ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod, people_id,))
-		    db.con.commit()
-		    count_u += 1
-		except Exception, e:
-		    sout = "Can't update sm table. UID: {0}".format(people_id)
-		    log.error(sout)
-		    sout = "{0}".format(e)
-		    log.error(sout)
-	    if PRINT_FOUND:
-		f_oms_series = rec[0]
-		f_oms_number = rec[1]
-		f_enp        = rec[2]
-		f_mcod       = rec[3]
+        curr.execute(s_sqlf,(people_id,))
+        rec = curr.fetchone()
+        if rec is None:
+            try:
+                curw.execute(s_sqli,(people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod,))
+                db.con.commit()
+                count_i += 1
+            except Exception, e:
+                sout = "Can't insert into sm table. UID: {0}".format(people_id)
+                log.error(sout)
+                sout = "{0}".format(e)
+                log.error(sout)
+        else:
+            if upd:
+                try:
+                    curw.execute(s_sqlu,(ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod, people_id,))
+                    db.con.commit()
+                    count_u += 1
+                except Exception, e:
+                    sout = "Can't update sm table. UID: {0}".format(people_id)
+                    log.error(sout)
+                    sout = "{0}".format(e)
+                    log.error(sout)
+            if PRINT_FOUND:
+                f_oms_series = rec[0]
+                f_oms_number = rec[1]
+                f_enp        = rec[2]
+                f_mcod       = rec[3]
 
-		sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
-		log.info(sout)
+                sout = "Found in sm: {0} enp: {1} | {2} mcod: {3} | {4} ".format(people_id, enp, f_enp, mcod, f_mcod)
+                log.info(sout)
 
 
     return count_a, count_i, count_u
@@ -206,11 +206,11 @@ def st_done(db, mcod, w_month = '1402'):
     cursor.execute(s_sql)
     rec = cursor.fetchone()
     if rec == None:
-	return False, "", ""
+        return False, "", ""
     else:
-	fname = rec[0]
-	done  = rec[1]
-	return True, fname, done
+        fname = rec[0]
+        done  = rec[1]
+        return True, fname, done
 
 if __name__ == "__main__":
 
@@ -231,48 +231,48 @@ if __name__ == "__main__":
     dbmy2 = DBMY()
 
     for fname in fnames:
-	s_mcod  = fname[5:11]
-	w_month = fname[12:16]
-	mcod = int(s_mcod)
+        s_mcod  = fname[5:11]
+        w_month = fname[12:16]
+        mcod = int(s_mcod)
 
-	try:
-	    mo = modb[mcod]
-	    clinic_id = mo.mis_code
-	    sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
-	    log.info(sout)
-	except:
-	    sout = "Clinic not found for mcod = {0}".format(s_mcod)
-	    log.warn(sout)
-	    continue
+        try:
+            mo = modb[mcod]
+            clinic_id = mo.mis_code
+            sout = "clinic_id: {0} MO Code: {1}".format(clinic_id, mcod)
+            log.info(sout)
+        except:
+            sout = "Clinic not found for mcod = {0}".format(s_mcod)
+            log.warn(sout)
+            continue
 
-	f_fname = ST2DO_PATH + "/" + fname
-	sout = "Input file: {0}".format(f_fname)
-	log.info(sout)
+        f_fname = ST2DO_PATH + "/" + fname
+        sout = "Input file: {0}".format(f_fname)
+        log.info(sout)
 
-	if CHECK_REGISTERED:
-	    ldone, dfname, ddone = st_done(dbmy2, mcod, w_month)
-	else:
-	    ldone = False
+        if CHECK_REGISTERED:
+            ldone, dfname, ddone = st_done(dbmy2, mcod, w_month)
+        else:
+            ldone = False
 
-	if ldone:
-	    sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
-	    log.warn( sout )
-	else:
-	    #pfile(f_fname)
-	    ar = get_st(f_fname)
-	    l_ar = len(ar)
-	    sout = "File has got {0} lines".format(l_ar)
-	    log.info( sout )
-	    count_a, count_i, count_u = write_st(dbmy2, ar, UPDATE)
-	    sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
-	    log.info( sout )
-	    if REGISTER_FILE: register_st_done(dbmy2, mcod, clinic_id, fname)
+        if ldone:
+            sout = "On {0} hase been done. Fname: {1}".format(ddone, dfname)
+            log.warn( sout )
+        else:
+            #pfile(f_fname)
+            ar = get_st(f_fname)
+            l_ar = len(ar)
+            sout = "File has got {0} lines".format(l_ar)
+            log.info( sout )
+            count_a, count_i, count_u = write_st(dbmy2, ar, UPDATE)
+            sout = "Totally {0} lines of {1} have been inserted, {2} - updated".format(count_i, count_a, count_u)
+            log.info( sout )
+            if REGISTER_FILE: register_st_done(dbmy2, mcod, clinic_id, fname)
 
-	if MOVE_FILE:
-	# move file
-	    source = ST2DO_PATH + "/" + fname
-	    destination = STDONE_PATH + "/" + fname
-	    shutil.move(source, destination)
+        if MOVE_FILE:
+        # move file
+            source = ST2DO_PATH + "/" + fname
+            destination = STDONE_PATH + "/" + fname
+            shutil.move(source, destination)
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Registering of Insurance Belonging Replies. Finish  '+localtime)
