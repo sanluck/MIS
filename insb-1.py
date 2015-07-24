@@ -75,10 +75,10 @@ def get_st(fname):
         oms_number = a_line[5]
         enp        = a_line[6]
         if (len(a_line) > 7) and (a_line[7] != u'\r\n'):
-            if len(a_line[7]) == 0:
-                mcod = None
-            else:
+            try:
                 mcod = int(a_line[7])
+            except:
+                mcod = None
         else:
             mcod    = None
         a_rec = [people_id, ocato, smo_code, dpfs_code, oms_series, oms_number, enp, mcod]
