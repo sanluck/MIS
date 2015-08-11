@@ -29,16 +29,18 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 import ConfigParser
+from ConfigSection import ConfigSectionMap
 
 FINI = "csip.ini"
 Config = ConfigParser.ConfigParser()
 Config.read(FINI)
+Config1 = ConfigSectionMap(Config, "CSIP")
 #START_TICKET_ID = 129119089
-START_TICKET_ID = int(ConfigSectionMap("CSIP")['start_ticket_id'])
-STEP = int(ConfigSectionMap("CSIP")['step'])
-LIMIT = int(ConfigSectionMap("CSIP")['limit'])
-START_DATE = ConfigSectionMap("CSIP")['start_date']
-START_BD = ConfigSectionMap("CSIP")['start_bd']
+START_TICKET_ID = int(Config1['start_ticket_id'])
+STEP = int(Config1['step'])
+LIMIT = int(Config1['limit'])
+START_DATE = Config1['start_date']
+START_BD = Config1['start_bd']
 
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
