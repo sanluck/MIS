@@ -28,13 +28,17 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-STEP = 50000
-LIMIT = 3000000
+import ConfigParser
 
+FINI = "csip.ini"
+Config = ConfigParser.ConfigParser()
+Config.read(FINI)
 #START_TICKET_ID = 129119089
-START_TICKET_ID = 92971547
-START_DATE = '2013-01-01'
-START_BD = '1998-01-01'
+START_TICKET_ID = int(ConfigSectionMap("CSIP")['start_ticket_id'])
+STEP = int(ConfigSectionMap("CSIP")['step'])
+LIMIT = int(ConfigSectionMap("CSIP")['limit'])
+START_DATE = ConfigSectionMap("CSIP")['start_date']
+START_BD = ConfigSectionMap("CSIP")['start_bd']
 
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
@@ -97,6 +101,15 @@ if __name__ == "__main__":
     # and cursor
     ro_cur = ro_transaction.cursor()
 
+    sout = "START_DATE: {0}".format(START_DATE)
+    log.info(sout)
+    sout = "START_BD: {0}".format(START_BD)
+    log.info(sout)
+    sout = "START_TICKET_ID: {0}".format(START_TICKET_ID)
+    log.info(sout)
+    sout = "LIMIT: {0}".format(LIMIT)
+    log.info(sout)
+    
     cur.execute(SQLT_GET_TICKETS, (LIMIT, START_TICKET_ID, START_DATE, START_BD))
     results = cur.fetchall()
 
@@ -144,6 +157,12 @@ if __name__ == "__main__":
                 curm.execute(SQLT_PUT_CSIP, (people_id_fk, clinic_id_fk, mcod))
                 dbmy.con.commit()
 
+    sout = "Set START_TICKET_ID to: {0}".format(ticket_id)
+    log.info(sout)
+    cfgfile = open(FINI,'w')
+    Config.set('CSIP','start_ticket_id', ticket_id)
+    Config.write(cfgfile)
+    cfgfile.close()
 
     dbmy.con.close()
     dbc.con.close()
