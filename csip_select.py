@@ -113,7 +113,7 @@ if __name__ == "__main__":
     log.info(sout)
     
     start_date = datetime.strptime(START_DATE, "%Y-%m-%d")
-    start_bd = datetime.strptime(START_bd, "%Y-%m-%d")
+    start_bd = datetime.strptime(START_BD, "%Y-%m-%d")
     
     cur.execute(SQLT_GET_TICKETS, (LIMIT, START_TICKET_ID, start_date, start_bd))
     results = cur.fetchall()
