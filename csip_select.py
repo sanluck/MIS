@@ -28,11 +28,11 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-STEP = 10000
-LIMIT = 1000000
+STEP = 50000
+LIMIT = 3000000
 
 #START_TICKET_ID = 129119089
-START_TICKET_ID = 44964514
+START_TICKET_ID = 92971547
 START_DATE = '2013-01-01'
 START_BD = '1998-01-01'
 
