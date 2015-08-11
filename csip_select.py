@@ -29,9 +29,10 @@ logging.getLogger('').addHandler(console)
 log = logging.getLogger(__name__)
 
 STEP = 10000
-LIMIT = 100000
+LIMIT = 1000000
 
-START_TICKET_ID = 129119089
+#START_TICKET_ID = 129119089
+START_TICKET_ID = 44964514
 START_DATE = '2013-01-01'
 START_BD = '1998-01-01'
 
@@ -53,7 +54,8 @@ FROM tickets t
 LEFT JOIN peoples p ON t.people_id_fk = p.people_id
 WHERE t.ticket_id > ?
 AND t.visit_date >= ?
-AND p.birthday >= ?;"""
+AND p.birthday >= ?
+ORDER BY t.ticket_id;"""
 
 SQLT_FIND_PEOPLE = """SELECT id FROM csip
 WHERE people_id = %s
