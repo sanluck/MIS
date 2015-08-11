@@ -112,7 +112,10 @@ if __name__ == "__main__":
     sout = "LIMIT: {0}".format(LIMIT)
     log.info(sout)
     
-    cur.execute(SQLT_GET_TICKETS, (LIMIT, START_TICKET_ID, START_DATE, START_BD))
+    start_date = datetime.strptime(START_DATE, "%Y-%m-%d")
+    start_bd = datetime.strptime(START_bd, "%Y-%m-%d")
+    
+    cur.execute(SQLT_GET_TICKETS, (LIMIT, START_TICKET_ID, start_date, start_bd))
     results = cur.fetchall()
 
     i = 0
