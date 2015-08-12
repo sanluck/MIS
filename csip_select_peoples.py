@@ -46,12 +46,19 @@ M_DB = "mis"
 SQLT_GET_PLIST = """SELECT DISTINCT people_id FROM csip WHERE luse = 1;"""
 
 SQLT_GET_PEOPLE = """SELECT
-fio, sex, birthday,
-addr_jure_country_town, addr_jure_street_name, addr_jure_house,
-addr_jure_corps, addr_jure_flat,
-addr_fact_country_town, addr_fact_street_name, addr_fact_house,
-addr_fact_corps, addr_fact_flat
-FROM vw_peoples_short
+lname, fname, mname, sex, birthday,
+addr_jure_town_name, addr_jure_town_socr,
+addr_jure_area_name, addr_jure_area_socr,
+addr_jure_country_name, addr_jure_country_socr,
+addr_jure_street_name, addr_jure_street_socr,
+addr_jure_house, addr_jure_flat,
+addr_fact_town_name, addr_fact_town_socr,
+addr_fact_area_name, addr_fact_area_socr,
+addr_fact_country_name, addr_fact_country_socr,
+addr_fact_street_name, addr_fact_street_socr,
+addr_fact_house, addr_fact_flat,
+addr_jure_corps, addr_fact_corps
+FROM peoples
 WHERE people_id = ?;"""
 
 F_NAME = "csip_list.xls"
@@ -109,53 +116,110 @@ if __name__ == "__main__":
         ro_cur.execute(SQLT_GET_PEOPLE, (people_id, ))
         recp = ro_cur.fetchone()
         if recp:
-            fio = recp[0]
-            sex = recp[1]
-            birthday = recp[2]
-            addr_jure_country_town = recp[3]
-            addr_jure_street_name = recp[4]
-            addr_jure_house = recp[5]
-            addr_jure_corps = recp[6]
-            addr_jure_flat = recp[7]
-            addr_fact_country_town = recp[8]
-            addr_fact_street_name = recp[9]
-            addr_fact_house = recp[10]
-            addr_fact_corps = recp[11]
-            addr_fact_flat = recp[12]
+            lname = recp[0]
+            fname = recp[1]
+            mname = recp[2]
+            sex = recp[3]
+            birthday = recp[4]
+            addr_jure_town_name = recp[5]
+            addr_jure_town_socr = recp[6]
+            addr_jure_area_name = recp[7]
+            addr_jure_area_socr = recp[8]
+            addr_jure_country_name = recp[9]
+            addr_jure_country_socr = recp[10]
+            addr_jure_street_name = recp[11]
+            addr_jure_street_socr = recp[12]
+            addr_jure_house = recp[13]
+            addr_jure_flat = recp[14]
+            addr_fact_town_name = recp[15]
+            addr_fact_town_socr = recp[16]
+            addr_fact_area_name = recp[17]
+            addr_fact_area_socr = recp[18]
+            addr_fact_country_name = recp[19]
+            addr_fact_country_socr = recp[20]
+            addr_fact_street_name = recp[21]
+            addr_fact_street_socr = recp[22]
+            addr_fact_house = recp[23]
+            addr_fact_flat = recp[24]
+            addr_jure_corps = recp[25]
+            addr_fact_corps = recp[26]
 
-            if addr_jure_country_town:
-                addr_jure = addr_jure_country_town
-            else:
-                addr_jure = u""
+            fio = lname + u" " + fname
+            if mname: fio += u" " + mname
 
-            if addr_jure_street_name:
-                addr_jure += u", " + addr_jure_street_name
+            addr = u''
 
-            if addr_jure_house:
-                addr_jure += u", " + addr_jure_house
+            if addr_jure_town_name is not None:
+                addr += addr_jure_town_name
+                if addr_jure_town_socr is not None:
+                    addr += u' ' + addr_jure_town_socr + u', '
+                else:
+                    addr += u', '
+            if addr_jure_area_name is not None:
+                addr += addr_jure_area_name
+                if addr_jure_area_socr is not None:
+                    addr += u' ' + addr_jure_area_socr + u', '
+                else:
+                    addr += u', '
+            if addr_jure_country_name is not None:
+                addr += addr_jure_country_name
+                if addr_jure_country_socr is not None:
+                    addr += u' ' + addr_jure_country_socr + u', '
+                else:
+                    addr += u', '
 
-            if addr_jure_corps:
-                addr_jure += u"/" + addr_jure_corps
+            if addr_jure_street_name is not None:
+                addr += addr_jure_street_name
+                if addr_jure_street_socr is not None:
+                    addr += u' ' + addr_jure_street_socr
 
-            if addr_jure_flat:
-                addr_jure += u"-" + addr_jure_flat
+            if addr_jure_house is not None:
+                addr += u', дом ' + addr_jure_house
 
-            if addr_fact_country_town:
-                addr_fact = addr_fact_country_town
-            else:
-                addr_fact = u""
+            if addr_jure_corps is not None:
+                addr += u'/' + addr_jure_corps
 
-            if addr_fact_street_name:
-                addr_fact += u", " + addr_fact_street_name
+            if addr_jure_flat is not None:
+                addr += u', кв. ' + addr_jure_flat
 
-            if addr_fact_house:
-                addr_fact += u", " + addr_fact_house
+            addr_jure = addr
 
-            if addr_fact_corps:
-                addr_fact += u"/" + addr_fact_corps
+            addr = u''
 
-            if addr_fact_flat:
-                addr_fact += u"-" + addr_fact_flat
+            if addr_fact_town_name is not None:
+                addr += addr_fact_town_name
+                if addr_fact_town_socr is not None:
+                    addr += u' ' + addr_fact_town_socr + u', '
+                else:
+                    addr += u', '
+            if addr_fact_area_name is not None:
+                addr += addr_fact_area_name
+                if addr_fact_area_socr is not None:
+                    addr += u' ' + addr_fact_area_socr + u', '
+                else:
+                    addr += u', '
+            if addr_fact_country_name is not None:
+                addr += addr_fact_country_name
+                if addr_fact_country_socr is not None:
+                    addr += u' ' + addr_fact_country_socr + u', '
+                else:
+                    addr += u', '
+
+            if addr_fact_street_name is not None:
+                addr += addr_fact_street_name
+                if addr_fact_street_socr is not None:
+                    addr += u' ' + addr_fact_street_socr
+
+            if addr_fact_house is not None:
+                addr += u', дом ' + addr_fact_house
+
+            if addr_fact_corps is not None:
+                addr += u'/' + addr_fact_corps
+
+            if addr_fact_flat is not None:
+                addr += u', кв. ' + addr_fact_flat
+
+            addr_fact = addr
 
             row += 1
             ws.write(row,0,fio)
