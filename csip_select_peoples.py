@@ -43,7 +43,7 @@ DB = "DBMIS"
 M_HOST = "ct216.ctmed.ru"
 M_DB = "mis"
 
-SQLT_GET_PLIST = """SELECT DISTINCT people_id FROM csip;"""
+SQLT_GET_PLIST = """SELECT DISTINCT people_id FROM csip WHERE luse = 1;"""
 
 SQLT_GET_PEOPLE = """SELECT
 fio, sex, birthday,

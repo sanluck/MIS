@@ -46,7 +46,7 @@ LIMIT 1;"""
 SQLT_GET_TICKETS = """SELECT FIRST ?
 ticket_id,
 clinic_id_fk, people_id_fk, visit_date, visit_time,
-visit_motive_id_fk
+visit_motive_id_fk, worker_id_fk
 FROM tickets
 WHERE ticket_id > ?
 ORDER BY ticket_id;"""
@@ -71,6 +71,10 @@ class TICKET:
     FROM clinics
     WHERE clinic_id = ?;"""
 
+    SQLT_GET_WORKER = """SELECT speciality_id_fk
+    FROM workers
+    WHERE worker_id = ?;"""
+
     SQLT_GET_DIAGS = """SELECT
     ticket_diagnosis_id, line, diagnosis_id_fk,
     medical_service_id_fk, visit_type_id_fk, diagnosis_state_id_fk
@@ -78,13 +82,16 @@ class TICKET:
     WHERE ticket_id_fk = ?;"""
 
     SQLT_PUT_TICKET = """INSERT INTO tickets
-    (ticket_id, clinic_id_fk, people_id_fk, visit_dt, visit_motive_id_fk)
+    (ticket_id, clinic_id_fk, people_id_fk, visit_dt,
+    visit_motive_id_fk, worker_id_fk)
     VALUES
-    (%s, %s, %s, %s, %s);"""
+    (%s, %s, %s, %s, %s, %s);"""
 
     SQLT_FIND_PEOPLE = "SELECT enp FROM peoples WHERE people_id =%s;"
 
     SQLT_FIND_CLINIC = "SELECT clinic_name FROM clinics WHERE clinic_id =%s;"
+
+    SQLT_FIND_WORKER = "SELECT speciality_id_fk FROM workers WHERE worker_id =%s;"
 
     SQLT_PUT_PEOPLE = """INSERT INTO peoples
     (people_id, sex, birthday, snils, enp)
@@ -95,6 +102,11 @@ class TICKET:
     (clinic_id, clinic_name, mcod)
     VALUES
     (%s, %s, %s);"""
+
+    SQLT_PUT_WORKER = """INSERT INTO workers
+    (worker_id, speciality_id_fk)
+    VALUES
+    (%s, %s);"""
 
     SQLT_PUT_DIAG = """INSERT INTO ticket_diagnosis
     (ticket_diagnosis_id, ticket_id_fk, line, diagnosis_id_fk,
@@ -118,6 +130,9 @@ class TICKET:
         self.clinic_name = None
         self.mcod = None
 
+        self.worker_id_fk = None
+        self.speciality_id_fk = None
+
         self.diags = []
 
     def get_people(self, cur):
@@ -138,6 +153,13 @@ class TICKET:
                 self.clinic_name = rec[0]
                 if rec[1]:
                     self.mcod = int(rec[1])
+
+    def get_worker(self, cur):
+        if self.worker_id_fk:
+            cur.execute(self.SQLT_GET_WORKER, (self.worker_id_fk, ))
+            rec = cur.fetchone()
+            if rec:
+                self.speciality_id_fk = rec[0]
 
     def get_diags(self, cur):
         if self.ticket_id:
@@ -165,6 +187,7 @@ class TICKET:
         visit_date = self.visit_date
         visit_time = self.visit_time
         visit_motive_id_fk = self.visit_motive_id_fk
+        worker_id_fk = self.worker_id_fk
 
         if visit_time:
             visit_dt = datetime.combine(visit_date, visit_time)
@@ -173,7 +196,8 @@ class TICKET:
 
         cur.execute(self.SQLT_PUT_TICKET, (ticket_id, clinic_id_fk, \
                                            people_id_fk, visit_dt, \
-                                           visit_motive_id_fk, ))
+                                           visit_motive_id_fk, \
+                                           worker_id_fk))
 
         sex = self.sex
         birthday = self.birthday
@@ -195,6 +219,14 @@ class TICKET:
         if rec is None:
             cur.execute(self.SQLT_PUT_CLINUIC, (clinic_id_fk,
                                            clinic_name, mcod))
+
+        if worker_id_fk:
+            speciality_id_fk = self.speciality_id_fk
+            cur.execute(self.SQLT_FIND_WORKER, (worker_id_fk, ))
+            rec = cur.fetchone()
+            if rec is None:
+                cur.execute(self.SQLT_PUT_WORKER, (worker_id_fk, \
+                                                   speciality_id_fk))
 
         for diag in self.diags:
             ticket_diagnosis_id = diag.ticket_diagnosis_id
@@ -261,6 +293,7 @@ if __name__ == "__main__":
         visit_date = rec[3]
         visit_time = rec[4]
         visit_motive_id_fk = rec[5]
+        worker_id_fk = rec[6]
 
         ticket= TICKET(ticket_id)
         ticket.clinic_id_fk = clinic_id_fk
@@ -268,9 +301,11 @@ if __name__ == "__main__":
         ticket.visit_date = visit_date
         ticket.visit_time = visit_time
         ticket.visit_motive_id_fk = visit_motive_id_fk
+        ticket.worker_id_fk = visit_motive_id_fk
 
         ticket.get_people(ro_cur)
         ticket.get_clinic(ro_cur)
+        ticket.get_worker(ro_cur)
         ticket.get_diags(ro_cur)
 
         ticket.put2dbmisr(curm)
