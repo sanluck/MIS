@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
 log = logging.getLogger(__name__)
 
-STEP = 10000
-LIMIT = 1000000
+STEP = 50000
+LIMIT = 5000000
 
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
@@ -301,7 +301,7 @@ if __name__ == "__main__":
         ticket.visit_date = visit_date
         ticket.visit_time = visit_time
         ticket.visit_motive_id_fk = visit_motive_id_fk
-        ticket.worker_id_fk = visit_motive_id_fk
+        ticket.worker_id_fk = worker_id_fk
 
         ticket.get_people(ro_cur)
         ticket.get_clinic(ro_cur)
