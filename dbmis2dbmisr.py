@@ -62,6 +62,12 @@ class DIAGNOSIS:
         diagnosis_state_id_fk = None
 
 class TICKET:
+    SQLT_GET_TICKET = """SELECT
+    clinic_id_fk, people_id_fk, visit_date, visit_time,
+    visit_motive_id_fk, worker_id_fk
+    FROM tickets
+    WHERE ticket_id = ?;"""
+
     SQLT_GET_PEOPLE = """SELECT sex, birthday,
     insurance_certificate, enp
     FROM peoples
@@ -92,6 +98,8 @@ class TICKET:
     SQLT_FIND_CLINIC = "SELECT clinic_name FROM clinics WHERE clinic_id =%s;"
 
     SQLT_FIND_WORKER = "SELECT speciality_id_fk FROM workers WHERE worker_id =%s;"
+
+    SQLT_FIND_TD = "SELECT ticket_id_fk, line FROM ticket_dignosis WHERE ticket_dignosis_id =%s;"
 
     SQLT_PUT_PEOPLE = """INSERT INTO peoples
     (people_id, sex, birthday, snils, enp)
@@ -177,6 +185,23 @@ class TICKET:
                 diag.diagnosis_state_id_fk = rec[5]
                 self.diags.append(diag)
 
+    def init_from_DBMIS(self, cur, ticket_id):
+        self.ticket_id = ticket_id
+        cur.execute(self.SQLT_GET_TICKET, (ticket_id, ))
+        rec = cur.fetchone()
+        if not rec: return
+        self.clinic_id_fk = rec[0]
+        self.people_id_fk = rec[1]
+        self.visit_date = rec[2]
+        self.visit_time = rec[3]
+        self.visit_motive_id_fk = rec[4]
+        self.worker_id_fk = rec[5]
+
+        self.get_people(cur)
+        self.get_clinic(cur)
+        self.get_worker(cur)
+        self.get_diags(cur)
+
     def put2dbmisr(self, cur):
 
         if self.ticket_id is None: return
@@ -245,6 +270,71 @@ class TICKET:
                                              visit_type_id_fk, \
                                              diagnosis_state_id_fk))
 
+    def update2dbmisr(self, cur):
+
+        if self.ticket_id is None: return
+
+        ticket_id = self.ticket_id
+        clinic_id_fk = self.clinic_id_fk
+        people_id_fk = self.people_id_fk
+        visit_date = self.visit_date
+        visit_time = self.visit_time
+        visit_motive_id_fk = self.visit_motive_id_fk
+        worker_id_fk = self.worker_id_fk
+
+        if visit_time:
+            visit_dt = datetime.combine(visit_date, visit_time)
+        else:
+            visit_dt = visit_date
+
+        sex = self.sex
+        birthday = self.birthday
+        snils = self.snils
+        enp = self.enp
+
+        cur.execute(self.SQLT_FIND_PEOPLE, (people_id_fk, ))
+        rec = cur.fetchone()
+        if rec is None:
+            cur.execute(self.SQLT_PUT_PEOPLE, (people_id_fk, \
+                                               sex, birthday, \
+                                               snils, enp))
+
+        clinic_name = self.clinic_name
+        mcod = self.mcod
+
+        cur.execute(self.SQLT_FIND_CLINIC, (clinic_id_fk, ))
+        rec = cur.fetchone()
+        if rec is None:
+            cur.execute(self.SQLT_PUT_CLINUIC, (clinic_id_fk,
+                                           clinic_name, mcod))
+
+        if worker_id_fk:
+            speciality_id_fk = self.speciality_id_fk
+            cur.execute(self.SQLT_FIND_WORKER, (worker_id_fk, ))
+            rec = cur.fetchone()
+            if rec is None:
+                cur.execute(self.SQLT_PUT_WORKER, (worker_id_fk, \
+                                                   speciality_id_fk))
+
+        for diag in self.diags:
+            ticket_diagnosis_id = diag.ticket_diagnosis_id
+            ticket_id_fk = diag.ticket_id_fk
+            line = diag.line
+            diagnosis_id_fk = diag.diagnosis_id_fk
+            medical_service_id_fk = diag.medical_service_id_fk
+            visit_type_id_fk = diag.visit_type_id_fk
+            diagnosis_state_id_fk = diag.diagnosis_state_id_fk
+
+            cur.execute(self.SQLT_FIND_TD, (diagnosis_id_fk, ))
+            rec = cur.fetchone()
+            if rec is None:
+                cur.execute(self.SQLT_PUT_DIAG, (ticket_diagnosis_id, \
+                                                 ticket_id_fk, \
+                                                 line, \
+                                                 diagnosis_id_fk, \
+                                                 medical_service_id_fk, \
+                                                 visit_type_id_fk, \
+                                                 diagnosis_state_id_fk))
 
 if __name__ == "__main__":
 
@@ -280,6 +370,11 @@ if __name__ == "__main__":
     ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
     # and cursor
     ro_cur = ro_transaction.cursor()
+
+    if start_ticket_id > 0:
+        ticket = TICKET()
+        ticket.init_from_DBMIS(ro_cur, start_ticket_id)
+        ticket.update2dbmisr(curm)
 
     cur.execute(SQLT_GET_TICKETS, (LIMIT, start_ticket_id, ))
     results = cur.fetchall()
