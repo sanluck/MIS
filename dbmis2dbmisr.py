@@ -99,7 +99,7 @@ class TICKET:
 
     SQLT_FIND_WORKER = "SELECT speciality_id_fk FROM workers WHERE worker_id =%s;"
 
-    SQLT_FIND_TD = "SELECT ticket_id_fk, line FROM ticket_dignosis WHERE ticket_dignosis_id =%s;"
+    SQLT_FIND_TD = "SELECT ticket_id_fk, line FROM ticket_diagnosis WHERE ticket_diagnosis_id =%s;"
 
     SQLT_PUT_PEOPLE = """INSERT INTO peoples
     (people_id, sex, birthday, snils, enp)
@@ -325,7 +325,7 @@ class TICKET:
             visit_type_id_fk = diag.visit_type_id_fk
             diagnosis_state_id_fk = diag.diagnosis_state_id_fk
 
-            cur.execute(self.SQLT_FIND_TD, (diagnosis_id_fk, ))
+            cur.execute(self.SQLT_FIND_TD, (ticket_diagnosis_id, ))
             rec = cur.fetchone()
             if rec is None:
                 cur.execute(self.SQLT_PUT_DIAG, (ticket_diagnosis_id, \

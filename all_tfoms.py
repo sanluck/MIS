@@ -7,6 +7,8 @@
 import logging
 import sys, codecs
 
+import fdb
+from dbmis_connect2 import DBMIS
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
 
@@ -21,12 +23,21 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
+HOST = "fb2.ctmed.ru"
+DB = "DBMIS"
+
 STEP = 100
 
 F2DO_PATH        = "./ALL_TFOMS_IN"
 FDONE_PATH       = "./ALL_TFOMS_OUT"
 
 MOVE_FILE         = True
+
+SQLT_GET_PEOPLES = """SELECT
+people_id, birthday, enp,
+medical_insurance_series,
+medical_insurance_number
+FROM peoples;"""
 
 class PTFOMS:
     def __init__(self):
@@ -49,6 +60,14 @@ class PTFOMS:
         self.clinic_id = None
         self.d_begin = None
         self.docsnils = None
+
+class PEOPLE:
+    def __init__(self):
+        self.people_id = None
+        self.birthday = None
+        self.enp = None
+        self.oms_ser = None
+        self.oms_num = None
 
 def get_ptfomss(fname):
     ins = open( fname, "r" )
@@ -109,6 +128,32 @@ def get_ptfomss(fname):
 
     return array
 
+def get_peoples(cur):
+
+    cur.execute(SQLT_GET_PEOPLES)
+    results = cur.fetchall()
+    p_enp = {}
+    p_oms = {}
+    for rec in results:
+        people = PEOPLE()
+        people.people_id = rec[0]
+        people.birthday = rec[1]
+        people.enp = rec[2]
+        people.oms_ser = rec[3]
+        people.oms_num = rec[4]
+
+        if people.enp: p_enp[people.enp] = people
+        if people.oms_ser:
+            oms_sn = people.oms_ser
+        else:
+            oms_sn = u""
+
+        if people.oms_num:
+            oms_sn += people.oms_num
+
+        if len(oms_sn) > 0: p_oms[oms_sn] = people
+
+    return p_enp, p_oms
 
 if __name__ == "__main__":
     import os, shutil
@@ -126,6 +171,26 @@ if __name__ == "__main__":
     sout = "Totally {0} files has been found".format(n_fnames)
     log.info( sout )
 
+    sout = "Database: {0}:{1}".format(HOST, DB)
+    log.info(sout)
+
+    dbc = DBMIS(mis_host = HOST, mis_db = DB)
+    # Create new READ ONLY READ COMMITTED transaction
+    ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+    # and cursor
+    ro_cur = ro_transaction.cursor()
+
+    p_enp, p_oms = get_peoples(ro_cur)
+
+    l_enp = len(p_enp)
+    l_oms = len(p_oms)
+
+    sout = "ENP count: {0}".format(l_enp)
+    log.info(sout)
+
+    sout = "OMS count: {0}".format(l_oms)
+    log.info(sout)
+
     for fname in fnames:
         f_fname = F2DO_PATH + "/" + fname
         sout = "Input file: {0}".format(f_fname)
@@ -135,6 +200,9 @@ if __name__ == "__main__":
         l_ar = len(ar_ptfoms)
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
+
+
+    dbc.con.close()
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('ALL TFOMS. Finish  '+localtime)
