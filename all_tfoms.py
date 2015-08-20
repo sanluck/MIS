@@ -155,6 +155,41 @@ def get_peoples(cur):
 
     return p_enp, p_oms
 
+def identify_ptfoms(ar_pf, d_enp, d_oms):
+    
+    l = len(ar_pf)
+    lenp = 0
+    loms = 0
+    for i in range(l):
+        pf = ar_pf[i]
+        enp = pf.enp
+        oms_ser = pf.oms_ser
+        oms_num = pf.oms_num
+        if oms_ser:
+            oms_sn = oms_ser
+        else:
+            oms_sn = u""
+
+        if oms_num:
+            oms_sn += oms_num
+        
+        if enp:
+            if d_enp.has_key(enp):
+                p = d_enp[enp]
+                people_id = p.people_id
+                lenp += 1
+                pf.people_id = people_id
+                ar_pf[i] = pf
+        elif len(oms_sn) > 0:
+            if d_oms.has_key(oms_sn):
+                p = d_oms[oms_sn]
+                people_id = p.people_id
+                loms += 1
+                pf.people_id = people_id
+                ar_pf[i] = pf
+    
+    return lenp, loms
+
 if __name__ == "__main__":
     import os, shutil
     import time
@@ -185,6 +220,9 @@ if __name__ == "__main__":
     l_enp = len(p_enp)
     l_oms = len(p_oms)
 
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('ALL TFOMS. PEOPLES TABLE LOADED {0}'.format(localtime))
+    
     sout = "ENP count: {0}".format(l_enp)
     log.info(sout)
 
@@ -200,6 +238,14 @@ if __name__ == "__main__":
         l_ar = len(ar_ptfoms)
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
+        
+        lenp, loms = identify_ptfoms(ar_ptfoms, p_enp, p_oms)
+        
+        sout = "{0} patients have been identified using ENP".format(lenp)
+        log.info(sout)
+        
+        sout = "{0} patients have been identified using OMS".format(loms)
+        log.info(sout)
 
 
     dbc.con.close()
