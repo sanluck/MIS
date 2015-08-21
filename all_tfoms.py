@@ -159,8 +159,18 @@ def get_peoples(cur):
         people.people_id = rec[0]
         people.birthday = rec[1]
         people.enp = rec[2]
-        people.oms_ser = rec[3]
-        people.oms_num = rec[4]
+        oms_ser = rec[3]
+        if oms_ser:
+            people.oms_ser = oms_ser.strip()
+        else:
+            people.oms_ser = None
+        oms_num = rec[4]
+        if oms_num:
+            people.oms_num = oms_num.strip()
+            if (not people.enp) and len(people.oms_num) == 16:
+                people.enp = people.oms_num
+        else:
+            people.oms_num = None
 
         if people.enp: p_enp[people.enp] = people
         if people.oms_ser:
@@ -200,13 +210,8 @@ def identify_ptfoms(ar_pf, d_enp, d_oms):
                 lenp += 1
                 pf.people_id = people_id
                 ar_pf[i] = pf
-            elif d_oms.has_key(enp):
-                p = d_oms[enp]
-                people_id = p.people_id
-                loms += 1
-                pf.people_id = people_id
-                ar_pf[i] = pf
-        elif len(oms_sn) > 0:
+        
+        if (not pf.people_id) and (len(oms_sn) > 0):
             if d_oms.has_key(oms_sn):
                 p = d_oms[oms_sn]
                 people_id = p.people_id
