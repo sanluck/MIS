@@ -136,9 +136,9 @@ class DBMIS:
         try:
             self.con = fdb.connect(dsn=s_dsn, user=DB_USER, password=DB_PWD, role = DB_ROLE, charset='WIN1251')
             self.cur = self.con.cursor()
-        except:
+        except Exception, e:
             exctype, value = sys.exc_info()[:2]
-            log.warn( 'DBMIS init error: %s' % value.message )
+            log.warn( 'DBMIS init error: {0}s'.format(e) )
             raise
         sout = "Connection to %s has been established" % (s_dsn)
         log.debug(sout)

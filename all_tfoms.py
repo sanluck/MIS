@@ -6,6 +6,8 @@
 
 import logging
 import sys, codecs
+from datetime import datetime
+
 
 import fdb
 from dbmis_connect2 import DBMIS
@@ -38,6 +40,21 @@ people_id, birthday, enp,
 medical_insurance_series,
 medical_insurance_number
 FROM peoples;"""
+
+SQLT_AP = """SELECT
+ap.area_people_id, ap.area_id_fk, ap.date_beg, ap.motive_attach_beg_id_fk,
+ca.clinic_id_fk,
+ar.area_number,
+ca.speciality_id_fk,
+ap.docum_attach_beg_number
+FROM area_peoples ap
+LEFT JOIN areas ar ON ap.area_id_fk = ar.area_id
+LEFT JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ap.people_id_fk = ?
+AND ca.basic_speciality = 1
+AND ca.speciality_id_fk IN (1,7,38,51)
+AND ap.date_end is Null
+ORDER BY ap.date_beg DESC;"""
 
 class PTFOMS:
     def __init__(self):
@@ -190,10 +207,143 @@ def identify_ptfoms(ar_pf, d_enp, d_oms):
     
     return lenp, loms
 
+def set_ap(ar_pf):
+    from clinic_areas_doctors import get_cad, get_d
+
+    try:
+        dbmis = DBMIS(mis_host = HOST, mis_db = DB)
+    except:
+        return
+        
+    # Create new READ ONLY READ COMMITTED transaction
+    ro_transaction = dbmis.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+    # and cursor
+    cur = ro_transaction.cursor()
+    
+    t_clinic_id = 0
+
+    l = len(ar_pf)
+    for i in range(l):
+        pf = ar_pf[i]
+        people_id = pf.people_id
+        if not people_id: continue
+        
+        cur.execute(SQLT_AP, (people_id, ))
+        aprec = cur.fetchone()
+        dbmis.con.commit()
+        if not aprec: continue
+        area_id = aprec[1]
+        date_beg = aprec[2]
+        clinic_id = aprec[4]
+        mcod = modb.moCodeByMisId(clinic_id)
+
+        area_number   = aprec[5]
+        speciality_id = aprec[6]
+
+        pf.clinic_id = clinic_id
+        pf.d_begin = date_beg
+
+        if clinic_id != t_clinic_id:
+            cad = get_cad(dbmis, clinic_id)
+            d1,d7,d38,d51 = get_d(dbc, clinic_id)
+            t_clinic_id = clinic_id
+
+        docsnils = None
+        if cad.has_key(area_id):
+            docsnils = cad[area_id][2]
+
+        pf.docsnils = docsnils
+        
+        ar_pf[i] = pf
+    
+    dbmis.con.close()
+    
+def save_ptfomss(pf_arr, fout):
+    
+    fo = open(fout, "wb")
+
+    for pf in pf_arr:
+        line = u""
+        
+        if pf.ddd:
+            line += pf.ddd.strftime("%Y-%m-%d")
+        line += ";"
+        
+        if pf.enp:
+            line += pf.enp
+        line += ";"
+
+        if pf.tdpfs:
+            line += str(pf.tdpfs)
+        line += ";"
+
+        if pf.oms_ser:
+            line += pf.oms_ser
+        line += ";"
+
+        if pf.oms_num:
+            line += pf.oms_num
+        line += ";"
+
+        if pf.oms_ddd:
+            line += pf.oms_ddd.strftime("%Y-%m-%d")
+        line += ";"
+
+        if pf.addr1:
+            line += pf.addr1
+        line += ";"
+
+        if pf.addr2:
+            line += pf.addr2
+        line += ";"
+
+        if pf.addr3:
+            line += pf.addr3
+        line += ";"
+
+        if pf.addr4:
+            line += pf.addr4
+        line += ";"
+
+        if pf.addr5:
+            line += pf.addr5
+        line += ";"
+
+        if pf.birthday:
+            line += pf.birthday.strftime("%Y-%m-%d")
+        line += ";"
+
+        if pf.clinic_key:
+            line += str(pf.clinic_key)
+        line += ";"
+
+        if pf.mcod:
+            line += str(pf.mcod)
+        line += ";"
+
+        if pf.people_id:
+            line += str(pf.people_id)
+        line += ";"
+
+        if pf.clinic_id:
+            line += str(pf.clinic_id)
+        line += ";"
+
+        if pf.d_begin:
+            line += pf.d_begin.strftime("%Y-%m-%d")
+        line += ";"
+
+        if pf.docsnils:
+            line += pf.docsnils
+        
+        lout = line.upper().encode('cp1251')+"\r\n"
+        fo.write(lout)
+        
+    fo.close()
+
 if __name__ == "__main__":
     import os, shutil
     import time
-    import datetime
     from people import get_fnames
 
     localtime = time.asctime( time.localtime(time.time()) )
@@ -209,7 +359,11 @@ if __name__ == "__main__":
     sout = "Database: {0}:{1}".format(HOST, DB)
     log.info(sout)
 
-    dbc = DBMIS(mis_host = HOST, mis_db = DB)
+    try:
+        dbc = DBMIS(mis_host = HOST, mis_db = DB)
+    except:
+        sys.exit(1)
+        
     # Create new READ ONLY READ COMMITTED transaction
     ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
     # and cursor
@@ -239,13 +393,21 @@ if __name__ == "__main__":
         sout = "File has got {0} lines".format(l_ar)
         log.info( sout )
         
-        lenp, loms = identify_ptfoms(ar_ptfoms, p_enp, p_oms)
+        l_enp, l_oms = identify_ptfoms(ar_ptfoms, p_enp, p_oms)
         
-        sout = "{0} patients have been identified using ENP".format(lenp)
+        sout = "{0} patients have been identified using ENP".format(l_enp)
         log.info(sout)
         
-        sout = "{0} patients have been identified using OMS".format(loms)
+        sout = "{0} patients have been identified using OMS".format(l_oms)
         log.info(sout)
+        
+        set_ap(ar_ptfoms)
+
+        f_fname = FDONE_PATH + "/" + fname
+        sout = "Output file: {0}".format(f_fname)
+        log.info(sout)
+        
+        save_ptfomss(ar_ptfoms, f_fname)
 
 
     dbc.con.close()
