@@ -200,6 +200,12 @@ def identify_ptfoms(ar_pf, d_enp, d_oms):
                 lenp += 1
                 pf.people_id = people_id
                 ar_pf[i] = pf
+            elif d_oms.has_key(enp):
+                p = d_oms[enp]
+                people_id = p.people_id
+                loms += 1
+                pf.people_id = people_id
+                ar_pf[i] = pf
         elif len(oms_sn) > 0:
             if d_oms.has_key(oms_sn):
                 p = d_oms[oms_sn]
@@ -329,7 +335,12 @@ def save_ptfomss(pf_arr, fout):
         line += ";"
 
         if pf.clinic_id:
-            line += str(pf.clinic_id)
+            try:
+                dbmis_mcod = modb.moCodeByMisId(pf.clinic_id)
+                line += str(dbmis_mcod)
+            except:
+                pass
+#            line += str(pf.clinic_id)
         line += ";"
 
         if pf.d_begin:
