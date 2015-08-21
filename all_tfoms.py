@@ -116,7 +116,10 @@ def get_ptfomss(fname):
 
         ptfoms.oms_ser = a_line[3]
         ptfoms.oms_num = a_line[4]
-        ptfoms.oms_ddd = a_line[5]
+        try:
+            ptfoms.oms_ddd = datetime.strptime(a_line[5], '%Y-%m-%d')
+        except:
+            ptfoms.oms_ddd = None
         ptfoms.addr1 = a_line[6]
         ptfoms.addr2 = a_line[7]
         ptfoms.addr3 = a_line[8]
