@@ -214,10 +214,11 @@ def identify_ptfoms(ar_pf, d_enp, d_oms):
         if (not pf.people_id) and (len(oms_sn) > 0):
             if d_oms.has_key(oms_sn):
                 p = d_oms[oms_sn]
-                people_id = p.people_id
-                loms += 1
-                pf.people_id = people_id
-                ar_pf[i] = pf
+                if pf.birthday == p.birthday:
+                    people_id = p.people_id
+                    loms += 1
+                    pf.people_id = people_id
+                    ar_pf[i] = pf
     
     return lenp, loms
 
