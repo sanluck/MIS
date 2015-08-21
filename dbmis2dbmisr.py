@@ -48,7 +48,8 @@ ticket_id,
 clinic_id_fk, people_id_fk, visit_date, visit_time,
 visit_motive_id_fk, worker_id_fk
 FROM tickets
-WHERE ticket_id > ?
+WHERE ticket_id > ? 
+AND people_id_fk IS NOT Null 
 ORDER BY ticket_id;"""
 
 class DIAGNOSIS:
