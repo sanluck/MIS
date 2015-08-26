@@ -49,8 +49,8 @@ SQLT1 = """SELECT
 people_id, lname, fname, mname, bd, sex,
 doc_type, doc_ser, doc_number, snils,
 insorg_ogrn, insorg_okato,
-enp, tdpfs, oms_ser, oms_number, 
-mc_start, mc_end, mo_ogrn, hc_cost 
+enp, tdpfs, oms_ser, oms_number,
+mc_start, mc_end, mo_ogrn, hc_cost
 FROM im;"""
 
 if __name__ == "__main__":
@@ -64,34 +64,34 @@ if __name__ == "__main__":
     curm = dbmy.con.cursor()
     curm.execute(SQLT1)
     results = curm.fetchall()
-    
+
     iii = 0
     npack = 1
     fname = FPATH + "/" + FNAME.format(npack)
     sout = "Output to file: {0}".format(fname)
     log.info(sout)
     fo = open(fname, "wb")
-    
+
     for rec in results:
         im_people = IM_PEOPLE()
         im_people.init2(rec)
-        sss = im_people.p1() + "|\n"
+        sss = im_people.p1() + "\n"
         ps = sss.encode('windows-1251')
         fo.write(ps)
         iii += 1
-        
+
         if iii % STEP == 0:
             fo.flush()
             os.fsync(fo.fileno())
             fo.close()
-            
+
             npack += 1
             fname = FPATH + "/" + FNAME.format(npack)
             sout = "Output to file: {0}".format(fname)
             log.info(sout)
             fo = open(fname, "wb")
-            
-            
+
+
     fo.flush()
     os.fsync(fo.fileno())
     fo.close()
@@ -99,5 +99,5 @@ if __name__ == "__main__":
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Generate Insurance Belongings Request Finish {0}'.format(localtime))
-        
+
     sys.exit(0)

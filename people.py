@@ -86,13 +86,13 @@ SQLT_IM_INSERT = """INSERT INTO im
 (people_id, lname, fname, mname, bd, sex,
 doc_type, doc_ser, doc_number, snils,
 insorg_ogrn, insorg_okato,
-enp, tdpfs, oms_ser, oms_number, 
-mc_start, mc_end, mo_ogrn, hc_cost) 
-VALUES 
+enp, tdpfs, oms_ser, oms_number,
+mc_start, mc_end, mo_ogrn, hc_cost)
+VALUES
 (%s, %s, %s, %s, %s, %s,
 %s, %s, %s, %s,
 %s, %s,
-%s, %s, %s, %s, 
+%s, %s, %s, %s,
 %s, %s, %s, %s);"""
 
 class PEOPLE:
@@ -386,7 +386,7 @@ class IM_PEOPLE:
         self.mc_end       = None
         self.mo_ogrn      = None
         self.hc_cost      = None
-        
+
     def init1(self, patient, insorg, skip_ogrn = True, clinic_ogrn = CLINIC_OGRN):
         now = datetime.now()
         s_now = u"%04d-%02d-%02d" % (now.year, now.month, now.day)
@@ -397,7 +397,7 @@ class IM_PEOPLE:
             self.mname    = patient.mname.strip().upper()
         else:
             self.mname    = None
-        
+
         dr = patient.birthday
         sdr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
         self.bd           = sdr
@@ -425,7 +425,7 @@ class IM_PEOPLE:
             self.insorg_ogrn = None
         else:
             self.insorg_ogrn = u"{0}".format(ogrn)
-    
+
         okato = insorg.okato
         if okato == None or okato == 0 or skip_ogrn:
             self.insorg_okato = None
@@ -438,30 +438,30 @@ class IM_PEOPLE:
             s_mis = u""
         else:
             s_mis = u"{0}".format(sss)
-        
+
         sss = patient.medical_insurance_number
         if sss == None:
             s_min = u""
         else:
             s_min = u"{0}".format(sss)
-        
+
         enp = None
         if len(s_mis) == 0:
             tdpfs = u"3" # Полис ОМС единого образца
             enp = s_min
             s_mis = None
-            
+
         elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
             tdpfs = u"2" # Временное свидетельство, ....
         else:
             tdpfs = u"1" # Полис ОМС старого образца
-        
+
         # ENP
         if skip_ogrn:
             if enp:
                 s_min = enp
                 enp = None
-        
+
         if enp:
             if len(enp) < 16:
                 self.enp = None
@@ -479,7 +479,7 @@ class IM_PEOPLE:
             self.mo_ogrn  = None
         else:
             self.mo_ogrn  = clinic_ogrn
-        
+
         self.hc_cost      = None
 
     def p1(self):
@@ -524,12 +524,12 @@ class IM_PEOPLE:
             res.append(self.insorg_okato)
         else:
             res.append(u"")
-    
+
         if self.enp:
             res.append(self.enp)
         else:
             res.append(u"")
-    
+
         res.append(self.tdpfs)
 
         if self.oms_ser:
@@ -538,12 +538,12 @@ class IM_PEOPLE:
             res.append(u"")
 
         res.append(self.oms_number)
-    
+
         # medical care start
         res.append(self.mc_start)
         # medical care end
         res.append(self.mc_end)
-    
+
         # MO  OGRN
         if self.mo_ogrn:
             res.append(self.mo_ogrn)
@@ -554,12 +554,12 @@ class IM_PEOPLE:
         if self.hc_cost:
             res.append(self.hc_cost)
         else:
-            res.append(u"")
-    
+            res.append(u"0")
+
         return u"|".join(res)
-        
+
     def save2dbmy(self, cur):
-        
+
         try:
             cur.execute(SQLT_IM_INSERT, \
                         (self.people_id, self.lname, self.fname, self.mname, \
@@ -575,10 +575,10 @@ class IM_PEOPLE:
         except Exception, e:
             result = 1
             err_msg = "{0}".format(e)
-            
-        
+
+
         return (result, err_msg)
-    
+
     def init2(self, rec):
         self.people_id    = rec[0]
         self.lname        = rec[1]
