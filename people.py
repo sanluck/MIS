@@ -1581,18 +1581,36 @@ def put_mo_cad(db, ar, upd = False):
 
     return count_a, count_i, count_u
 
-def get_mo_fromdb(db, mcod):
+def get_mo_fromdb(db, mcod, mode = 1):
+    # mode = 1 - select all records
+    # mode = 2 - select only records,
+    #            which have not got tfoms_verification_status = 1
     from datetime import datetime
 
-    s_sqlt = """SELECT
-    dpfs, oms_sn, enp,
-    lname, fname, mname,
-    birthday, birthplace,
-    doc_type_id, doc_sn, doc_when, doc_who,
-    snils, mcod,
-    motive_att, type_att, date_att, date_det
-    FROM mo
-    WHERE mcod = %s;"""
+    if mode == 1:
+        s_sqlt = """SELECT
+          dpfs, oms_sn, enp,
+          lname, fname, mname,
+          birthday, birthplace,
+          doc_type_id, doc_sn, doc_when, doc_who,
+          snils, mcod,
+          motive_att, type_att, date_att, date_det
+        FROM mo
+        WHERE mcod = %s;"""
+    else:
+        s_sqlt = """SELECT
+          mo.dpfs, mo.oms_sn, mo.enp,
+          mo.lname, mo.fname, mo.mname,
+          mo.birthday, mo.birthplace,
+          mo.doc_type_id, mo.doc_sn, mo.doc_when, mo.doc_who,
+          mo.snils, mo.mcod,
+          mo.motive_att, mo.type_att, mo.date_att, mo.date_det,
+          il.clinic_id,
+          tp.tfoms_verification_status
+        FROM mo
+        LEFT JOIN insr_list il ON mo.mcod = il.mcod
+        LEFT JOIN tfoms_peoples tp ON il.clinic_id = tp.clinic_id AND mo.enp = tp.enp
+        WHERE mo.mcod = %s;"""
 
     curr = db.con.cursor()
     curr.execute(s_sqlt,(mcod,))
@@ -1622,7 +1640,12 @@ def get_mo_fromdb(db, mcod):
         p_mo.date_att    = rec[16]
         p_mo.date_det    = rec[17]
 
-        array.append( p_mo )
+        if mode == 1:
+            array.append( p_mo )
+        else:
+            tfoms_verification_status = rec[19]
+            if tfoms_verification_status != 1:
+                array.append( p_mo )
 
     return array
 
