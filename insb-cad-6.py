@@ -31,6 +31,11 @@ OCATO      = '01000'
 
 PRINT2     = False
 
+# режим вывода
+# 1 - все записи
+# 2 - только те, у которых tfoms_verification_status != 1
+MODE = 2
+
 def get_clist(db):
 
     s_sql = "SELECT DISTINCT mcod FROM mo_done WHERE d_out is Null;"
@@ -87,7 +92,7 @@ if __name__ == "__main__":
             clinic_id = 0
             continue
 
-        mo_ar = get_mo_cad_fromdb(dbmy, mcod)
+        mo_ar = get_mo_cad_fromdb(dbmy, mcod, MODE)
         l_ar  = len(mo_ar)
         sout  = "has got {0} MO lines".format(l_ar)
         log.info(sout)

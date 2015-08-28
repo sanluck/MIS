@@ -1649,20 +1649,40 @@ def get_mo_fromdb(db, mcod, mode = 1):
 
     return array
 
-def get_mo_cad_fromdb(db, mcod):
+def get_mo_cad_fromdb(db, mcod, mode = 1):
+    # mode = 1 - select all records
+    # mode = 2 - select only records,
+    #            which have not got tfoms_verification_status = 1
     from datetime import datetime
 
-    s_sqlt = """SELECT
-    action,
-    dpfs, oms_sn, enp,
-    lname, fname, mname,
-    birthday, birthplace,
-    doc_type_id, doc_sn, doc_when, doc_who,
-    snils, mcod,
-    motive_att, type_att, date_att, date_det,
-    mo_oid, dep_code, area_number, doc_snils, doc_category
-    FROM mo_cad
-    WHERE mcod = %s;"""
+    if mode == 1:
+        s_sqlt = """SELECT
+          action,
+          dpfs, oms_sn, enp,
+          lname, fname, mname,
+          birthday, birthplace,
+          doc_type_id, doc_sn, doc_when, doc_who,
+          snils, mcod,
+          motive_att, type_att, date_att, date_det,
+          mo_oid, dep_code, area_number, doc_snils, doc_category
+        FROM mo_cad
+        WHERE mcod = %s;"""
+    else:
+        s_sqlt = """SELECT
+          m.action,
+          m.dpfs, m.oms_sn, m.enp,
+          m.lname, m.fname, m.mname,
+          m.birthday, m.birthplace,
+          m.doc_type_id, m.doc_sn, m.doc_when, m.doc_who,
+          m.snils, m.mcod,
+          m.motive_att, m.type_att, m.date_att, m.date_det,
+          m.mo_oid, m.dep_code, m.area_number, m.doc_snils, m.doc_category,
+          il.clinic_id,
+          tp.tfoms_verification_status
+        FROM mo_cad m
+        LEFT JOIN insr_list il ON m.mcod = il.mcod
+        LEFT JOIN tfoms_peoples tp ON il.clinic_id = tp.clinic_id AND m.enp = tp.enp
+        WHERE m.mcod = %s;"""
 
     curr = db.con.cursor()
     curr.execute(s_sqlt,(mcod,))
@@ -1698,7 +1718,12 @@ def get_mo_cad_fromdb(db, mcod):
         p_mo.doc_snils   = rec[22]
         p_mo.doc_category= rec[23]
 
-        array.append( p_mo )
+        if mode == 1:
+            array.append( p_mo )
+        else:
+            tfoms_verification_status = rec[25]
+            if tfoms_verification_status != 1:
+                array.append( p_mo )
 
     return array
 
