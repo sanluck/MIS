@@ -36,11 +36,18 @@ AND p_print = 1;"""
 
 SQLF1 = """SELECT cc.clinical_checkup_id, cc.clinic_id_fk,
 cc.ds_1,
-cl.clinic_name
+cl.clinic_name,
+cs.oplata, cs.os_sluch
 FROM clinical_checkups cc
 LEFT JOIN clinics cl ON cc.clinic_id_fk = cl.clinic_id
+LEFT JOIN clinical_checkup_stages cs ON cc.clinical_checkup_id = cs.clinical_checkup_id_fk
 WHERE
 cc.clinical_checkup_id = ?;"""
+
+# В таблице  clinical_checkup_stages
+# поле  OPLATA = 1 или NULL - это полная оплата
+# поле  OS_SLUCH = 3 - для первого этапа и  = 4 - для второго этапа
+#
 
 F_NAME = "md_report.xls"
 F_PATH = "MEDDEM"
@@ -105,6 +112,7 @@ if __name__ == "__main__":
     ws.write(0,6,"D Clinic")
     ws.write(0,7,"DVN DS1")
     ws.write(0,8,"D DS")
+    ws.write(0,9,"OPLATA")
 
     row = 1
 
@@ -133,6 +141,8 @@ if __name__ == "__main__":
             clinic_id = rec[1]
             ds_1 = rec[2]
             clinic_name = rec[3]
+        oplata = rec[4]
+        os_sluch = rec[5]
         if not ds_1: continue
         if not (ds_1.startswith(DS1)): continue
         
@@ -155,8 +165,13 @@ if __name__ == "__main__":
         ws.write(row,6,lpu)
         ws.write(row,7,ds_1)
         ws.write(row,8,mkb_itog)
-
-
+        s_oplata = u""
+        if oplata is None:
+            if os_sluch is not None:
+                s_oplata = u"Полная"
+        elif oplata == 1:
+                s_oplata = u"Полная"
+        ws.write(row,9,s_oplata)
 
     wb.save(F_FNAME)
 
