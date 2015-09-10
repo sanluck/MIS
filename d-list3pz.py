@@ -137,15 +137,17 @@ if __name__ == "__main__":
             clinic_id = "-"
             ds_1 = "-"
             clinic_name = "-"
+            oplata = None
+            os_sluch = None
         else:
             clinic_id = rec[1]
             ds_1 = rec[2]
             clinic_name = rec[3]
-        oplata = rec[4]
-        os_sluch = rec[5]
+            oplata = rec[4]
+            os_sluch = rec[5]
         if not ds_1: continue
         if not (ds_1.startswith(DS1)): continue
-        
+
         row += 1
 
         fio = lname.strip() + " " + fname.strip()

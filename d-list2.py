@@ -47,7 +47,8 @@ WHERE id = %s;"""
 SQLF1 = """SELECT clinical_checkup_id, date_end_1
 FROM clinical_checkups
 WHERE
-people_id_fk = ?;"""
+people_id_fk = ?
+ORDER BY date_end_1 DESC;"""
 
 if __name__ == "__main__":
     import time

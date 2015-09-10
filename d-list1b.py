@@ -38,9 +38,9 @@ WHERE md_id = %s;"""
 
 DDB_HOST = "ct217.ctmed.ru"
 DDB_NAME = "meddoc"
-D_START = "2014-01-01"
+D_START = "2015-01-01"
 
-SQLT_DGET = """SELECT 
+SQLT_DGET = """SELECT
 `идентификатор случая`,
 `Фамилия умершего`,
 `имя умершего`,
@@ -74,8 +74,8 @@ SQLT_DGET = """SELECT
 `причина смерти`,
 `удостоверил`,
 `на основании`,
-`id_lpu` 
-FROM create_list_death 
+`id_lpu`
+FROM create_list_death
 WHERE `дата и время смерти` >= %s;"""
 
 APPEND = True
@@ -85,13 +85,13 @@ def get_md_list_from_db(d_start=D_START):
 
     sout = "Getting List of Cases from: {0}:{1}".format(DDB_HOST, DDB_NAME)
     log.info(sout)
-    
+
     sout = "D_START: {0}".format(d_start)
     log.info(sout)
-    
+
     dbmy = DBMY(host=DDB_HOST, db=DDB_NAME)
     curr = dbmy.con.cursor()
-    
+
     curr.execute(SQLT_DGET, (d_start, ))
     results = curr.fetchall()
 
