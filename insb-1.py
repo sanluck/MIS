@@ -226,7 +226,8 @@ if __name__ == "__main__":
     log.info('Registering of Insurance Belonging Replies. Start {0}'.format(localtime))
 
 
-    fnames = get_fnames()
+    fnames = get_fnames(file_ext = '.csv')
+    fnames += get_fnames(file_ext = '.CSV')
     n_fnames = len(fnames)
     sout = "Totally {0} files has been found".format(n_fnames)
     log.info( sout )
