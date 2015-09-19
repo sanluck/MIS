@@ -244,7 +244,7 @@ def set_ap(ar_pf):
         date_beg = aprec[2]
         motive_att = aprec[3]
         clinic_id = aprec[4]
-        mcod = modb.moCodeByMisId(clinic_id)
+        #mcod = modb.moCodeByMisId(clinic_id)
 
         area_number   = aprec[5]
         speciality_id = aprec[6]
