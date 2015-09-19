@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
 
-STEP = 100
+STEP = 10000
 
 NFIELDS = 23
 F2DO_PATH        = "./ALL_TFOMS_IN"
@@ -228,6 +228,11 @@ def set_ap(ar_pf):
     l = len(ar_pf)
     for i in range(l):
         pf = ar_pf[i]
+
+        if (i % STEP) == 0:
+            sout = "{0}: enp: {1} mcod: {2}".format(i, pf.enp, pf.mcod)
+            log.info(sout)
+
         people_id = pf.people_id
         if not people_id: continue
         
@@ -369,13 +374,15 @@ if __name__ == "__main__":
         
         l_enp = identify_ptfoms(ar_ptfoms, p_enp)
         
-        sout = "{0} patients have been identified using ENP".format(l_enp)
+        localtime = time.asctime( time.localtime(time.time()) )
+        sout = "{0} patients have been identified using ENP. {1}".format(l_enp, localtime)
         log.info(sout)
         
         set_ap(ar_ptfoms)
 
         f_fname = FDONE_PATH + "/" + fname
-        sout = "Output file: {0}".format(f_fname)
+        localtime = time.asctime( time.localtime(time.time()) )
+        sout = "Output file: {0}. {1}".format(f_fname, localtime)
         log.info(sout)
         
         save_ptfomss(ar_ptfoms, f_fname)
