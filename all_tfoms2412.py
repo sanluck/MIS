@@ -306,9 +306,9 @@ def save_ptfomss(pf_arr, fout):
         line += '"' + pf.s21 + '";'
         line += '"' + pf.s22 + '";'
         if pf.docsnils:
-            line += '"' + pf.docsnils + '";'
+            line += '"' + pf.docsnils + '"'
         else:
-            line += '"' + pf.s23 + '";'
+            line += '"' + pf.s23 + '"'
         
         lout = line.upper().encode('cp1251')+"\r\n"
         fo.write(lout)
