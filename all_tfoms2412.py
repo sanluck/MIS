@@ -87,6 +87,7 @@ class PTFOMS:
         self.people_id = None
         self.m = None
         self.clinic_id = None
+        self.motive_att = None
         self.d_begin = None
         self.docsnils = None
 
@@ -236,6 +237,7 @@ def set_ap(ar_pf):
         if not aprec: continue
         area_id = aprec[1]
         date_beg = aprec[2]
+        motive_att = aprec[3]
         clinic_id = aprec[4]
         mcod = modb.moCodeByMisId(clinic_id)
 
@@ -244,6 +246,7 @@ def set_ap(ar_pf):
 
         pf.clinic_id = clinic_id
         pf.d_begin = date_beg
+        pf.motive_att = motive_att
 
         if clinic_id != t_clinic_id:
             cad = get_cad(dbmis, clinic_id)
@@ -287,19 +290,25 @@ def save_ptfomss(pf_arr, fout):
             try:
                 dbmis_mcod = str(modb.moCodeByMisId(pf.clinic_id))
             except:
-                dbmis_mcod = ''
+                dbmis_mcod = pf.mcod
         else:
-            dbmis_mcod = ''
+            dbmis_mcod = pf.mcod
         line += '"' + dbmis_mcod + '";'
 
         line += '"' + pf.s16 + '";'
-        line += '"' + pf.s17 + '";'
+        if pf.motive_att:
+            line += '"' + str(pf.motive_att) + '";'
+        else:
+            line += '"' + pf.s17 + '";'
         line += '"' + pf.sdp + '";'
         line += '"' + pf.s19 + '";'
         line += '"' + pf.s20 + '";'
         line += '"' + pf.s21 + '";'
         line += '"' + pf.s22 + '";'
-        line += '"' + pf.s23 + '";'
+        if pf.docsnils:
+            line += '"' + pf.docsnils + '";'
+        else:
+            line += '"' + pf.s23 + '";'
         
         lout = line.upper().encode('cp1251')+"\r\n"
         fo.write(lout)
