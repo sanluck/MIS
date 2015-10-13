@@ -255,7 +255,7 @@ ORDER BY ap.date_beg DESC;"""
                     d_snils = random.choice(d51)
             else:
                 if EMPTY_DOCTOR:
-                    d_snils = None
+                    d_snils = u"11111111111"
                 else:
                     continue
 
