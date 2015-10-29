@@ -76,30 +76,30 @@ if __name__ == "__main__":
         c_id = rec[2]
         enp  = rec[3]
         mcod = rec[4]
-	
-	if nall % STEP == 0:
-	    sout = " {0}: people_id: {1} enp: {2} mcod: {3}".format(nall, p_id, enp, mcod)
-	    log.info(sout)
-	    
+        
+        if nall % STEP == 0:
+            sout = " {0}: people_id: {1} enp: {2} mcod: {3}".format(nall, p_id, enp, mcod)
+            log.info(sout)
+            
         if enp is None:
             nfound += 1
             continue
-	if mcod is not None:
-	    try:
-		mo = modb[mcod]
-		lpu_tfoms = mo.mis_code
-	    except:
-		sout = "id: {0} people_id: {1}. Clinic not found for mcod = {2}".format(_id, p_id, mcod)
-		log.warn(sout)
-		lpu_tfoms = None
-		nomcod += 1
-	else:
-	    lpu_tfoms = None
-	    nomcod += 1
-	    
-	curw.execute(SQLT_TPU,(dnow, enp, lpu_tfoms, _id, ))
-	dbmy.con.commit()
-	
+        if mcod is not None:
+            try:
+                mo = modb[mcod]
+                lpu_tfoms = mo.mis_code
+            except:
+                sout = "id: {0} people_id: {1}. Clinic not found for mcod = {2}".format(_id, p_id, mcod)
+                log.warn(sout)
+                lpu_tfoms = None
+                nomcod += 1
+        else:
+            lpu_tfoms = None
+            nomcod += 1
+            
+        curw.execute(SQLT_TPU,(dnow, enp, lpu_tfoms, _id, ))
+        dbmy.con.commit()
+        
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Filling out TFOMS_PEOPLES table. Finish  '+localtime)  
     
@@ -114,8 +114,3 @@ if __name__ == "__main__":
     
     dbmy.close()
     sys.exit(0)    
-        
-        
-        
-        
-    

@@ -110,28 +110,28 @@ if __name__ == "__main__":
         p_id = rec[1]
         c_id = rec[2]
         c_tf = rec[3]
-	if c_tf is None:
-	    nfound += 1
-	    tfoms_v_status = 4
-	elif c_id == c_tf:
-	    tfoms_v_status = 1
-	else:
-	    tfoms_v_status = 2
-	
-	if nall % STEP == 0:
-	    sout = " {0}: people_id: {1} clinic_id: {2} tfoms_v_status: {3}".format(nall, p_id, c_id, tfoms_v_status)
-	    log.info(sout)
+        if c_tf is None:
+            nfound += 1
+            tfoms_v_status = 4
+        elif c_id == c_tf:
+            tfoms_v_status = 1
+        else:
+            tfoms_v_status = 2
+        
+        if nall % STEP == 0:
+            sout = " {0}: people_id: {1} clinic_id: {2} tfoms_v_status: {3}".format(nall, p_id, c_id, tfoms_v_status)
+            log.info(sout)
 
-	dbc_curr.execute(SQLT_APR, (p_id, c_id, ))
-	ap_recs = dbc_curr.fetchall()
-	for ap_rec in ap_recs:
-	    ap_id = ap_rec[0]
-	    dbc_curw.execute(SQLT_APU, (tfoms_v_status, dnow, ap_id, ))
-	    dbc.con.commit()
-	    
-	curw.execute(SQLT_TPU,( sdnow, tfoms_v_status, _id))
-	dbmy.con.commit()
-	
+        dbc_curr.execute(SQLT_APR, (p_id, c_id, ))
+        ap_recs = dbc_curr.fetchall()
+        for ap_rec in ap_recs:
+            ap_id = ap_rec[0]
+            dbc_curw.execute(SQLT_APU, (tfoms_v_status, dnow, ap_id, ))
+            dbc.con.commit()
+            
+        curw.execute(SQLT_TPU,( sdnow, tfoms_v_status, _id))
+        dbmy.con.commit()
+        
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Set TFOMS_VERIFIVATION_STATUS. Finish  '+localtime)  
     

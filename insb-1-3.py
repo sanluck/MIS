@@ -90,21 +90,21 @@ if __name__ == "__main__":
         nall += 1
         p_id = rec[0]
         enp  = rec[1]
-	
-	if nall % STEP == 0:
-	    sout = " {0}: people_id: {1} enp: {2}".format(nall, p_id, enp)
-	    log.info(sout)
-	    
+        
+        if nall % STEP == 0:
+            sout = " {0}: people_id: {1} enp: {2}".format(nall, p_id, enp)
+            log.info(sout)
+            
         if enp is None:
             nfound += 1
             continue
-	
-	cur.execute(SQLT_PEOPLESU, (enp, p_id, ))
-	dbc.con.commit()
-	    
-	curw.execute(SQLT_SMU,( p_id, ))
-	dbmy.con.commit()
-	
+        
+        cur.execute(SQLT_PEOPLESU, (enp, p_id, ))
+        dbc.con.commit()
+            
+        curw.execute(SQLT_SMU,( p_id, ))
+        dbmy.con.commit()
+        
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Put ENP into DBMIS. Finish  '+localtime)  
     
@@ -117,8 +117,3 @@ if __name__ == "__main__":
     dbc.close()
     dbmy.close()
     sys.exit(0)    
-        
-        
-        
-        
-    
