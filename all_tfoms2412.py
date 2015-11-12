@@ -291,6 +291,8 @@ def save_ptfomss(pf_arr, fout):
         line += '"' + pf.s14 + '";'
         
         #line += '"' + pf.mcod + '";'
+        # изменить МО прикрепление, на то, которое актуально в АРМ Поликлиника 
+        # (15 поле)
         if pf.clinic_id:
             try:
                 dbmis_mcod = str(modb.moCodeByMisId(pf.clinic_id))
@@ -299,12 +301,18 @@ def save_ptfomss(pf_arr, fout):
         else:
             dbmis_mcod = pf.mcod
         line += '"' + dbmis_mcod + '";'
-
-        line += '"' + pf.s16 + '";'
+        
+        # https://prm.ctmed.ru/redmine/issues/2714
+        # изменить способ прикрепления (по регистрации (1) /по заявлению (2)), 
+        # поле следующее за кодом МО (16 поле)
         if pf.motive_att:
             line += '"' + str(pf.motive_att) + '";'
         else:
-            line += '"' + pf.s17 + '";'
+            line += '"' + pf.s16 + '";'
+ 
+        line += '"' + pf.s17 + '";'
+
+        # НЕ менять дату прикрепления
         line += '"' + pf.sdp + '";'
         line += '"' + pf.s19 + '";'
         line += '"' + pf.s20 + '";'
