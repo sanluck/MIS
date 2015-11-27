@@ -27,7 +27,6 @@ class DBMY:
         except:
             exctype, value = sys.exc_info()[:2]
             log.warn( 'DBMY init error: %s' % value.message )
-            self.con.close()
             raise
         sout = "Connection to %s:%s has been established" % (DBHOST, DBNAME)
         log.debug(sout)
