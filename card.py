@@ -130,9 +130,9 @@ class CARD:
 
         self.head_circ = None
 
-	self.age  = None
-	self.mage = None
-	self.sex  = None
+        self.age  = None
+        self.mage = None
+        self.sex  = None
 
     def initFromDB(self, dbc, exam_id):
         cur = dbc.con.cursor()
@@ -397,33 +397,33 @@ class CARD:
 
         doc = SimpleXmlConstructor()
 
-	health_group_code = self.health_group_code
-	phys_group_code = self.phys_group_code
+        health_group_code = self.health_group_code
+        phys_group_code = self.phys_group_code
 
-	de = self.date_end
+        de = self.date_end
 
-	if health_group_code is None:
-	    health_group_code = 1
-	elif health_group_code not in (1,2,3,4,5):
-	    health_group_code = 1
-	addNode(doc, "healthGroup", str(health_group_code))
+        if health_group_code is None:
+            health_group_code = 1
+        elif health_group_code not in (1,2,3,4,5):
+            health_group_code = 1
+        addNode(doc, "healthGroup", str(health_group_code))
 
-	if phys_group_code is None:
-	    phys_group_code = 1
-	elif phys_group_code == 5:
-	    phys_group_code = -1
-	elif phys_group_code not in (1,2,3,4):
-	    phys_group_code = 1
-	addNode(doc, "fizkultGroup", str(phys_group_code))
+        if phys_group_code is None:
+            phys_group_code = 1
+        elif phys_group_code == 5:
+            phys_group_code = -1
+        elif phys_group_code not in (1,2,3,4):
+            phys_group_code = 1
+        addNode(doc, "fizkultGroup", str(phys_group_code))
 
-	if de is None:
-	    zakluchDate = "2014-06-30"
-	else:
-	    zakluchDate = "%04d-%02d-%02d" % (de.year, de.month, de.day)
+        if de is None:
+            zakluchDate = "2014-06-30"
+        else:
+            zakluchDate = "%04d-%02d-%02d" % (de.year, de.month, de.day)
 
-	addNode(doc, "zakluchDate", zakluchDate)
+        addNode(doc, "zakluchDate", zakluchDate)
 
-	return doc
+        return doc
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS

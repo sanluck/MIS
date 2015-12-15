@@ -105,7 +105,7 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     elif age < 3:
         mage = 24 + rd.months - (rd.months % 6)
     else:
-        mage = (dateOfObsled.year - bd.year)*12
+        mage = (dateOfObsled.year - bd.year)*12 + rd.months
 
     if (mage % 12 <> 0) or (mage == 0):
         docTXT = ""
