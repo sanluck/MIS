@@ -113,9 +113,9 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID, age_mode = 1):
         mage = card.card
         if mage:
             age = mage / 12
-        else
-        mage = 0
-        age = 0
+        else:
+            mage = 0
+            age = 0
 
     if (mage % 12 <> 0) or (mage == 0):
         docTXT = ""
