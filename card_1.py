@@ -71,7 +71,7 @@ def getOplata(dbc, card_id):
     return doc
 
 
-def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
+def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID, age_mode = 1):
     from dateutil.relativedelta import relativedelta
 
     cname = dbc.name.encode('utf-8')
@@ -96,16 +96,26 @@ def getCard(dbc, card_id = PROF_EXAM_ID, people_id = PEOPLE_ID):
     card = CARD()
     card.initFromDB(dbc, card_id)
     dateOfObsled = card.dateOfObsled
-    rd = relativedelta(dateOfObsled, bd)
-    age = rd.years
-    if age < 1:
-        mage = rd.months
-    elif age < 2:
-        mage = 12 + rd.months - (rd.months % 3)
-    elif age < 3:
-        mage = 24 + rd.months - (rd.months % 6)
+    
+    if age_mode == 1:
+        rd = relativedelta(dateOfObsled, bd)
+        age = rd.years
+        if age < 1:
+            mage = rd.months
+        elif age < 2:
+            mage = 12 + rd.months - (rd.months % 3)
+        elif age < 3:
+            mage = 24 + rd.months - (rd.months % 6)
+        else:
+            mage = (dateOfObsled.year - bd.year)*12 + rd.months
+    
     else:
-        mage = (dateOfObsled.year - bd.year)*12 + rd.months
+        mage = card.card
+        if mage:
+            age = mage / 12
+        else
+        mage = 0
+        age = 0
 
     if (mage % 12 <> 0) or (mage == 0):
         docTXT = ""

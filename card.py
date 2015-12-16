@@ -30,7 +30,7 @@ date_inv_first, date_inv_last,
 vnz_inv_list,
 health_group_code, phys_group_code,
 date_end,
-head_circ
+head_circ, card
 FROM prof_exam_minor
 WHERE prof_exam_id = ?;"""
 
@@ -130,6 +130,8 @@ class CARD:
 
         self.head_circ = None
 
+        self.card = None
+
         self.age  = None
         self.mage = None
         self.sex  = None
@@ -190,6 +192,8 @@ class CARD:
             self.date_end = rec[31]
 
             self.head_circ = rec[32]
+            
+            self.card = rec[33]
 
 
     def asXML(self):

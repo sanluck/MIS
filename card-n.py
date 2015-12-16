@@ -58,6 +58,7 @@ DB = Config1['db']
 Config2 = ConfigSectionMap(Config, "Cardn")
 D_START = Config2['d_start']
 D_FINISH = Config2['d_finish']
+
 SELECT_MODE = int(Config2['select_mode'])
 
 # Выбирать:
@@ -67,6 +68,13 @@ SELECT_MODE = int(Config2['select_mode'])
 # 3 - отмеченных на выгрузку
 # 4 - не проверять полноту заполнения карт, статус пациента
 # SELECT_MODE = 2
+
+AGE_MODE = int(Config2['age_mode'])
+
+# Определять возраст карты:
+# 1 - расчет
+# 2 - PROF_EXAM_MINOR.CARD
+#
 
 if SELECT_MODE == 2:
     SQLT_CL = """SELECT
@@ -226,7 +234,7 @@ def do_card_n(clinic_id = CLINIC_ID):
             p_id = ccc[1]
             d_bg = ccc[2]
 
-            docTXT = getCard(dbc, e_id, p_id)
+            docTXT = getCard(dbc, e_id, p_id, AGE_MODE)
             if len(docTXT) > 0:
                 fo.write(docTXT)
                 fo.flush()
