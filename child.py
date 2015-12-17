@@ -3,7 +3,7 @@
 
 import sys
 import logging
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 
 from child_const import IDTYPE, IDCATEGORY, SMO_ID, SMO_ID0
 from child_const import KLADR0

@@ -10,7 +10,7 @@ import logging
 from medlib.moinfolist import MoInfoList
 modb = MoInfoList()
 
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 
 from child import CHILD
 from card import CARD

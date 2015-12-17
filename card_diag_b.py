@@ -7,7 +7,7 @@
 
 import sys
 import logging
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
@@ -80,9 +80,9 @@ class CARD_DIAG_B_ARR:
                 card_diag_b = CARD_DIAG_B()
 
                 if rec[0] is None:
-		    card_diag_b.mkb = None
-		else:
-		    card_diag_b.mkb = rec[0].strip()
+                    card_diag_b.mkb = None
+                else:
+                    card_diag_b.mkb = rec[0].strip()
                 card_diag_b.dn = rec[1]
                 card_diag_b.ln1 = rec[2]
                 card_diag_b.ul1 = rec[3]
@@ -103,22 +103,22 @@ class CARD_DIAG_B_ARR:
         doc = SimpleXmlConstructor()
         arr = self.diag_b_arr
         if len(arr) == 0:
-	    doc.startNode("diagnosisBefore")
-	    doc.startNode("diagnosis")
-	    addNode(doc, "mkb", "Z00.0")
-	    addNode(doc, "dispNablud", "3")
-	    addNode(doc, "vmp", "0")
-	    doc.endNode() # diagnosis
-	    doc.endNode() # diagnosisBefore
+            doc.startNode("diagnosisBefore")
+            doc.startNode("diagnosis")
+            addNode(doc, "mkb", "Z00.0")
+            addNode(doc, "dispNablud", "3")
+            addNode(doc, "vmp", "0")
+            doc.endNode() # diagnosis
+            doc.endNode() # diagnosisBefore
             return doc
         doc.startNode("diagnosisBefore")
         for diag_b in arr:
             mkb = diag_b.mkb
             if mkb is None: continue
             doc.startNode("diagnosis")
-	    lmkb = len(mkb)
-	    if lmkb > 5: mkb = mkb[:5]
-	    addNode(doc, "mkb", mkb)
+            lmkb = len(mkb)
+            if lmkb > 5: mkb = mkb[:5]
+            addNode(doc, "mkb", mkb)
             dn = diag_b.dn
             if dn is None: dn = 3
             addNode(doc, "dispNablud", str(dn))
@@ -150,9 +150,9 @@ class CARD_DIAG_B_ARR:
                 addNode(doc, "organ", str(mo3))
                 lv2 = diag_b.lv2
                 if lv2 == 2:
-		    doc.startNode("notDone")
-		    addNode(doc, "reason", "1")
-		    doc.endNode() # notDone
+                    doc.startNode("notDone")
+                    addNode(doc, "reason", "1")
+                    doc.endNode() # notDone
                 doc.endNode() # reabil
 
 
@@ -203,9 +203,9 @@ class CARD_DIAG_A_ARR:
                 card_diag_a = CARD_DIAG_A()
 
                 if rec[0] is None:
-		    card_diag_a.mkb = rec[0]
-		else:
-		    card_diag_a.mkb = rec[0].strip()
+                    card_diag_a.mkb = rec[0]
+                else:
+                    card_diag_a.mkb = rec[0].strip()
 
                 card_diag_a.uv = rec[1]
                 card_diag_a.dn = rec[2]
@@ -231,81 +231,81 @@ class CARD_DIAG_A_ARR:
         arr = self.diag_a_arr
         if len(arr) == 0:
             addNode(doc, "healthyMKB", "Z00.0")
-	    return doc
-	elif len(arr) > 0:
+            return doc
+        elif len(arr) > 0:
             diag_a = arr[0]
             mkb = diag_a.mkb
             if mkb is not None:
-		mkb3 = mkb[:3]
-		if (mkb3 >= "Z00") and (mkb3 <= "Z10"):
-		    addNode(doc, "healthyMKB", mkb)
-		    return doc
+                mkb3 = mkb[:3]
+                if (mkb3 >= "Z00") and (mkb3 <= "Z10"):
+                    addNode(doc, "healthyMKB", mkb)
+                    return doc
 
-	doc.startNode("diagnosisAfter")
-	for diag_a in arr:
-	    mkb = diag_a.mkb
-	    if mkb is None: continue
-	    doc.startNode("diagnosis")
-	    lmkb = len(mkb)
-	    if lmkb > 5: mkb = mkb[:5]
-	    addNode(doc, "mkb", mkb)
+        doc.startNode("diagnosisAfter")
+        for diag_a in arr:
+            mkb = diag_a.mkb
+            if mkb is None: continue
+            doc.startNode("diagnosis")
+            lmkb = len(mkb)
+            if lmkb > 5: mkb = mkb[:5]
+            addNode(doc, "mkb", mkb)
 
-	    if diag_a.uv == 1:
-		addNode(doc, "firstTime", "1")
-	    else:
-		addNode(doc, "firstTime", "0")
+            if diag_a.uv == 1:
+                addNode(doc, "firstTime", "1")
+            else:
+                addNode(doc, "firstTime", "0")
 
-	    dn = diag_a.dn
-	    if (dn is None) or (dn == 3): dn = 0
-	    addNode(doc, "dispNablud", str(dn))
+            dn = diag_a.dn
+            if (dn is None) or (dn == 3): dn = 0
+            addNode(doc, "dispNablud", str(dn))
 
-	    ln3 = diag_a.ln3
-	    if ln3 == 1:
-		doc.startNode("lechen")
-		ul3 = diag_a.ul3
-		if ul3 is None: ul3 = 1
-		addNode(doc, "condition", str(ul3))
-		mo3 = diag_a.mo3
-		if mo3 is None: mo3 = 2
-		addNode(doc, "organ", str(mo3))
-		doc.endNode() # lechen
+            ln3 = diag_a.ln3
+            if ln3 == 1:
+                doc.startNode("lechen")
+                ul3 = diag_a.ul3
+                if ul3 is None: ul3 = 1
+                addNode(doc, "condition", str(ul3))
+                mo3 = diag_a.mo3
+                if mo3 is None: mo3 = 2
+                addNode(doc, "organ", str(mo3))
+                doc.endNode() # lechen
 
-	    ln4 = diag_a.ln4
-	    if ln4 == 1:
-		doc.startNode("reabil")
-		ul4 = diag_a.ul4
-		if (ul4 is None) or (ul4 > 3): ul4 = 3
-		addNode(doc, "condition", str(ul4))
-		mo4 = diag_a.mo4
-		if mo4 is None: mo4 = 2
-		addNode(doc, "organ", str(mo4))
-		doc.endNode() # reabil
+            ln4 = diag_a.ln4
+            if ln4 == 1:
+                doc.startNode("reabil")
+                ul4 = diag_a.ul4
+                if (ul4 is None) or (ul4 > 3): ul4 = 3
+                addNode(doc, "condition", str(ul4))
+                mo4 = diag_a.mo4
+                if mo4 is None: mo4 = 2
+                addNode(doc, "organ", str(mo4))
+                doc.endNode() # reabil
 
-	    in1 = diag_a.in1
-	    if in1 == 1:
-		doc.startNode("consul")
-		ul1 = diag_a.ul1
-		if ul1 is None: ul1 = 1
-		addNode(doc, "condition", str(ul1))
-		mo1 = diag_a.mo1
-		if mo1 is None: mo1 = 1
-		addNode(doc, "organ", str(mo1))
-		iv2 = diag_a.iv2
-		if (iv2 is None) or (iv2 == 2): iv2 = 0
-		addNode(doc, "state", str(iv2))
-		doc.endNode() # consul
+            in1 = diag_a.in1
+            if in1 == 1:
+                doc.startNode("consul")
+                ul1 = diag_a.ul1
+                if ul1 is None: ul1 = 1
+                addNode(doc, "condition", str(ul1))
+                mo1 = diag_a.mo1
+                if mo1 is None: mo1 = 1
+                addNode(doc, "organ", str(mo1))
+                iv2 = diag_a.iv2
+                if (iv2 is None) or (iv2 == 2): iv2 = 0
+                addNode(doc, "state", str(iv2))
+                doc.endNode() # consul
 
-	    vmp = diag_a.vmp
-	    if (vmp is None) or (vmp == 2): vmp = 0
-	    addNode(doc, "needVMP", str(vmp))
-	    addNode(doc, "needSMP", "0")
-	    addNode(doc, "needSKL", "0")
+            vmp = diag_a.vmp
+            if (vmp is None) or (vmp == 2): vmp = 0
+            addNode(doc, "needVMP", str(vmp))
+            addNode(doc, "needSMP", "0")
+            addNode(doc, "needSKL", "0")
 
-	    ms_uid = diag_a.ms_uid
-	    addNode(doc, "recommendNext", "Нет")
-	    doc.endNode() # diagnosis
+            ms_uid = diag_a.ms_uid
+            addNode(doc, "recommendNext", "Нет")
+            doc.endNode() # diagnosis
 
-	doc.endNode() # diagnosisAfter
+        doc.endNode() # diagnosisAfter
 
         return doc
 

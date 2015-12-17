@@ -10,7 +10,7 @@
 
 import sys
 import logging
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
@@ -65,7 +65,7 @@ def addNode(doc, nodeName, nodeValue):
 
 class CARD_PRIV:
     def __init__(self):
-	self.idInternal = None
+        self.idInternal = None
         self.state = None
         self.privs = None
 
@@ -77,31 +77,31 @@ class CARD_PRIV:
             self.__init__()
         else:
             self.idInternal = exam_id
-	    if rec[1] is None:
-		self.state = 1
-	    else:
-		self.state = rec[1]
-	    if rec[0] is None:
-		self.privs = []
-	    else:
-		self.privs = rec[0].split(",")
+            if rec[1] is None:
+                self.state = 1
+            else:
+                self.state = rec[1]
+            if rec[0] is None:
+                self.privs = []
+            else:
+                self.privs = rec[0].split(",")
 
     def asXML(self):
         doc = SimpleXmlConstructor()
         if (self.idInternal is None): return doc
         doc.startNode("privivki")
         addNode(doc, "state", str(self.state))
-	privs = self.privs
-	if len(privs) > 0:
-	    doc.startNode("privs")
-	    for priv in privs:
-		if len(priv) > 0:
-		    ipriv = int(priv)
-		    if ipriv >= 1 and ipriv <= 23:
-			ipriv += 5
-			spriv = str(ipriv)
-			addNode(doc, "priv", spriv)
-	    doc.endNode() # privs
+        privs = self.privs
+        if len(privs) > 0:
+            doc.startNode("privs")
+            for priv in privs:
+                if len(priv) > 0:
+                    ipriv = int(priv)
+                    if ipriv >= 1 and ipriv <= 23:
+                        ipriv += 5
+                        spriv = str(ipriv)
+                        addNode(doc, "priv", spriv)
+            doc.endNode() # privs
         doc.endNode() # privivki
 
         return doc

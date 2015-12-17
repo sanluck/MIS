@@ -18,7 +18,7 @@
 
 import sys
 import logging
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 
 HOST      = "fb2.ctmed.ru"
 DB        = "DBMIS"
@@ -82,10 +82,10 @@ def addNode(doc, nodeName, nodeValue):
 def invGroupByDS(DS):
     DSS = DS[:3]
     for i in range(INV_GROUP_MAX, 0, -1):
-	if INV_GROUP.has_key(i):
-	    DS1 = INV_GROUP[i][0]
-	    DS2 = INV_GROUP[i][1]
-	    if (DSS >= DS1) and (DSS <= DS2): return str(i)
+        if INV_GROUP.has_key(i):
+            DS1 = INV_GROUP[i][0]
+            DS2 = INV_GROUP[i][1]
+            if (DSS >= DS1) and (DSS <= DS2): return str(i)
 
     return '0'
 
@@ -151,22 +151,22 @@ class CARD_INV:
         return doc
 
     def reabilitationAsXML(self):
-	doc = SimpleXmlConstructor()
-	if self.date_inv_done is None:
-	    return doc
+        doc = SimpleXmlConstructor()
+        if self.date_inv_done is None:
+            return doc
 
-	doc.startNode("reabilitation")
-	dd = self.date_inv_done
-	date_inv_done = "%04d-%02d-%02d" % (dd.year, dd.month, dd.day)
-	addNode(doc, "date", date_inv_done)
-	if self.inv_done in (1,2,3,4):
-	    inv_done = str(self.inv_done)
-	else:
-	    inv_done = 4
-	addNode(doc, "state", str(inv_done))
-	doc.endNode() # reabilitation
+        doc.startNode("reabilitation")
+        dd = self.date_inv_done
+        date_inv_done = "%04d-%02d-%02d" % (dd.year, dd.month, dd.day)
+        addNode(doc, "date", date_inv_done)
+        if self.inv_done in (1,2,3,4):
+            inv_done = str(self.inv_done)
+        else:
+            inv_done = 4
+        addNode(doc, "state", str(inv_done))
+        doc.endNode() # reabilitation
 
-	return doc
+        return doc
 
 if __name__ == "__main__":
     from dbmis_connect2 import DBMIS

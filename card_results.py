@@ -6,7 +6,7 @@
 
 import sys
 import logging
-from medlib.modules.medobjects.SimpleXmlConstructor import SimpleXmlConstructor
+from SimpleXmlConstructor import SimpleXmlConstructor
 from child_const import ISSLED_ID, OSMOTR_ID
 
 HOST      = "fb2.ctmed.ru"
