@@ -3,6 +3,7 @@
 # reso-2.py - выбор из DBMIS пациентов страховой компании
 #             по номеру страховой компании (insorg_id)
 #             со старыми полисами
+#             посещавших после DATE_START ЛПУ
 #             и заполнение xls файлов данными из таблицы peoples
 #
 
@@ -24,19 +25,33 @@ HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
 CLINIC_ID = 22
-INSORG_ID = 8
+INSORG_ID = 0
 OMS_SER = u"АК%"
+DATE_START = "2015-12-01"
 
 F_PATH    = "./RESO/"
-FOUT_NAME = "ims_out.xls"
+FOUT_NAME = "ak_out"
 
-STEP = 100
+STEP = 200
+STEP_F = 2000
 
-s_sqlt0 = """SELECT 
+if INSORG_ID != 0:
+    s_sqlt0 = """SELECT 
 people_id, lname, fname, mname, birthday 
 FROM peoples 
 WHERE insorg_id = ? 
 AND medical_insurance_series like ?;"""
+else:
+    s_sqlt0 = """SELECT 
+people_id, lname, fname, mname, birthday 
+FROM peoples 
+WHERE medical_insurance_series like ?;"""
+
+s_sqlt0t = """SELECT 
+ticket_id
+FROM tickets 
+WHERE people_id_fk = ? 
+AND visit_date >= ?;"""
 
 s_sqlt1 = """SELECT
 document_type_id_fk, document_series, document_number, insurance_certificate,
@@ -90,7 +105,11 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER):
 
     plist = []
 
-    ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, ))
+    if insorg_id != 0:
+        ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, ))
+    else:
+        ro_cur.execute(s_sqlt0, (oms_ser, ))
+
     results = ro_cur.fetchall()
     
     for rec in results:
@@ -140,6 +159,10 @@ if __name__ == "__main__":
     sout = "Have got {0} peoples matching criteria".format(l_plist)
     log.info( sout )
 
+    date_start = datetime.datetime.strptime(DATE_START, "%Y-%m-%d")
+    sout = "date_start: {0}".format(date_start)
+    log.info( sout )
+
     dbc  = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
 
     # Create new READ ONLY READ COMMITTED transaction
@@ -147,8 +170,6 @@ if __name__ == "__main__":
     # and cursor
     ro_cur = ro_transaction.cursor()
 
-    f_fname = F_PATH + FOUT_NAME    
-    
     wb = xlwt.Workbook(encoding='cp1251')
     ws = wb.add_sheet('Peoples')
     
@@ -171,6 +192,8 @@ if __name__ == "__main__":
     row += 1
     
     counta = 0
+    countp = 0
+    fnumber = 1
     for p in plist:
         
         counta += 1
@@ -180,7 +203,12 @@ if __name__ == "__main__":
         mname = p.mname
         dr    = p.birthday
         p_id  = p.people_id
-        
+
+        ro_cur.execute(s_sqlt0t,(p_id, date_start,))
+        tickets = ro_cur.fetchall()
+        if len(tickets) == 0: 
+            continue
+
         ro_cur.execute(s_sqlt3,(p_id,))
         rfs = ro_cur.fetchall()
         for rf in rfs:
@@ -205,11 +233,6 @@ if __name__ == "__main__":
             mobile_phone             = rf[18]
                 
             row += 1
-                
-            if row % STEP == 0:
-                
-                sout = "{0}/{1} {2} {3} {4} {5}".format(row, counta, p_id, lname.encode('utf-8'), fname.encode('utf-8'), mname.encode('utf-8'))
-                log.info( sout )
 
             ws.write(row,0,lname)
             ws.write(row,1,fname)
@@ -268,10 +291,52 @@ if __name__ == "__main__":
                 addr += u', кв. ' + addr_jure_flat
                 
             ws.write(row,13,addr)
-        
+
+            countp += 1
+
+                
+            if countp % STEP == 0:
+                sout = "{0}/{1} {2} {3} {4} {5}".format(countp, counta, p_id, \
+                                                        lname.encode('utf-8'), \
+                                                        fname.encode('utf-8'), \
+                                                        mname.encode('utf-8'))
+                log.info( sout )
+
+            if countp % STEP_F == 0:
+                f_fname = F_PATH + FOUT_NAME + "-" + "%03d" % fnumber + ".xls"
+                fnumber += 1
+                wb.save(f_fname)
+                sout = "File {0} has been written".format(f_fname)
+                log.info( sout )
+
+                wb = xlwt.Workbook(encoding='cp1251')
+                ws = wb.add_sheet('Peoples')
+                
+                row = 3
+                ws.write(row,0,u'Фамилия')
+                ws.write(row,1,u'Имя')
+                ws.write(row,2,u'Отчетсво')
+                ws.write(row,3,u'Дата рождения')
+                ws.write(row,4,u'Серия ОМС')
+                ws.write(row,5,u'Номер ОМС')    
+                ws.write(row,6,u'СНИЛС')    
+                ws.write(row,7,u'Тип УДЛ')
+                ws.write(row,8,u'Серия УДЛ')
+                ws.write(row,9,u'Номер УДЛ')
+                ws.write(row,10,u'Дата выдачи УДЛ')
+                ws.write(row,11,u'Телефон')
+                ws.write(row,12,u'Сотовый')
+                ws.write(row,13,u'Адрес')
+                
+                row += 1
+                
     
     dbc.close()
-    wb.save(f_fname)
+    if row > 4:
+        f_fname = F_PATH + FOUT_NAME + "-" + "%03d" % fnumber + ".xls"
+        wb.save(f_fname)
+        sout = "File {0} has been written".format(f_fname)
+        log.info( sout )
+
     sys.exit(0)
     
-
