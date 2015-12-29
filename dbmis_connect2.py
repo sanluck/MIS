@@ -13,10 +13,11 @@ from get_lan_ip import get_lan_ip
 
 
 HOST = 'fb2.ctmed.ru'
-#DB = 'DBMIS'
-DB = 'DVN5'
+DB = 'DBMIS'
+#DB = 'DVN5'
 DB_USER = 'sysdba'
-DB_PWD = 'Vfcnth1'
+#DB_PWD = 'Vfcnth1'
+DB_PWD = 'Ma5ter1'
 
 #DB_USER = 'clinic'
 #DB_PWD = 'Polyclinic'
