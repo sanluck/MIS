@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # reso-2.py - выбор из DBMIS пациентов страховой компании
 #             по номеру страховой компании (insorg_id)
-#             со старыми полисами
 #             посещавших после DATE_START ЛПУ
 #             и заполнение xls файлов данными из таблицы peoples
+#             Распределение пациентов по файлам в соответствии с ЛПУ прикрепления
 #
 
 import logging
@@ -12,7 +12,7 @@ import sys, codecs
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-LOG_FILENAME = '_reso2.out'
+LOG_FILENAME = '_reso3.out'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
 
 console = logging.StreamHandler()
@@ -24,14 +24,13 @@ log = logging.getLogger(__name__)
 HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
-CLINIC_ID = 22
+CLINIC_ID = 125
 INSORG_ID = 8
 # OMS_SER = u"АК%"
 OMS_SER = None
 DATE_START = "2015-01-01"
 
 F_PATH    = "./RESO/"
-
 if OMS_SER:
     FOUT_NAME = "ak_out"
 else:
@@ -42,27 +41,45 @@ STEP_F = 2000
 
 if OMS_SER:
     if INSORG_ID != 0:
-        s_sqlt0 = """SELECT 
+        s_sqlt0 = """SELECT DISTINCT
 people_id, lname, fname, mname, birthday 
-FROM peoples 
-WHERE insorg_id = ? 
-AND medical_insurance_series like ?;"""
+FROM peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE p.insorg_id = ? AND p.medical_insurance_series like ?
+AND ca.clinic_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null;"""
     else:
-        s_sqlt0 = """SELECT 
+        s_sqlt0 = """SELECT DISTINCT
 people_id, lname, fname, mname, birthday 
-FROM peoples 
-WHERE medical_insurance_series like ?;"""
+FROM peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE p.medical_insurance_series like ?
+AND ca.clinic_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null;"""
 else:
     if INSORG_ID != 0:
         s_sqlt0 = """SELECT 
 people_id, lname, fname, mname, birthday 
-FROM peoples 
-WHERE insorg_id = ?;"""
+FROM peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE p.insorg_id = ? 
+AND ca.clinic_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null;"""
     else:
         s_sqlt0 = """SELECT 
 people_id, lname, fname, mname, birthday 
-FROM peoples;"""
-    
+FROM peoples p
+JOIN area_peoples ap ON p.people_id = ap.people_id_fk
+JOIN areas ar ON ap.area_id_fk = ar.area_id
+JOIN clinic_areas ca ON ar.clinic_area_id_fk = ca.clinic_area_id
+WHERE ca.clinic_id_fk = ? AND ca.basic_speciality = 1
+AND ap.date_end is Null;"""
 
 s_sqlt0t = """SELECT 
 ticket_id
@@ -107,12 +124,11 @@ phone, mobile_phone
 FROM peoples
 WHERE people_id = ?"""
 
-def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER):
+def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER, clinic_id=CLINIC_ID):
     import fdb
     from dbmis_connect2 import DBMIS
     from people import PEOPLE
 
-    clinic_id = CLINIC_ID
     dbc  = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
     
     # Create new READ ONLY READ COMMITTED transaction
@@ -124,14 +140,14 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER):
 
     if oms_ser:
         if insorg_id != 0:
-            ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, ))
+            ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, clinic_id, ))
         else:
-            ro_cur.execute(s_sqlt0, (oms_ser, ))
+            ro_cur.execute(s_sqlt0, (oms_ser, clinic_id, ))
     else:
         if insorg_id != 0:
-            ro_cur.execute(s_sqlt0, (insorg_id, ))
+            ro_cur.execute(s_sqlt0, (insorg_id, clinic_id, ))
         else:
-            ro_cur.execute(s_sqlt0)
+            ro_cur.execute(s_sqlt0, (clinic_id,) )
 
     results = ro_cur.fetchall()
     
@@ -158,9 +174,7 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER):
     
     return plist
 
-if __name__ == "__main__":
-    import sys
-    import time
+def export_clinic(clinic_id=CLINIC_ID):
     import datetime
     
     import xlwt
@@ -169,9 +183,8 @@ if __name__ == "__main__":
     from dbmis_connect2 import DBMIS
     from people import get_people
 
-    sout = "clinic_id: {0} database: {1}:{2}".format(CLINIC_ID, HOST, DB)
+    sout = "clinic_id: {0} database: {1}:{2}".format(clinic_id, HOST, DB)
     log.info( sout )
-    clinic_id = CLINIC_ID
 
     if OMS_SER:
         sout = "INSORG_ID: {0} OMS_SER: {1}".format(INSORG_ID, OMS_SER.encode("utf-8"))
@@ -328,41 +341,52 @@ if __name__ == "__main__":
                                                         mname.encode('utf-8'))
                 log.info( sout )
 
-            if countp % STEP_F == 0:
-                f_fname = F_PATH + FOUT_NAME + "-" + "%03d" % fnumber + ".xls"
-                fnumber += 1
-                wb.save(f_fname)
-                sout = "File {0} has been written".format(f_fname)
-                log.info( sout )
-
-                wb = xlwt.Workbook(encoding='cp1251')
-                ws = wb.add_sheet('Peoples')
-                
-                row = 3
-                ws.write(row,0,u'Фамилия')
-                ws.write(row,1,u'Имя')
-                ws.write(row,2,u'Отчетсво')
-                ws.write(row,3,u'Дата рождения')
-                ws.write(row,4,u'Серия ОМС')
-                ws.write(row,5,u'Номер ОМС')    
-                ws.write(row,6,u'СНИЛС')    
-                ws.write(row,7,u'Тип УДЛ')
-                ws.write(row,8,u'Серия УДЛ')
-                ws.write(row,9,u'Номер УДЛ')
-                ws.write(row,10,u'Дата выдачи УДЛ')
-                ws.write(row,11,u'Телефон')
-                ws.write(row,12,u'Сотовый')
-                ws.write(row,13,u'Адрес')
-                
-                row += 1
-                
-    
     dbc.close()
-    if row > 4:
-        f_fname = F_PATH + FOUT_NAME + "-" + "%03d" % fnumber + ".xls"
-        wb.save(f_fname)
-        sout = "File {0} has been written".format(f_fname)
-        log.info( sout )
+
+    f_fname = F_PATH + FOUT_NAME + "-" + "%03d" % clinic_id + ".xls"
+    wb.save(f_fname)
+    sout = "File {0} has been written".format(f_fname)
+    log.info( sout )
+    
+def get_1clinic_lock(id_unlock = None):
+    from dbmysql_connect import DBMY
+
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+
+    if id_unlock is not None:
+        ssql = "UPDATE insr_list SET c_lock = Null WHERE id = %s;"
+        curm.execute(ssql, (id_unlock, ))
+        dbmy.con.commit()
+
+    ssql = "SELECT id, clinic_id, mcod FROM insr_list WHERE (done is Null) AND (c_lock is Null);"
+    curm.execute(ssql)
+    rec = curm.fetchone()
+
+    if rec is not None:
+        _id  = rec[0]
+        c_id = rec[1]
+        mcod = rec[2]
+        c_rec = [_id, c_id, mcod]
+        ssql = "UPDATE insr_list SET c_lock = 1 WHERE id = %s;"
+        curm.execute(ssql, (_id, ))
+        dbmy.con.commit()
+    else:
+        c_rec = None
+
+    dbmy.close()
+    return c_rec
+
+if __name__ == "__main__":
+    import sys
+
+    c_rec  = get_1clinic_lock()
+    while c_rec is not None:
+        _id = c_rec[0]
+        clinic_id = c_rec[1]
+        mcod = c_rec[2]
+        export_clinic(clinic_id)
+        c_rec  = get_1clinic_lock(_id)
 
     sys.exit(0)
     
