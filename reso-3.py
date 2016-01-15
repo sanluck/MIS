@@ -129,7 +129,12 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER, clinic_id=CLINIC_ID):
     from dbmis_connect2 import DBMIS
     from people import PEOPLE
 
+    sout = "database: {0}:{1}".format(HOST, DB)
+    log.info( sout )
     dbc  = DBMIS(clinic_id, mis_host = HOST, mis_db = DB)
+    cname = dbc.name.encode('utf-8')
+    sout = "clinic_id: {0} clinic_name: {1}".format(clinic_id, cname)
+    log.info(sout)
     
     # Create new READ ONLY READ COMMITTED transaction
     ro_transaction = dbc.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
@@ -174,7 +179,7 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER, clinic_id=CLINIC_ID):
     
     return plist
 
-def export_clinic(clinic_id=CLINIC_ID):
+def export_clinic(clinic_id):
     import datetime
     
     import xlwt
@@ -183,16 +188,14 @@ def export_clinic(clinic_id=CLINIC_ID):
     from dbmis_connect2 import DBMIS
     from people import get_people
 
-    sout = "clinic_id: {0} database: {1}:{2}".format(clinic_id, HOST, DB)
-    log.info( sout )
-
     if OMS_SER:
         sout = "INSORG_ID: {0} OMS_SER: {1}".format(INSORG_ID, OMS_SER.encode("utf-8"))
     else:
         sout = "INSORG_ID: {0} ANY OMS_SER".format(INSORG_ID)
     log.info( sout )
 
-    plist = get_plist()
+    c_id = clinic_id
+    plist = get_plist(clinic_id=c_id)
     l_plist = len(plist)
 
     sout = "Have got {0} peoples matching criteria".format(l_plist)
@@ -377,6 +380,24 @@ def get_1clinic_lock(id_unlock = None):
     dbmy.close()
     return c_rec
 
+def register_done(_id):
+    import datetime
+    from dbmysql_connect import DBMY
+
+    dbmy = DBMY()
+    curm = dbmy.con.cursor()
+
+    dnow = datetime.datetime.now()
+    sdnow = str(dnow)
+
+    s_sqlt = """UPDATE insr_list
+    SET done = %s
+    WHERE
+    id = %s;"""
+
+    curm.execute(s_sqlt,(dnow, _id, ))
+    dbmy.close()
+
 if __name__ == "__main__":
     import sys
 
@@ -386,6 +407,7 @@ if __name__ == "__main__":
         clinic_id = c_rec[1]
         mcod = c_rec[2]
         export_clinic(clinic_id)
+        register_done(_id)
         c_rec  = get_1clinic_lock(_id)
 
     sys.exit(0)
