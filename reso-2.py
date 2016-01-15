@@ -25,27 +25,44 @@ HOST = "fb2.ctmed.ru"
 DB   = "DBMIS"
 
 CLINIC_ID = 22
-INSORG_ID = 0
-OMS_SER = u"АК%"
-DATE_START = "2015-12-01"
+INSORG_ID = 8
+# OMS_SER = u"АК%"
+OMS_SER = None
+DATE_START = "2015-01-01"
 
 F_PATH    = "./RESO/"
-FOUT_NAME = "ak_out"
+
+if OMS_SER:
+    FOUT_NAME = "ak_out"
+else:
+    FOUT_NAME = "all_out"
 
 STEP = 200
 STEP_F = 2000
 
-if INSORG_ID != 0:
-    s_sqlt0 = """SELECT 
+if OMS_SER:
+    if INSORG_ID != 0:
+        s_sqlt0 = """SELECT 
 people_id, lname, fname, mname, birthday 
 FROM peoples 
 WHERE insorg_id = ? 
 AND medical_insurance_series like ?;"""
-else:
-    s_sqlt0 = """SELECT 
+    else:
+        s_sqlt0 = """SELECT 
 people_id, lname, fname, mname, birthday 
 FROM peoples 
 WHERE medical_insurance_series like ?;"""
+else:
+    if INSORG_ID != 0:
+        s_sqlt0 = """SELECT 
+people_id, lname, fname, mname, birthday 
+FROM peoples 
+WHERE insorg_id = ?;"""
+    else:
+        s_sqlt0 = """SELECT 
+people_id, lname, fname, mname, birthday 
+FROM peoples;"""
+    
 
 s_sqlt0t = """SELECT 
 ticket_id
@@ -105,10 +122,16 @@ def get_plist(insorg_id=INSORG_ID, oms_ser=OMS_SER):
 
     plist = []
 
-    if insorg_id != 0:
-        ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, ))
+    if oms_ser:
+        if insorg_id != 0:
+            ro_cur.execute(s_sqlt0, (insorg_id, oms_ser, ))
+        else:
+            ro_cur.execute(s_sqlt0, (oms_ser, ))
     else:
-        ro_cur.execute(s_sqlt0, (oms_ser, ))
+        if insorg_id != 0:
+            ro_cur.execute(s_sqlt0, (insorg_id, ))
+        else:
+            ro_cur.execute(s_sqlt0)
 
     results = ro_cur.fetchall()
     
