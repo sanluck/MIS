@@ -11,6 +11,15 @@ import logging
 import fdb
 from get_lan_ip import get_lan_ip
 
+if __name__ == "__main__":
+    LOG_FILENAME = '_dbmis_connect.out'
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.INFO,)
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console)
+
+log = logging.getLogger(__name__)
 
 HOST = 'fb2.ctmed.ru'
 DB = 'DBMIS'
@@ -153,10 +162,13 @@ class DBMIS:
         lan_ip = get_lan_ip()
         s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}','{2}')"
         s_sql  = s_sqlt.format(mis_user, mis_user_pwd, lan_ip)
+        # Create new READ ONLY READ COMMITTED transaction
+        self.ro_transaction = self.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+        # and cursor
+        self.ro_cur = self.ro_transaction.cursor()
+
         try:
-            self.con.begin()
-            self.cur.execute(s_sql)
-            self.con.commit()
+            self.ro_cur.execute(s_sql)
         except Exception, e:
             exctype, value = sys.exc_info()[:2]
             log.warn( 'DBMIS SP_USER_AUTHENTICATION Error: {0}'.format(e) )
@@ -459,3 +471,6 @@ if __name__ == "__main__":
         print "people_id: {0}".format(p_id)
 
     print dset()
+    
+    dbc.con.close()
+    
