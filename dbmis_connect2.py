@@ -162,13 +162,10 @@ class DBMIS:
         lan_ip = get_lan_ip()
         s_sqlt = "EXECUTE PROCEDURE SP_USER_AUTHENTICATION({0},'{1}','{2}')"
         s_sql  = s_sqlt.format(mis_user, mis_user_pwd, lan_ip)
-        # Create new READ ONLY READ COMMITTED transaction
-        self.ro_transaction = self.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
-        # and cursor
-        self.ro_cur = self.ro_transaction.cursor()
-
         try:
-            self.ro_cur.execute(s_sql)
+            self.con.begin(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+            self.cur.execute(s_sql)
+            self.con.commit()
         except Exception, e:
             exctype, value = sys.exc_info()[:2]
             log.warn( 'DBMIS SP_USER_AUTHENTICATION Error: {0}'.format(e) )
