@@ -139,6 +139,10 @@ class PEOPLE:
 
         self.addr_fact = None
 
+        self.oms_ser = None
+        self.oms_num = None
+        self.snils   = None
+
     def initFromRec(self, rec):
         self.people_id = rec[0]
         self.lname = rec[1].strip()
