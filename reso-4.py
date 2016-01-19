@@ -47,7 +47,8 @@ addres_p$kladr, addres_p$indx,
 addres_p$dom, addres_p$korp, addres_p$kv,
 tip_op
 FROM enp$card
-WHERE activ=1 and sfile_id_fk is null;"""
+WHERE activ=1 and sfile_id_fk is null
+ORDER BY addres_p$kladr;"""
 
 s_sql_kladr = """SELECT 
 name, socr 
@@ -124,8 +125,8 @@ def get_plist():
         
         nnf += 1
 
-        oms_ser = rec[5]
-        oms_num = rec[6]
+        oms_num = rec[5]
+        oms_ser = rec[6]
         snils = rec[7]
 
         doc_type = rec[8]
@@ -168,7 +169,14 @@ def get_plist():
         p.contact = contact
         
         p.kladr = kladr
-        p.zip_code = zip_code
+
+        if zip_code:
+            zip_code = zip_code.strip()
+            if len(zip_code) == 0:
+                zip_code == None
+            p.zip_code = zip_code
+        else:
+            p.zip_code = None
         
         p.dom = dom
         p.korp = korp
@@ -181,21 +189,37 @@ def get_plist():
         else:
             s_address = u""
         if kladr:
-            kladr_k1 = kladr[:13]
-            kladr_k0 = kladr[:8] + "00000"
+            kladr_k2 = kladr[:13]
+            kladr_k1 = kladr[:8] + "00000"
+            kladr_k0 = kladr[:2] + "00000000000"
             r2_cur.execute(s_sql_kladr, (kladr_k0, ))
             raddr = r2_cur.fetchone()
             if raddr:
                 name = raddr[0]
                 socr = raddr[1]
-                s_address += socr + u" " + name + ", "
+                if socr == u"Респ":
+                    s_address += socr + u" " + name + ", "
+                else:
+                    s_address += name + u" " + socr + ", "
+            
+            if kladr_k1 != kladr_k0:
+                r2_cur.execute(s_sql_kladr, (kladr_k1, ))
+                raddr = r2_cur.fetchone()
+                if raddr:
+                    name = raddr[0]
+                    socr = raddr[1]
+                    if socr == u"р-н":
+                        s_address += name + u" " + socr + ", "
+                    else:
+                        s_address += socr + u" " + name + ", "
                 
-            r2_cur.execute(s_sql_kladr, (kladr_k1, ))
-            raddr = r2_cur.fetchone()
-            if raddr:
-                name = raddr[0]
-                socr = raddr[1]
-                s_address += socr + u" " + name + ", "
+            if kladr_k2 != kladr_k1:
+                r2_cur.execute(s_sql_kladr, (kladr_k2, ))
+                raddr = r2_cur.fetchone()
+                if raddr:
+                    name = raddr[0]
+                    socr = raddr[1]
+                    s_address += socr + u" " + name + ", "
                 
             r2_cur.execute(s_sql_street, (kladr, ))
             raddr = r2_cur.fetchone()
@@ -227,6 +251,96 @@ def get_plist():
     
     return plist
 
+def export_plist(f_fname, plist):
+    """
+    Export plist content into xls files
+    """
+    import xlwt
+    
+    wb = xlwt.Workbook(encoding='cp1251')
+    ws = wb.add_sheet('Peoples')
+    
+    row = 3
+    ws.write(row,0,u'Фамилия')
+    ws.write(row,1,u'Имя')
+    ws.write(row,2,u'Отчетсво')
+    ws.write(row,3,u'Дата рождения')
+    ws.write(row,4,u'Серия ОМС')
+    ws.write(row,5,u'Номер ОМС')    
+    ws.write(row,6,u'СНИЛС')    
+    ws.write(row,7,u'Тип УДЛ')
+    ws.write(row,8,u'Серия УДЛ')
+    ws.write(row,9,u'Номер УДЛ')
+    ws.write(row,10,u'Дата выдачи УДЛ')
+    ws.write(row,11,u'Телефон')
+    ws.write(row,12,u'Контакт')
+    ws.write(row,13,u'Адрес')
+    ws.write(row,14,u'Тип оп.')
+    
+    row += 1
+    
+    for p in plist:
+        lname = p.lname
+        fname = p.fname
+        mname = p.mname
+        dr    = p.birthday
+        uid   = p.uid
+
+        oms_ser = p.oms_ser
+        oms_num = p.oms_num
+        if p.snils:
+            sss = p.snils
+            if len(sss) < 11:
+                snils = sss
+            else:
+                snils = sss[:3] + '-' + sss[3:6] + '-' + sss[6:9] + ' ' + sss[9:]
+        else:
+            snils = u"-"
+
+        doc_type = p.doc_type
+        doc_ser = p.doc_ser
+        doc_num = p.doc_num
+        doc_date = p.doc_date
+
+        phone = p.phone
+        contact = p.contact
+        
+        address = p.address
+        tip_op = p.tip_op
+            
+        row += 1
+
+        ws.write(row,0,lname)
+        ws.write(row,1,fname)
+        ws.write(row,2,mname)
+        s_dr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
+        ws.write(row,3,s_dr)
+
+        ws.write(row,4,oms_ser)
+        ws.write(row,5,oms_num)
+        ws.write(row,6,snils)
+        ws.write(row,7,doc_type)
+        ws.write(row,8,doc_ser)
+        ws.write(row,9,doc_num)
+            
+        if doc_date is None:
+            s_dw = ''
+        else:
+            s_dw = u"%04d-%02d-%02d" % (doc_date.year, doc_date.month, doc_date.day)
+                
+        ws.write(row,10,s_dw)
+
+        ws.write(row,11,phone)
+        ws.write(row,12,contact)
+        
+        ws.write(row,13,address)
+        ws.write(row,14,tip_op)
+    
+    wb.save(f_fname)
+    sout = "File {0} has been written".format(f_fname)
+    log.info( sout )
+    
+
 if __name__ == "__main__":
     import time
     sout = "------------------------------------------------------------------------------"
@@ -236,6 +350,19 @@ if __name__ == "__main__":
     log.info(sout)    
     
     plist = get_plist()
+    
+    nfiles = len(plist) / STEP_F + 1
+    
+    if nfiles == 1:
+        fname = F_PATH + FOUT_NAME + ".xls"
+        export_plist(fname, plist)
+    
+    else:
+        for i in range(nfiles):
+            fname = F_PATH + FOUT_NAME + ("-%02d" % i) + ".xls"
+            psublist = plist[i*STEP_F:(i+1)*STEP_F]
+            export_plist(fname, psublist)
+            
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info("Process ENP$CARDs. Finish {0}".format(localtime))
