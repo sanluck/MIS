@@ -148,7 +148,7 @@ class DBMIS:
             self.cur = self.con.cursor()
         except Exception, e:
             exctype, value = sys.exc_info()[:2]
-            log.warn( 'DBMIS init error: {0}s'.format(e) )
+            log.warn( 'DBMIS init error: {0}'.format(e) )
             raise
         sout = "Connection to %s has been established" % (s_dsn)
         log.debug(sout)
