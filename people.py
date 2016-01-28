@@ -1950,7 +1950,7 @@ def mo_cad_string(p_mo):
     else:
         sss += u'"' + str(p_mo.area_number) + u'";'
 
-    if p_mo.doc_snils:
+    if p_mo.doc_snils is not None:
         sss += u'"' + p_mo.doc_snils + u'"'
 
     if p_mo.doc_category:
