@@ -22,8 +22,10 @@ logging.getLogger('').addHandler(console)
 
 log = logging.getLogger(__name__)
 
-FNAME  = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
-R_PATH = "./RMO"
+FNAME   = "MO2{0}{1}.csv" # в ТФОМС на внесение изменений
+FNAME1  = "MO2{0}{1}_mo.csv" # в ТФОМС на внесение изменений
+FNAME2  = "MO2{0}{1}_doctor.csv" # в ТФОМС на внесение изменений
+R_PATH  = "./RMO"
 
 STEP = 1000
 
@@ -98,12 +100,14 @@ if __name__ == "__main__":
         log.info(sout)
 
         stime   = time.strftime("%Y%m%d")
-        fname   = FNAME.format(mcod, stime)
-        f_fname = R_PATH  + "/" + fname
-        sout = "Output to file: {0}".format(f_fname)
+        fname1   = FNAME1.format(mcod, stime)
+        fname2   = FNAME2.format(mcod, stime)
+        f_fname1 = R_PATH  + "/" + fname1
+        f_fname2 = R_PATH  + "/" + fname2
+        sout = "Output to files: {0}, {1}".format(f_fname1, f_fname2)
         log.info(sout)
 
-        l_out = write_mo_cad(mo_ar, f_fname)
+        l_out = write_mo_cad(mo_ar, f_fname1, f_fname2)
         register_cdone(dbmy, mcod, l_out)
 
     dbmy.close()

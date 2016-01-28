@@ -1682,7 +1682,7 @@ def get_mo_cad_fromdb(db, mcod, mode = 1):
           m.motive_att, m.type_att, m.date_att, m.date_det,
           m.mo_oid, m.dep_code, m.area_number, m.doc_snils, m.doc_category,
           il.clinic_id,
-          tp.tfoms_verification_status
+          tp.tfoms_verification_status, tp.lpu_tfoms
         FROM mo_cad m
         LEFT JOIN insr_list il ON m.mcod = il.mcod
         LEFT JOIN tfoms_peoples tp ON il.clinic_id = tp.clinic_id AND m.enp = tp.enp
@@ -1721,12 +1721,15 @@ def get_mo_cad_fromdb(db, mcod, mode = 1):
         p_mo.area_number = rec[21]
         p_mo.doc_snils   = rec[22]
         p_mo.doc_category= rec[23]
-
+        
         if mode == 1:
+            p_mo.lpu_tfoms = None
             array.append( p_mo )
         else:
             tfoms_verification_status = rec[25]
+            lpu_tfoms = rec[26]
             if tfoms_verification_status != 1:
+                p_mo.lpu_tfoms = lpu_tfoms
                 array.append( p_mo )
 
     return array
@@ -1832,7 +1835,7 @@ def mo_string(p_mo):
 def mo_cad_string(p_mo):
 
     sss = u''
-
+       
     if p_mo.action is None:
         sss += u';'
     else:
@@ -1975,9 +1978,13 @@ def write_mo(ar, fname):
 
     return l_ar
 
-def write_mo_cad(ar, fname):
+def write_mo_cad(ar, fname1, fname2):
 
-    fo = open(fname, "wb")
+    #
+    # https://prm.ctmed.ru/redmine/issues/3066
+    #
+    fo1 = open(fname1, "wb")
+    fo2 = open(fname2, "wb")
 
     l_ar = len(ar)
     i = 0
@@ -1988,10 +1995,29 @@ def write_mo_cad(ar, fname):
             sss = mo_cad_string(p_mo)
         else:
             sss = mo_cad_string(p_mo) + u"\r\n"
+        
         ps = sss.encode('windows-1251')
-        fo.write(ps)
+        fo2.write(ps)
 
-    fo.close()
+        lpu_tfoms = p_mo.lpu_tfoms
+      
+        if (lpu_tfoms is not None) and (lpu_tfoms == 1):
+            p_mo.action = u'Р'
+        else:
+            p_mo.action = u'И'
+          
+        p_mo.doc_snils = u''
+
+        if i == l_ar:
+            sss = mo_cad_string(p_mo)
+        else:
+            sss = mo_cad_string(p_mo) + u"\r\n"
+        
+        ps = sss.encode('windows-1251')
+        fo1.write(ps)
+
+    fo1.close()
+    fo2.close()
 
     return l_ar
 
