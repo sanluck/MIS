@@ -34,6 +34,10 @@ CLINIC_ID = 125
 F_PATH    = "./RESO/"
 FOUT_NAME = "kissmo_out"
 
+MODE = 2
+# 1 - проверять наличие среди выгруженных ранее
+# 2 - не проверять
+
 STEP = 200
 STEP_F = 2000
 
@@ -45,7 +49,8 @@ doc$type, doc$docser, doc$docnum, doc$docdate,
 person$phone, person$contact, 
 addres_p$kladr, addres_p$indx, 
 addres_p$dom, addres_p$korp, addres_p$kv,
-tip_op
+tip_op, 
+person$w, doc$mr
 FROM enp$card
 WHERE activ=1 and sfile_id_fk is null
 ORDER BY addres_p$kladr;"""
@@ -116,12 +121,13 @@ def get_plist():
             mname = None
         birthday = rec[4]
         
-        # look for existing record in the reso_list table
-        cur.execute(s_sql_f1, (lname, fname, mname, birthday))
-        rf1 = cur.fetchone()
+        if MODE == 1:
+            # look for existing record in the reso_list table
+            cur.execute(s_sql_f1, (lname, fname, mname, birthday))
+            rf1 = cur.fetchone()
         
-        # skip in case this person was found in the reso_list table
-        if rf1: continue
+            # skip in case this person was found in the reso_list table
+            if rf1: continue
         
         nnf += 1
 
@@ -146,12 +152,22 @@ def get_plist():
 
         tip_op = rec[19]
         
+        person_w = rec[20]
+        if person_w == 2:
+            sex = u'Ж'
+        else:
+            sex = u'М'
+            
+        doc_mr = rec[21]
+        
         p = PEOPLE()
         p.uid = uid
         p.lname = lname
         p.fname = fname
         p.mname = mname
+        p.sex = sex
         p.birthday = birthday
+        p.doc_mr = doc_mr
 
         p.oms_ser = oms_ser
         p.oms_num = oms_num
@@ -264,18 +280,22 @@ def export_plist(f_fname, plist):
     ws.write(row,0,u'Фамилия')
     ws.write(row,1,u'Имя')
     ws.write(row,2,u'Отчетсво')
-    ws.write(row,3,u'Дата рождения')
-    ws.write(row,4,u'Серия ОМС')
-    ws.write(row,5,u'Номер ОМС')    
-    ws.write(row,6,u'СНИЛС')    
-    ws.write(row,7,u'Тип УДЛ')
-    ws.write(row,8,u'Серия УДЛ')
-    ws.write(row,9,u'Номер УДЛ')
-    ws.write(row,10,u'Дата выдачи УДЛ')
-    ws.write(row,11,u'Телефон')
-    ws.write(row,12,u'Контакт')
-    ws.write(row,13,u'Адрес')
-    ws.write(row,14,u'Тип оп.')
+    ws.write(row,3,u'Пол')
+
+    ws.write(row,4,u'Дата рождения')
+    ws.write(row,5,u'Место рождения')
+
+    ws.write(row,6,u'Серия ОМС')
+    ws.write(row,7,u'Номер ОМС')    
+    ws.write(row,8,u'СНИЛС')    
+    ws.write(row,9,u'Тип УДЛ')
+    ws.write(row,10,u'Серия УДЛ')
+    ws.write(row,11,u'Номер УДЛ')
+    ws.write(row,12,u'Дата выдачи УДЛ')
+    ws.write(row,13,u'Телефон')
+    ws.write(row,14,u'Контакт')
+    ws.write(row,15,u'Адрес')
+    ws.write(row,16,u'Тип оп.')
     
     row += 1
     
@@ -283,7 +303,9 @@ def export_plist(f_fname, plist):
         lname = p.lname
         fname = p.fname
         mname = p.mname
+        sex   = p.sex
         dr    = p.birthday
+        mr    = p.doc_mr
         uid   = p.uid
 
         oms_ser = p.oms_ser
@@ -313,28 +335,30 @@ def export_plist(f_fname, plist):
         ws.write(row,0,lname)
         ws.write(row,1,fname)
         ws.write(row,2,mname)
+        ws.write(row,3,sex)
         s_dr = u"%04d-%02d-%02d" % (dr.year, dr.month, dr.day)
-        ws.write(row,3,s_dr)
+        ws.write(row,4,s_dr)
+        ws.write(row,5,mr)
 
-        ws.write(row,4,oms_ser)
-        ws.write(row,5,oms_num)
-        ws.write(row,6,snils)
-        ws.write(row,7,doc_type)
-        ws.write(row,8,doc_ser)
-        ws.write(row,9,doc_num)
+        ws.write(row,6,oms_ser)
+        ws.write(row,7,oms_num)
+        ws.write(row,8,snils)
+        ws.write(row,9,doc_type)
+        ws.write(row,10,doc_ser)
+        ws.write(row,11,doc_num)
             
         if doc_date is None:
             s_dw = ''
         else:
             s_dw = u"%04d-%02d-%02d" % (doc_date.year, doc_date.month, doc_date.day)
                 
-        ws.write(row,10,s_dw)
+        ws.write(row,12,s_dw)
 
-        ws.write(row,11,phone)
-        ws.write(row,12,contact)
+        ws.write(row,13,phone)
+        ws.write(row,14,contact)
         
-        ws.write(row,13,address)
-        ws.write(row,14,tip_op)
+        ws.write(row,15,address)
+        ws.write(row,16,tip_op)
     
     wb.save(f_fname)
     sout = "File {0} has been written".format(f_fname)
