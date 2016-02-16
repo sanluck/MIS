@@ -417,7 +417,13 @@ def set_ap(ar_pcad):
         cur.execute(SQLT_AP, (people_id, ))
         aprec = cur.fetchone()
         dbmis.con.commit()
-        if not aprec: continue
+        pcad.action = ACTION
+        pcad.type_att = TYPE_ATT
+        pcad.lpu_tfoms = None
+
+        if not aprec: 
+            ar_pcad[i] = pcad
+            continue
         area_id = aprec[1]
         date_beg = aprec[2]
         motive_att = aprec[3]
@@ -427,15 +433,11 @@ def set_ap(ar_pcad):
         area_number   = aprec[5]
         speciality_id = aprec[6]
 
-        pcad.action = ACTION
         #pcad.clinic_id = clinic_id
         pcad.mcod = mcod
         pcad.motive_att = motive_att
-        pcad.type_att = TYPE_ATT
         pcad.date_att = date_beg
         
-        pcad.lpu_tfoms = None
-
         if clinic_id != t_clinic_id:
             cad = get_cad(dbmis, clinic_id)
             d1,d7,d38,d51 = get_d(dbmis, clinic_id)
