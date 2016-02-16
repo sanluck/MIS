@@ -297,7 +297,7 @@ if __name__ == "__main__":
         sout = "Input file: {0}".format(f_fname)
         log.info(sout)
         
-        # plist = get_plist(f_fname)
+        plist = get_plist(f_fname)
         
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Getting patients and processing data. Finish  '+localtime)
