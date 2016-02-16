@@ -273,7 +273,7 @@ def get_plist(f_fname, p_enp, o_oms):
         else:
             continue
         
-        ro_tranasction.begin()
+        ro_transaction.begin()
         ro_cur.execute(SQLT_GETP1, (people_id, ))
         rec = ro_cur.fetchone()
         if not rec: continue
@@ -297,6 +297,8 @@ def get_plist(f_fname, p_enp, o_oms):
         document_when = rec[12]
         document_who  = rec[13]
         insurance_certificate = rec[14]
+        
+        ro_transaction.commit()
         
         # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
         sss = medical_insurance_series
