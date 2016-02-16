@@ -373,7 +373,7 @@ def get_plist(f_fname, p_enp, o_oms):
         if insurance_certificate is None:
             ppp.snils = None
         else:
-            ppp.snils = insurance_certificate.repalce('-','').replace(' ','')
+            ppp.snils = insurance_certificate.replace('-','').replace(' ','')
         
         ppp_arr.append(ppp)
         nnn += 1
