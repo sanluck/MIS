@@ -343,7 +343,7 @@ def get_plist(f_fname, p_enp, o_oms):
             sdt = u"14"
         else:
             sdt = str(document_type_id_fk)
-        self.doc_type_id = sdt
+        ppp.doc_type_id = sdt
 
         if document_series is None:
             dsn = None
