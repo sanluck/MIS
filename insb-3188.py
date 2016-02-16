@@ -211,8 +211,9 @@ def get_peoples():
     log.info('len(p_enp): {0} len(p_oms): {1}'.format(len(p_enp), len(p_oms)))
     return p_enp, p_oms
 
-def get_plist(f_fname):
+def get_plist(f_fname, p_enp, o_oms):
 # get patients list
+    from people import MO_CAD_PEOPLE
     from PatientInfo import PatientInfo
     import time
 
@@ -252,12 +253,15 @@ def get_plist(f_fname):
     ppp_arr = []
     for enp in array:
         
-        ro_cur.execute(SQLT_GETP0, (enp, ))
-        rec = ro_cur.fetchone()
-        if not rec: continue
-
-        ppp = PEOPLE()
-        ppp.init_from_rec(rec)
+        if p_enp.has_key(enp):
+            p = p_enp[enp]
+            people_id = p.people_id
+            
+        else:
+            continue
+        
+        ppp = MO_CAD_PEOPLE()
+        ppp.people_id = people_id
         
         ppp_arr.append(ppp)
         nnn += 1
@@ -268,7 +272,7 @@ def get_plist(f_fname):
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Get Patients List. Finish {0}'.format(localtime))
     
-    log.info('Have found {0} peoples in DBMIS'.format(nnn))
+    log.info('Identified {0} patients'.format(nnn))
     
     return ppp_arr
 
