@@ -117,6 +117,19 @@ medical_insurance_number
 FROM peoples
 WHERE enp = ?;"""
 
+SQLT_GETP1 = """SELECT
+medical_insurance_series,
+medical_insurance_number,
+enp, 
+lname, fname, mname, birthday, 
+enp, birthplace, 
+document_type_id_fk, document_series, document_number,
+document_when, document_who,
+insurance_certificate
+FROM peoples
+WHERE people_id = ?;"""
+
+
 class PEOPLE:
     def __init__(self):
         self.people_id = None
@@ -260,8 +273,105 @@ def get_plist(f_fname, p_enp, o_oms):
         else:
             continue
         
+        ro_tranasction.begin()
+        ro_cur.execute(SQLT_GETP1, (people_id, ))
+        rec = ro_cur.fetchone()
+        if not rec: continue
+        
         ppp = MO_CAD_PEOPLE()
         ppp.people_id = people_id
+        ppp.enp = enp
+        
+        medical_insurance_series = rec[0]
+        medical_insurance_number = rec[1]
+        enp = rec[2]
+        lname = rec[3]
+        fname = rec[4]
+        mname = rec[5]
+        birthday = rec[6]
+        # enp = rec[7]
+        birthplace = rec[8]
+        document_type_id_fk = rec[9]
+        document_series = rec[10]
+        document_number = rec[11]
+        document_when = rec[12]
+        document_who  = rec[13]
+        insurance_certificate = rec[14]
+        
+        # medical_insurance_series (s_mis) & medical_insurance_number (s_min)
+        sss = medical_insurance_series
+        if sss == None:
+            s_mis = u""
+            oms_sn = s_mis
+        else:
+            s_mis = u"{0}".format(sss)
+            oms_sn = s_mis + u" "
+    
+        sss = medical_insurance_number
+        if sss == None:
+            s_min = u""
+        else:
+            s_min = u"{0}".format(sss)
+            oms_sn += s_min
+    
+        oms_enp = u""
+        if len(s_mis) == 0:
+            tdpfs = u"3" # Полис ОМС единого образца
+            oms_enp = s_min
+        elif s_mis[0] in (u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9"):
+            tdpfs = u"2" # Временное свидетельство, ....
+        else:
+            tdpfs = u"1" # Полис ОМС старого образца
+            
+        ppp.dpfs = tdpfs
+        ppp.oms_sn = oms_sn
+
+        ppp.lname = lname
+        ppp.fname = fname
+        ppp.mname = mname
+        
+
+        ppp.birthday = birthday
+        if birthplace:
+            ppp.birthplace = birthplace
+        else:
+            ppp.birthplace = u""
+            
+        if document_type_id_fk is None:
+            sdt = u"14"
+        else:
+            sdt = str(document_type_id_fk)
+        self.doc_type_id = sdt
+
+        if document_series is None:
+            dsn = None
+        else:
+            dsn = document_series
+    
+        if document_number is not None:
+            if dsn is None:
+                dsn = document_number
+            else:
+                dsn += u" № " + document_number
+        
+        ppp.doc_sn = dsn
+
+        if document_when is None:
+            ppp.doc_when = None
+        else:
+            dw = document_when
+            sdr = u"%04d%02d%02d" % (dw.year, dw.month, dw.day)
+            ppp.doc_when = sdr
+    
+        if document_who is None:
+            ppp.doc_who = None
+        else:
+            ppp.doc_who = document_who.strip().upper()
+    
+        if insurance_certificate is None:
+            ppp.snils = None
+        else:
+            ppp.snils = insurance_certificate.repalce('-','').replace(' ','')
         
         ppp_arr.append(ppp)
         nnn += 1
@@ -297,7 +407,7 @@ if __name__ == "__main__":
         sout = "Input file: {0}".format(f_fname)
         log.info(sout)
         
-        plist = get_plist(f_fname)
+        plist = get_plist(f_fname, p_enp, p_oms)
         
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Getting patients and processing data. Finish  '+localtime)
