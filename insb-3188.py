@@ -79,6 +79,7 @@ else:
     SET_DOC_CATEGORY = False
 
 CLINIC_OGRN = u""
+TYPE_ATT = u"1"
 
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС
 
@@ -228,7 +229,6 @@ def get_plist(f_fname, p_enp):
 # get patients list
     from people import MO_CAD_PEOPLE
     from PatientInfo import PatientInfo
-    import time
 
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Get Patients List on the Base of {0}. Start {1} '.format(f_fname, localtime))
@@ -360,9 +360,7 @@ def get_plist(f_fname, p_enp):
         if document_when is None:
             ppp.doc_when = None
         else:
-            dw = document_when
-            sdr = u"%04d%02d%02d" % (dw.year, dw.month, dw.day)
-            ppp.doc_when = sdr
+            ppp.doc_when = document_when
     
         if document_who is None:
             ppp.doc_who = None
@@ -387,10 +385,80 @@ def get_plist(f_fname, p_enp):
     
     return ppp_arr
 
+def set_ap(ar_pcad):
+    from clinic_areas_doctors import get_cad, get_d
+    
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('Set Area. Start {0} '.format(localtime))
+
+    try:
+        dbmis = DBMIS(mis_host = HOST, mis_db = DB)
+    except:
+        return
+        
+    # Create new READ ONLY READ COMMITTED transaction
+    ro_transaction = dbmis.con.trans(fdb.ISOLATION_LEVEL_READ_COMMITED_RO)
+    # and cursor
+    cur = ro_transaction.cursor()
+    
+    t_clinic_id = 0
+
+    l = len(ar_pcad)
+    for i in range(l):
+        pcad = ar_pcad[i]
+
+        if (i % STEP) == 0:
+            sout = "{0}: enp: {1}".format(i, pcad.enp)
+            log.info(sout)
+
+        people_id = pcad.people_id
+        if not people_id: continue
+        
+        cur.execute(SQLT_AP, (people_id, ))
+        aprec = cur.fetchone()
+        dbmis.con.commit()
+        if not aprec: continue
+        area_id = aprec[1]
+        date_beg = aprec[2]
+        motive_att = aprec[3]
+        clinic_id = aprec[4]
+        mcod = modb.moCodeByMisId(clinic_id)
+
+        area_number   = aprec[5]
+        speciality_id = aprec[6]
+
+        pcad.action = ACTION
+        #pcad.clinic_id = clinic_id
+        pcad.mcod = mcod
+        pcad.motive_att = motive_att
+        pcad.type_att = TYPE_ATT
+        pcad.date_att = date_beg
+        
+        pcad.lpu_tfoms = None
+
+        if clinic_id != t_clinic_id:
+            cad = get_cad(dbmis, clinic_id)
+            d1,d7,d38,d51 = get_d(dbmis, clinic_id)
+            t_clinic_id = clinic_id
+
+        docsnils = None
+        if cad.has_key(area_id):
+            docsnils = cad[area_id][2]
+
+        pcad.docsnils = docsnils
+        
+        ar_pcad[i] = pcad
+    
+    dbmis.con.close()
+
+    localtime = time.asctime( time.localtime(time.time()) )
+    log.info('Set Area. Finish {0} '.format(localtime))
+    
 if __name__ == "__main__":
 
     import shutil
     import time
+    from people import write_mo_cad
 
     log.info("======================= INSB-3188 ===========================================")
     localtime = time.asctime( time.localtime(time.time()) )
@@ -409,6 +477,13 @@ if __name__ == "__main__":
         log.info(sout)
         
         plist = get_plist(f_fname, p_enp)
+        set_ap(plist)
+        
+        f_fname1 = OUT_PATH + "/" + fname
+        f_fname2 = f_fname1.replace('.csv','_doctor.csv')
+        sout = "Output file: {0}".format(f_fname)
+        log.info(sout)
+        l_out = write_mo_cad(plist, f_fname1, f_fname2)
         
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Getting patients and processing data. Finish  '+localtime)
