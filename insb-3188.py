@@ -201,7 +201,7 @@ def get_peoples():
         oms_num = rec[4]
         if oms_num:
             people.oms_num = oms_num.strip()
-            if (not people.enp) and len(people.oms_num) == 16:
+            if (people.enp is None) and len(people.oms_num) == 16:
                 people.enp = people.oms_num
         else:
             people.oms_num = None
@@ -224,7 +224,7 @@ def get_peoples():
     log.info('len(p_enp): {0} len(p_oms): {1}'.format(len(p_enp), len(p_oms)))
     return p_enp, p_oms
 
-def get_plist(f_fname, p_enp, o_oms):
+def get_plist(f_fname, p_enp):
 # get patients list
     from people import MO_CAD_PEOPLE
     from PatientInfo import PatientInfo
@@ -268,10 +268,6 @@ def get_plist(f_fname, p_enp, o_oms):
         
         if p_enp.has_key(enp):
             p = p_enp[enp]
-            people_id = p.people_id
-            
-        elif p_oms.has_key(enp):
-            p = p_oms[enp]
             people_id = p.people_id
         else:
             continue
@@ -412,7 +408,7 @@ if __name__ == "__main__":
         sout = "Input file: {0}".format(f_fname)
         log.info(sout)
         
-        plist = get_plist(f_fname, p_enp, p_oms)
+        plist = get_plist(f_fname, p_enp)
         
     localtime = time.asctime( time.localtime(time.time()) )
     log.info('Getting patients and processing data. Finish  '+localtime)
