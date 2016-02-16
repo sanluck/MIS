@@ -270,6 +270,9 @@ def get_plist(f_fname, p_enp, o_oms):
             p = p_enp[enp]
             people_id = p.people_id
             
+        elif p_oms.has_key(enp):
+            p = p_oms[enp]
+            people_id = p.people_id
         else:
             continue
         
