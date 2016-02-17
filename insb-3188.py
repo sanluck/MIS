@@ -79,7 +79,8 @@ else:
     SET_DOC_CATEGORY = False
 
 CLINIC_OGRN = u""
-TYPE_ATT = u"1"
+TYPE_ATT = u""
+DEP_CODE = u"0"
 
 FNAMEb = "MO2{0}{1}.csv" # в ТФОМС
 
@@ -306,7 +307,7 @@ def get_plist(f_fname, p_enp):
             oms_sn = s_mis
         else:
             s_mis = u"{0}".format(sss)
-            oms_sn = s_mis + u" "
+            oms_sn = s_mis + u" № "
     
         sss = medical_insurance_number
         if sss == None:
@@ -419,6 +420,7 @@ def set_ap(ar_pcad):
         dbmis.con.commit()
         pcad.action = ACTION
         pcad.type_att = TYPE_ATT
+        pcad.dep_code = DEP_CODE
         pcad.lpu_tfoms = None
 
         if not aprec: 
@@ -433,7 +435,7 @@ def set_ap(ar_pcad):
         area_number   = aprec[5]
         speciality_id = aprec[6]
 
-        #pcad.clinic_id = clinic_id
+        pcad.clinic_id = clinic_id
         pcad.mcod = mcod
         pcad.motive_att = motive_att
         pcad.date_att = date_beg

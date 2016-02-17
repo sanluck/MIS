@@ -1837,94 +1837,94 @@ def mo_cad_string(p_mo):
     sss = u''
        
     if p_mo.action is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.action + u'";'
 
     if p_mo.dpfs is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.dpfs + u'";'
 
     if p_mo.oms_sn is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.oms_sn + u'";'
 
     if p_mo.enp is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.enp + u'";'
 
     if p_mo.lname is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.lname + u'";'
 
     if p_mo.fname is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.fname + u'";'
 
     if p_mo.mname is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.mname + u'";'
 
     if p_mo.birthday is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sdd = "%04d%02d%02d" % (p_mo.birthday.year, p_mo.birthday.month, p_mo.birthday.day)
         sss += u'"' + sdd + u'";'
 
     if p_mo.birthplace is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.birthplace + u'";'
 
     if p_mo.doc_type_id is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + str(p_mo.doc_type_id) + u'";'
 
     if p_mo.doc_sn is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.doc_sn + u'";'
 
     if p_mo.doc_when is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sdd = "%04d%02d%02d" % (p_mo.doc_when.year, p_mo.doc_when.month, p_mo.doc_when.day)
         sss += u'"' + sdd + u'";'
 
     if p_mo.doc_who is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.doc_who + u'";'
 
     if p_mo.snils is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.snils + u'";'
 
     if p_mo.mcod is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + str(p_mo.mcod) + u'";'
 
     if p_mo.motive_att is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + str(p_mo.motive_att) + u'";'
 
     if p_mo.type_att is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.type_att + u'";'
 
     if p_mo.date_att is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sdd = "%04d%02d%02d" % (p_mo.date_att.year, p_mo.date_att.month, p_mo.date_att.day)
         sss += u'"' + sdd + u'";'
@@ -1933,20 +1933,20 @@ def mo_cad_string(p_mo):
         sdd = "%04d%02d%02d" % (p_mo.date_det.year, p_mo.date_det.month, p_mo.date_det.day)
         sss += u'"' + sdd + u'";'
     else:
-        sss += u';'
+        sss += u'"";'
 
     if p_mo.mo_oid is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.mo_oid + u'";'
 
     if p_mo.dep_code is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + p_mo.dep_code + u'";'
 
     if p_mo.area_number is None:
-        sss += u';'
+        sss += u'"";'
     else:
         sss += u'"' + str(p_mo.area_number) + u'";'
 
