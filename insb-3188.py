@@ -449,7 +449,7 @@ def set_ap(ar_pcad):
         if cad.has_key(area_id):
             docsnils = cad[area_id][2]
 
-        pcad.docsnils = docsnils
+        pcad.doc_snils = docsnils
         
         ar_pcad[i] = pcad
     
