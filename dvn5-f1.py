@@ -164,7 +164,7 @@ def register_cc(dbmy, cc_id, people_id, clinic_id):
     cursor.execute(s_sql)
     rec = cursor.fetchone()
     if rec == None:
-        # register clinical_checkup in the MySQL database (ct216.ctmed.ru:mis)
+        # register clinical_checkup in the MySQL database (ct208.ctmed.ru:mis)
 	s_sqlt = """INSERT INTO clinical_checkups
 	(cc_id, people_id, cc_dcreated, clinic_id)
 	VALUES

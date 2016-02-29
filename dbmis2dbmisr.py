@@ -35,7 +35,7 @@ LIMIT = 5000000
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
 
-M_HOST = "ct216.ctmed.ru"
+M_HOST = "ct208.ctmed.ru"
 M_DB = "dbmisr"
 
 SQLT_F_TICKET_ID = """SELECT ticket_id

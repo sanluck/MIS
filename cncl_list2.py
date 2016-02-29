@@ -91,7 +91,7 @@ AND t.visit_date BETWEEN ? AND ?
 AND c.ms_uid is not Null;"""
 
 MY_DB = "web2py_mis"
-MY_DBHOST = "ct216.ctmed.ru"
+MY_DBHOST = "ct208.ctmed.ru"
 
 SQLT_NEWCOUNT = """UPDATE cncl_clinics
 SET cncl_count = Null

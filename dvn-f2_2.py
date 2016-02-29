@@ -146,7 +146,7 @@ def register_ccr(dbmy, cc_id):
     dnow = datetime.datetime.now()
     sdnow = str(dnow)    
     
-    # register clinical_checkup_results in the MySQL database (ct216.ctmed.ru:mis)
+    # register clinical_checkup_results in the MySQL database (ct208.ctmed.ru:mis)
     s_sqlt = """INSERT INTO cc2
     (cc_id, dtcreated)
     VALUES

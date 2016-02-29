@@ -40,7 +40,7 @@ START_BD = '1998-01-01'
 HOST = "fb2.ctmed.ru"
 DB = "DBMIS"
 
-M_HOST = "ct216.ctmed.ru"
+M_HOST = "ct208.ctmed.ru"
 M_DB = "mis"
 
 SQLT_GET_PLIST = """SELECT DISTINCT people_id FROM csip WHERE luse = 1;"""
